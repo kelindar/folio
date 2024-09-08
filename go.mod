@@ -1,4 +1,4 @@
-module github.com/kelindar/ultima-web
+module github.com/kelindar/folio
 
 go 1.23
 
