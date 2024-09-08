@@ -1,69 +1,39 @@
 package sqlite
 
 import (
+	"database/sql"
 	"fmt"
-	"log"
-	"os"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/creasty/defaults"
 	"github.com/kelindar/folio"
-	_ "github.com/ncruces/go-sqlite3/embed" // cgo-free, uses wazero
-	"github.com/ncruces/go-sqlite3/gormlite"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	_ "github.com/ncruces/go-sqlite3/driver" // cgo-free, uses wazero
+	_ "github.com/ncruces/go-sqlite3/embed"  // cgo-free, uses wazero
 )
 
 type Record = folio.Object
 
-// ---------------------------------- Open ----------------------------------
-
 // rds represents a relational storage layer for resources.
 type rds struct {
-	db       *gorm.DB
+	db       *sql.DB
 	registry folio.Registry
 }
 
 // Open opens a storage database
 func Open(dsn string, registry folio.Registry) (folio.Storage, error) {
-	dblog := logger.New(
-		log.New(os.Stdout, "", log.LstdFlags),
-		logger.Config{
-			SlowThreshold:             500 * time.Millisecond,
-			LogLevel:                  logger.Warn,
-			IgnoreRecordNotFoundError: true,
-			Colorful:                  false,
-		},
-	)
-
-	// Open the database
-	db, err := gorm.Open(gormlite.Open(dsn), &gorm.Config{
-		Logger: dblog,
-	})
+	db, err := sql.Open("sqlite3", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("storage: unable to open database: %w", err)
 	}
 
-	// Set the max open connections to 1 for sqlite so we can test concurrency
-	if db.Name() == "sqlite" {
-		db, _ := db.DB()
-		db.SetMaxOpenConns(1)
-	}
+	// Set max open connections for SQLite (as SQLite is not designed for many concurrent writes)
+	db.SetMaxOpenConns(1)
 
 	// Auto-create the tables
 	if err := registry.Range(func(k folio.Kind, _ reflect.Type) error {
-		table := &row{}
-		scope := db.Table(k.String()).Session(&gorm.Session{})
-
-		// Fix the table name on the schema and auto-migrate
-		scope.Statement.Parse(table)
-		scope.Statement.Schema.Table = k.String()
-		if err := scope.AutoMigrate(table); err != nil {
-			return fmt.Errorf("storage: unable to auto-migrate table %s: %w", k, err)
-		}
-		return nil
+		_, err := db.Exec(createTableSQL(k.String()))
+		return err
 	}); err != nil {
 		return nil, err
 	}
@@ -74,7 +44,7 @@ func Open(dsn string, registry folio.Registry) (folio.Storage, error) {
 	}, nil
 }
 
-// OpenEphemeral opens a new emphemeral storage
+// OpenEphemeral opens an ephemeral storage
 func OpenEphemeral(registry folio.Registry) folio.Storage {
 	s, err := Open(":memory:", registry)
 	if err != nil {
@@ -85,23 +55,28 @@ func OpenEphemeral(registry folio.Registry) folio.Storage {
 
 // Close closes the storage gracefully.
 func (s *rds) Close() error {
-	db, err := s.db.DB()
-	if err != nil {
-		return err
-	}
-
-	return db.Close()
+	return s.db.Close()
 }
 
-// tableOf returns the table for the specified resource kind
-func (s *rds) tableOf(kind folio.Kind) *gorm.DB {
-	return s.db.Table(kind.String())
+// createTableSQL generates SQL to create a table for a specific resource kind.
+func createTableSQL(tableName string) string {
+	return fmt.Sprintf(`
+	CREATE TABLE IF NOT EXISTS %s (
+		id TEXT PRIMARY KEY,
+		namespace TEXT,
+		state TEXT,
+		data JSON,
+		created_by TEXT,
+		updated_by TEXT,
+		created_at INTEGER,
+		updated_at INTEGER
+	);`, tableName)
 }
 
 // ---------------------------------- Query ----------------------------------
 
 // query creates a query for the specified resource kind
-func (s *rds) query(kind folio.Kind, q folio.Query) (*gorm.DB, error) {
+func (s *rds) query(kind folio.Kind, q folio.Query) (*sql.Rows, error) {
 	if err := defaults.Set(&q); err != nil {
 		return nil, err
 	}
@@ -116,53 +91,44 @@ func (s *rds) query(kind folio.Kind, q folio.Query) (*gorm.DB, error) {
 		return nil, fmt.Errorf("storage: invalid offset %d", q.Offset)
 	}
 
-	// Filter by organization & project
-	query := s.tableOf(kind).Unscoped()
+	// Build the query
+	where := make([]string, 0, 4)
+	args := make([]any, 0, 4)
+
+	// Filter by namespaces
 	if len(q.Namespaces) > 0 {
-		query = query.Where("namespace IN (?)", q.Namespaces)
+		where = append(where, "namespace IN (?)")
+		args = append(args, strings.Join(q.Namespaces, ","))
 	}
 
-	// Filter by state
+	// Filter by states
 	if len(q.States) > 0 {
-		query = query.Where("state IN (?)", q.States)
-	}
-
-	// Filter by index
-	if len(q.Indexes) > 0 {
-		query = query.Where("indexed_by IN (?)", q.Indexes)
+		where = append(where, "state IN (?)")
+		args = append(args, strings.Join(q.States, ","))
 	}
 
 	// Filter by filters (JSON Path)
 	for path, filter := range q.Filters {
-		switch path {
-		case "":
-		case "id",
-			"createdAt", "updatedAt",
-			"createdBy", "updatedBy":
-			query = query.Where(snakeCase(path)+" in (?)", filter)
-		default:
-			query = query.Where(queryFilterByJSON(path, filter))
+		if path != "" {
+			where = append(where, queryFilterByJSON(path, filter))
 		}
 	}
 
-	// Order by
-	for _, field := range q.SortBy {
-		if len(field) > 0 {
-			query = query.Order(queryOrder(field))
-		}
+	// Build the SQL query string
+	querySQL := `SELECT data, created_by, updated_by, created_at, updated_at FROM ` + tableOf(kind)
+	if len(where) > 0 {
+		querySQL += ` WHERE ` + strings.Join(where, " AND ")
 	}
 
-	// Skip
-	if q.Offset > 0 {
-		query = query.Offset(q.Offset)
-	}
-
-	// Take
 	if q.Limit > 0 {
-		query = query.Limit(q.Limit)
+		querySQL += fmt.Sprintf(" LIMIT %d", q.Limit)
 	}
 
-	return query, nil
+	if q.Offset > 0 {
+		querySQL += fmt.Sprintf(" OFFSET %d", q.Offset)
+	}
+
+	return s.db.Query(querySQL, args...)
 }
 
 // queryOrder converts the sort field to a query string

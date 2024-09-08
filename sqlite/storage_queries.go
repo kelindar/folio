@@ -1,74 +1,14 @@
 package sqlite
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"iter"
+	"time"
 
 	"github.com/kelindar/folio"
 )
-
-// Insert inserts a new resource into the storage.
-func (s *rds) Insert(v Record, createdBy string) (Record, error) {
-	urn := v.URN()
-
-	// Convert the resource to a database row
-	row, err := rowOf(v)
-	if err != nil {
-		return nil, err
-	}
-
-	row.CreatedBy = createdBy
-	row.UpdatedBy = createdBy
-
-	// Insert the row
-	table := s.tableOf(urn.Kind)
-	if err := try(urn.String(), table.Create(row)); err != nil {
-		return nil, err
-	}
-
-	// Unmarshal the row back to a resource
-	return row.Unmarshal(s.registry)
-}
-
-// Update updates an existing resource in the storage.
-func (s *rds) Update(v Record, updatedBy string) (Record, error) {
-	_, version := v.Updated()
-	urn := v.URN()
-	table := s.tableOf(urn.Kind)
-
-	// Retrieve the old object we are updating
-	oldrec, err := s.Fetch(urn)
-	if err != nil {
-		return nil, err
-	}
-
-	// Convert the resource to a database row
-	updated, err := rowOf(v)
-	if err != nil {
-		return nil, err
-	}
-
-	// Update the row using optimistic locking in case the object was updated
-	// by another process/user between the time we retrieved it and now.
-	result := table.
-		Where("id = ?", urn.ID).
-		Where("updated_at = ?", version).
-		Updates(row{
-			State:     updated.State,
-			Data:      updated.Data,
-			UpdatedBy: updatedBy,
-		})
-
-	switch {
-	case result.Error != nil:
-		return nil, err
-	case result.RowsAffected == 0:
-		return oldrec, fmt.Errorf("%w (%s)", folio.ErrConflict, oldrec.URN())
-	}
-
-	// Find the updated object
-	return s.Fetch(urn)
-}
 
 // Upsert inserts or updates a resource in the storage.
 func (s *rds) Upsert(v Record, updatedBy string) (Record, error) {
@@ -83,73 +23,117 @@ func (s *rds) Upsert(v Record, updatedBy string) (Record, error) {
 	}
 }
 
-// Delete deletes a resource from the storage and returns the deleted object.
-func (s *rds) Delete(urn folio.URN, deletedBy string) (Record, error) {
-	table := s.tableOf(urn.Kind).Unscoped() // permanently delete the object
-
-	// Find the row, unscoped to include soft-deleted records
-	var existing row
-	if err := try(urn.String(), table.First(&existing, "id = ?", urn.ID)); err != nil {
-		return nil, err
-	}
-
-	// Unmarshal the document we are about to delete
-	deleted, err := existing.Unmarshal(s.registry)
+// Insert inserts a new resource into the storage.
+func (s *rds) Insert(v Record, createdBy string) (Record, error) {
+	data, err := folio.ToJSON(v)
 	if err != nil {
 		return nil, err
 	}
 
-	// Delete the row
-	if err := try(urn.String(), table.Delete(&existing, "id = ?", urn.ID)); err != nil {
-		return nil, err
+	// Prepare the statement
+	urn := v.URN()
+	now := time.Now()
+	sql := `INSERT INTO ` + tableOf(urn.Kind) +
+		` (id, namespace, state, data, created_by, updated_by, created_at, updated_at)` +
+		` VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+
+	// Insert the record
+	if _, err := s.db.Exec(sql,
+		urn.ID,
+		urn.Namespace,
+		v.Status(),
+		data,
+		createdBy,
+		createdBy, // same as created_by
+		now.UnixNano(),
+		now.UnixNano(), // same as created_at
+	); err != nil {
+		return nil, fmt.Errorf("storage: unable to insert, %w", err)
 	}
 
-	// Return the deleted object
-	return deleted, nil
+	return withMeta(v, createdBy, createdBy, now, now), nil
 }
 
-// Fetch attempts to find a specific document in the storage layer.
-func (s *rds) Fetch(urn folio.URN) (Record, error) {
-	var found row
-	if err := try(urn.String(), s.tableOf(urn.Kind).First(&found, "id = ?", urn.ID)); err != nil {
+// Update updates an existing resource in the storage.
+func (s *rds) Update(v Record, updatedBy string) (Record, error) {
+	data, err := folio.ToJSON(v)
+	if err != nil {
 		return nil, err
 	}
 
-	// Unmarshal the row back to a object
-	return found.Unmarshal(s.registry)
+	_, version := v.Updated()
+	urn := v.URN()
+	now := time.Now()
+	sql := `UPDATE ` + tableOf(urn.Kind) +
+		` SET state = ?, data = ?, updated_by = ?, updated_at = ?` +
+		` WHERE id = ? AND updated_at = ?`
+
+	// Update the record
+	r, err := s.db.Exec(sql, v.Status(), data, updatedBy, now.UnixNano(), urn.ID, version.UnixNano())
+	n, _ := r.RowsAffected()
+	switch {
+	case err != nil:
+		return nil, fmt.Errorf("storage: unable to update, %w", err)
+	case n == 0:
+		return nil, fmt.Errorf("%w (%v)", folio.ErrConflict, urn.String())
+	default:
+		return s.Fetch(urn)
+	}
+}
+
+// Fetch retrieves a resource by URN.
+func (s *rds) Fetch(urn folio.URN) (Record, error) {
+	selectSQL := `SELECT  data, created_by, updated_by, created_at, updated_at` +
+		` FROM ` + tableOf(urn.Kind) + ` WHERE id = ?`
+
+	row := s.db.QueryRow(selectSQL, urn.ID)
+	obj, err := read(row.Scan, s.registry)
+	switch {
+	case errors.Is(err, sql.ErrNoRows):
+		return nil, fmt.Errorf("%w (%v)", folio.ErrNotFound, urn.String())
+	case err != nil:
+		return nil, fmt.Errorf("storage: unable to fetch, %w", err)
+	default:
+		return obj, nil
+	}
+}
+
+// Delete deletes a resource from the storage.
+func (s *rds) Delete(urn folio.URN, deletedBy string) (Record, error) {
+	deleted, err := s.Fetch(urn)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := s.db.Exec(`DELETE FROM `+tableOf(urn.Kind)+` WHERE id = ?`, urn.ID); err != nil {
+		return nil, fmt.Errorf("failed to delete record: %w", err)
+	}
+
+	return deleted, nil
 }
 
 // Range performs a query against the storage layer and calls the specified
 // function for each retrieved object.
 func (s *rds) Range(kind folio.Kind, q folio.Query) (iter.Seq[Record], error) {
-	query, err := s.query(kind, q)
+	rows, err := s.query(kind, q)
 	if err != nil {
-		return nil, err
-	}
-
-	var result []row
-	if err := try(kind.String(), query.Find(&result)); err != nil {
 		return nil, err
 	}
 
 	var innerErr error
 	return func(yield func(Record) bool) {
-		for i := range result {
-			record, err := result[i].Unmarshal(s.registry)
+		defer rows.Close()
+		for rows.Next() {
+			obj, err := read(rows.Scan, s.registry)
 			if err != nil {
-				innerErr = err
+				innerErr = fmt.Errorf("storage: unable to read, %w", err)
 				return
 			}
 
-			if next := yield(record); !next {
+			if next := yield(obj); !next {
 				return
 			}
 		}
-	}, innerErr
-}
 
-func errIter(err error) iter.Seq2[Record, error] {
-	return func(yield func(Record, error) bool) {
-		yield(nil, err)
-	}
+	}, innerErr
 }

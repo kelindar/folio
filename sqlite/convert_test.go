@@ -3,26 +3,8 @@ package sqlite
 import (
 	"testing"
 
-	"github.com/kelindar/folio"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestRow(t *testing.T) {
-	registry := newRegistry()
-
-	// Create a new app
-	app, err := folio.New[*App]("my_project")
-	assert.NoError(t, err)
-
-	// Marshal the resource to a row
-	r, err := rowOf(app)
-	assert.NoError(t, err)
-
-	// Unmarshal the row to a resource
-	out, err := r.Unmarshal(registry)
-	assert.NoError(t, err)
-	assert.Equal(t, app.URN(), out.URN())
-}
 
 func TestOrderBy(t *testing.T) {
 	tests := map[string]string{

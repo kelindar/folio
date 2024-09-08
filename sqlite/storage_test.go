@@ -48,6 +48,9 @@ func TestUpdate_Conflict(t *testing.T) {
 		_, err = db.Insert(app, "test")
 		assert.NoError(t, err)
 
+		// Reset the updated at time
+		app.UpdatedAt = 0
+
 		// Update the object
 		_, err = db.Update(app, "test")
 		assert.True(t, folio.IsConflict(err))
@@ -82,6 +85,7 @@ func TestSearch(t *testing.T) {
 
 		results, err := db.Range("App", folio.Query{
 			Namespaces: []string{"my_project"},
+			Offset:     1,
 			Limit:      5,
 		})
 		assert.NoError(t, err)
