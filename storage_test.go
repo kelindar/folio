@@ -48,6 +48,7 @@ func TestUpdate_Conflict(t *testing.T) {
 		// Insert the object
 		_, err = folio.Insert(db, app, "test")
 		assert.NoError(t, err)
+		app.UpdatedAt = 0
 
 		// Update the object
 		_, err = folio.Update(db, app, "test")
