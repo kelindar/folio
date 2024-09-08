@@ -1,0 +1,16 @@
+html {
+    font-family: Poppins, sans-serif;
+}
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 20
+}
+
+.text-xxs {
+    font-size: 10px;
+    line-height: 10px;
+}

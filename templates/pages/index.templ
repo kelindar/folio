@@ -1,0 +1,29 @@
+package pages
+
+import (
+	"github.com/kelindar/ultima-web/internal/docs"
+	"github.com/kelindar/ultima-web/templates/blocks"
+	"iter"
+)
+
+// MetaTags defines meta tags.
+templ MetaTags(keywords, description string) {
+	<meta name="keywords" content={ keywords }/>
+	<meta name="description" content={ description }/>
+}
+
+// BodyContent defines HTML content.
+templ BodyContent(people iter.Seq[*docs.Person]) {
+	<div id="app" class="container mx-auto">
+		@blocks.List(people)
+	</div>
+}
+
+// BodyScripts defines JavaScript code.
+
+script BodyScripts() {
+console.log(
+"You're using Templ package to generate HTML content!",
+"Edit this JavaScript code in the `./templates/pages/index.templ` file.",
+);
+}
