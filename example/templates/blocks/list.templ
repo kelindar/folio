@@ -220,20 +220,10 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 				</div>
 			</div>
 			<div class="overflow-x-auto">
-				<table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-					<thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-						<tr>
-							<th scope="col" class="px-4 py-3">Name</th>
-							<th scope="col" class="px-4 py-3">Company</th>
-							<th scope="col" class="px-4 py-3">Job</th>
-							<th scope="col" class="px-4 py-3">Phone</th>
-							<th scope="col" class="px-4 py-3">
-								<span class="sr-only">Actions</span>
-							</th>
-						</tr>
-					</thead>
-					@ListContent(rctx, items)
-				</table>
+				<h2 class="text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white p-4">
+					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage Users</span>
+				</h2>
+				@ListContent(rctx, items)
 			</div>
 			<nav
 				class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
@@ -334,11 +324,38 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 }
 
 templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
-	<tbody id="list-content">
+	<div id="list-content">
 		for v := range elements {
-			@ListElementRow(v)
+			<div class="grid grid-cols-12 py-1 border-b dark:border-gray-700">
+				@ListElementRow(v)
+				<div class="col-span-1 w-auto text-right px-4">
+					<!-- Action Buttons -->
+					<button
+						class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
+						type="button"
+						data-drawer-target="drawer-content"
+						data-drawer-show="drawer-content"
+						data-drawer-placement="right"
+						aria-controls="drawer-content"
+						hx-target="#drawer-content"
+						hx-get={ "/view/" + v.URN().String() }
+					>
+						<svg
+							class="w-5 h-5"
+							aria-hidden="true"
+							fill="currentColor"
+							viewbox="0 0 20 20"
+							xmlns="http://www.w3.org/2000/svg"
+						>
+							<path
+								d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+							></path>
+						</svg>
+					</button>
+				</div>
+			</div>
 		}
-	</tbody>
+	</div>
 }
 
 templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
@@ -347,44 +364,16 @@ templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
 }
 
 templ ListElementRow(v *docs.Person) {
-	<tbody id={ v.ID } hx-swap-oob="true">
-		<tr class="border-b dark:border-gray-700">
-			<th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-				{ v.Name }
-			</th>
-			<td class="px-4 py-3">{ v.Company }</td>
-			<td class="px-4 py-3">{ v.JobTitle }</td>
-			<td class="px-4 py-3">{ v.Phone }</td>
-			<td class="px-4 py-3 flex items-center justify-end">
-				<button
-					class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-					type="button"
-					data-drawer-target="drawer-content"
-					data-drawer-show="drawer-content"
-					data-drawer-placement="right"
-					aria-controls="drawer-content"
-					hx-target="#drawer-content"
-					hx-get={ "/view/" + v.URN().String() }
-				>
-					<svg
-						class="w-5 h-5"
-						aria-hidden="true"
-						fill="currentColor"
-						viewbox="0 0 20 20"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<path
-							d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-						></path>
-					</svg>
-				</button>
-			</td>
-		</tr>
-	</tbody>
+	<div id={ v.ID } hx-swap-oob="true" class="grid grid-cols-4 col-span-11">
+		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.Name }</div>
+		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.Company }</div>
+		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.JobTitle }</div>
+		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.Phone }</div>
+	</div>
 }
 
 templ ListElementEdit(rctx *render.Context, value *docs.Person) {
-	<form id={ value.ID + "-form" } hx-post={ "/save/" + value.URN().String() } hx-ext="json-enc">
+	<form hx-post={ "/save/" + value.URN().String() } hx-target="#drawer-content" hx-ext="json-enc">
 		<div class="flex flex-row w-full">
 			<div class="flex-auto">
 				<strong>{ value.URN().ID }</strong>
