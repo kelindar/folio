@@ -33,6 +33,10 @@ templ Layout(title string, metaTags, bodyContent templ.Component) {
 			<script src="https://unpkg.com/htmx.org@1.9.11" integrity="sha384-0gxUXCCR8yv9FM2b+U3FDbsKthCI66oH5IA9fHppQq9DDMHuMauqq1ZHBpJxQ0J0" crossorigin="anonymous"></script>
 			<script src="https://unpkg.com/hyperscript.org@0.9.12" crossorigin="anonymous"></script>
 			<script src="https://unpkg.com/htmx.org@1.9.11/dist/ext/json-enc.js" crossorigin="anonymous"></script>
+			<script>
+  				htmx.config.allowNestedOobSwaps = false;
+				htmx.logAll();
+			</script>
 		</head>
 		<body class="bg-gray-50 dark:bg-gray-900" onload={ pages.BodyScripts() }>
 			@blocks.Navigation()

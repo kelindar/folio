@@ -10,6 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/kelindar/folio/example/docs"
+	"github.com/kelindar/folio/example/render"
 	"github.com/kelindar/folio/example/templates/blocks"
 	"iter"
 )
@@ -43,7 +44,7 @@ func MetaTags(keywords, description string) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(keywords)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/index.templ`, Line: 11, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/index.templ`, Line: 12, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -56,7 +57,7 @@ func MetaTags(keywords, description string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(description)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/index.templ`, Line: 12, Col: 47}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/pages/index.templ`, Line: 13, Col: 47}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -71,7 +72,7 @@ func MetaTags(keywords, description string) templ.Component {
 }
 
 // BodyContent defines HTML content.
-func BodyContent(people iter.Seq[*docs.Person]) templ.Component {
+func BodyContent(rctx *render.Context, people iter.Seq[*docs.Person]) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -96,7 +97,7 @@ func BodyContent(people iter.Seq[*docs.Person]) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = blocks.List(people).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = blocks.List(rctx, people).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -111,14 +112,14 @@ func BodyContent(people iter.Seq[*docs.Person]) templ.Component {
 // BodyScripts defines JavaScript code.
 func BodyScripts() templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_BodyScripts_7b62`,
-		Function: `function __templ_BodyScripts_7b62(){console.log(
-"You're using Templ package to generate HTML content!",
-"Edit this JavaScript code in the ` + "`" + `./templates/pages/index.templ` + "`" + ` file.",
-);
+		Name: `__templ_BodyScripts_e764`,
+		Function: `function __templ_BodyScripts_e764(){console.log(
+	"You're using Templ package to generate HTML content!",
+	"Edit this JavaScript code in the ` + "`" + `./templates/pages/index.templ` + "`" + ` file.",
+	);
 }`,
-		Call:       templ.SafeScript(`__templ_BodyScripts_7b62`),
-		CallInline: templ.SafeScriptInline(`__templ_BodyScripts_7b62`),
+		Call:       templ.SafeScript(`__templ_BodyScripts_e764`),
+		CallInline: templ.SafeScriptInline(`__templ_BodyScripts_e764`),
 	}
 }
 

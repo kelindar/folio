@@ -2,6 +2,7 @@ package pages
 
 import (
 	"github.com/kelindar/folio/example/docs"
+	"github.com/kelindar/folio/example/render"
 	"github.com/kelindar/folio/example/templates/blocks"
 	"iter"
 )
@@ -13,9 +14,9 @@ templ MetaTags(keywords, description string) {
 }
 
 // BodyContent defines HTML content.
-templ BodyContent(people iter.Seq[*docs.Person]) {
+templ BodyContent(rctx *render.Context, people iter.Seq[*docs.Person]) {
 	<div id="app" class="container mx-auto">
-		@blocks.List(people)
+		@blocks.List(rctx, people)
 	</div>
 }
 
@@ -23,7 +24,7 @@ templ BodyContent(people iter.Seq[*docs.Person]) {
 
 script BodyScripts() {
 console.log(
-"You're using Templ package to generate HTML content!",
-"Edit this JavaScript code in the `./templates/pages/index.templ` file.",
-);
+	"You're using Templ package to generate HTML content!",
+	"Edit this JavaScript code in the `./templates/pages/index.templ` file.",
+	);
 }

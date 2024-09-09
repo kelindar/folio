@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 
@@ -16,10 +17,6 @@ import (
 
 // indexViewHandler handles a view for the index page.
 func indexViewHandler(db folio.Storage) http.Handler {
-	for i := 0; i < 100; i++ {
-		folio.Insert(db, docs.NewPerson(), "sys")
-	}
-
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// Define template meta tags.
@@ -38,9 +35,9 @@ func indexViewHandler(db folio.Storage) http.Handler {
 		}
 
 		// Define template body content.
-		bodyContent := pages.BodyContent(
-			people,
-		)
+		bodyContent := pages.BodyContent(&render.Context{
+			Mode: render.ModeView,
+		}, people)
 
 		// Define template layout for index page.
 		indexTemplate := templates.Layout(
@@ -51,7 +48,6 @@ func indexViewHandler(db folio.Storage) http.Handler {
 
 		// Render index page template.
 		if err := htmx.NewResponse().RenderTempl(r.Context(), w, indexTemplate); err != nil {
-			// If not, return HTTP 400 error.
 			slog.Error("render template", "method", r.Method, "status", http.StatusInternalServerError, "path", r.URL.Path)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -100,11 +96,17 @@ func createForm(mode render.Mode, db folio.Storage) http.Handler {
 			return
 		}
 
-		ctx := &render.Context{
-			Mode: mode,
+		if err != nil {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
 		}
 
-		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.PersonEdit(ctx, document.(*docs.Person))); err != nil {
+		resp := htmx.NewResponse()
+		if err := errors.Join(
+			resp.RenderTempl(r.Context(), w, blocks.ListElementEdit(&render.Context{
+				Mode: mode,
+			}, document.(*docs.Person))),
+		); err != nil {
 			slog.Error("render template", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
@@ -141,17 +143,16 @@ func saveForm(registry folio.Registry, db folio.Storage) http.Handler {
 		}
 
 		// Save the instance back to the database
-		output, err := folio.Update(db, instance, "sys")
+		updated, err := folio.Update(db, instance, "sys")
 		if err != nil {
 			slog.Error("update", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
-		// Render the updated instance
-		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.PersonEdit(&render.Context{
+		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.ListElementUpdate(&render.Context{
 			Mode: render.ModeView,
-		}, output.(*docs.Person))); err != nil {
+		}, updated.(*docs.Person))); err != nil {
 			slog.Error("render template", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return

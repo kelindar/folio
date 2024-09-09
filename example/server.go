@@ -5,10 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 
-	gowebly "github.com/gowebly/helpers"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/example/render"
 )
@@ -18,14 +16,10 @@ var assets embed.FS
 
 // runServer runs a new HTTP server with the loaded environment variables.
 func runServer(registry folio.Registry, db folio.Storage) error {
-	// Validate environment variables.
-	port, err := strconv.Atoi(gowebly.Getenv("BACKEND_PORT", "7000"))
-	if err != nil {
-		return err
-	}
+	const port = 7000
 
 	// Handle static files from the embed FS (with a custom handler).
-	http.Handle("GET /assets/", gowebly.StaticFileServerHandler(http.FS(assets)))
+	http.Handle("GET /assets/", serveStatic(http.FS(assets)))
 
 	// Handle index page view.
 	http.Handle("GET /", indexViewHandler(db))
@@ -48,4 +42,19 @@ func runServer(registry folio.Registry, db folio.Storage) error {
 	slog.Info("Starting server...", "port", port)
 
 	return server.ListenAndServe()
+}
+
+// serveStatic handles a custom handler for serve embed static folder.
+func serveStatic(fs http.FileSystem) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, err := fs.Open(r.URL.Path)
+		if err != nil {
+			http.NotFound(w, r)
+			slog.Error(err.Error(), "method", r.Method, "status", http.StatusNotFound, "path", r.URL.Path)
+			return
+		}
+
+		// File is found, serve it using the standard http.FileServer.
+		http.FileServer(fs).ServeHTTP(w, r)
+	})
 }

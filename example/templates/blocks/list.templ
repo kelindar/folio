@@ -9,7 +9,7 @@ import (
 	"github.com/kelindar/folio/example/render"
 )
 
-templ List(items iter.Seq[*docs.Person]) {
+templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 	<div class="mx-auto max-w-screen-xl px-4 lg:px-12">
 		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -232,42 +232,7 @@ templ List(items iter.Seq[*docs.Person]) {
 							</th>
 						</tr>
 					</thead>
-					<tbody>
-						for v := range items {
-							<tr class="border-b dark:border-gray-700">
-								<th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-									{ v.Name }
-								</th>
-								<td class="px-4 py-3">{ v.Company }</td>
-								<td class="px-4 py-3">{ v.JobTitle }</td>
-								<td class="px-4 py-3">{ v.Phone }</td>
-								<td class="px-4 py-3 flex items-center justify-end">
-									<button
-										class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-										type="button"
-										data-drawer-target="drawer-content"
-										data-drawer-show="drawer-content"
-										data-drawer-placement="right"
-										aria-controls="drawer-content"
-										hx-target="#drawer-content"
-										hx-get={ "/view/" + v.URN().String() }
-									>
-										<svg
-											class="w-5 h-5"
-											aria-hidden="true"
-											fill="currentColor"
-											viewbox="0 0 20 20"
-											xmlns="http://www.w3.org/2000/svg"
-										>
-											<path
-												d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-											></path>
-										</svg>
-									</button>
-								</td>
-							</tr>
-						}
-					</tbody>
+					@ListContent(rctx, items)
 				</table>
 			</div>
 			<nav
@@ -361,13 +326,62 @@ templ List(items iter.Seq[*docs.Person]) {
 	<!-- drawer -->
 	<div
 		id="drawer-content"
+		hx-swap-oob="innerHTML"
 		class="fixed top-0 right-0 z-40 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white min-w-96 w-2/5 dark:bg-gray-800"
 		tabindex="-1"
 		aria-labelledby="drawer-right-label"
 	></div>
 }
 
-templ PersonEdit(rctx *render.Context, value *docs.Person) {
+templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
+	<tbody id="list-content">
+		for v := range elements {
+			@ListElementRow(v)
+		}
+	</tbody>
+}
+
+templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
+	//@ListElementRow(value)
+	@ListElementEdit(rctx, value)
+}
+
+templ ListElementRow(v *docs.Person) {
+	<tr id={ v.ID } class="border-b dark:border-gray-700" hx-swap-oob="true">
+		<th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+			{ v.Name }
+		</th>
+		<td class="px-4 py-3">{ v.Company }</td>
+		<td class="px-4 py-3">{ v.JobTitle }</td>
+		<td class="px-4 py-3">{ v.Phone }</td>
+		<td class="px-4 py-3 flex items-center justify-end">
+			<button
+				class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
+				type="button"
+				data-drawer-target="drawer-content"
+				data-drawer-show="drawer-content"
+				data-drawer-placement="right"
+				aria-controls="drawer-content"
+				hx-target="#drawer-content"
+				hx-get={ "/view/" + v.URN().String() }
+			>
+				<svg
+					class="w-5 h-5"
+					aria-hidden="true"
+					fill="currentColor"
+					viewbox="0 0 20 20"
+					xmlns="http://www.w3.org/2000/svg"
+				>
+					<path
+						d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
+					></path>
+				</svg>
+			</button>
+		</td>
+	</tr>
+}
+
+templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 	<form hx-post={ "/save/" + value.URN().String() } hx-target="#drawer-content" hx-ext="json-enc">
 		<div class="flex flex-row w-full">
 			<div class="flex-auto">
@@ -483,8 +497,7 @@ templ Divider(text string) {
 		<span
 			class="absolute px-3 font-medium text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-white dark:bg-gray-900"
 		>
-			{ 
-		text }
+			{ text }
 		</span>
 	</div>
 }

@@ -7,7 +7,6 @@ require (
 	github.com/angelofallars/htmx-go v0.5.0
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/creasty/defaults v1.8.0
-	github.com/gowebly/helpers v0.4.0
 	github.com/ncruces/go-sqlite3 v0.18.2
 	github.com/rs/xid v1.6.0
 	github.com/stretchr/testify v1.9.0
