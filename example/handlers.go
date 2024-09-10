@@ -118,7 +118,7 @@ func createForm(mode render.Mode, db folio.Storage) http.Handler {
 
 }
 
-func saveForm(registry folio.Registry, db folio.Storage) http.Handler {
+func saveForm(db folio.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
@@ -160,5 +160,41 @@ func saveForm(registry folio.Registry, db folio.Storage) http.Handler {
 
 		// Send log message.
 		slog.Info("render person", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
+	})
+}
+
+func search(db folio.Storage) http.Handler {
+	type request struct {
+		Query string `json:"query"`
+	}
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var req request
+		defer r.Body.Close()
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, "Invalid Data", http.StatusBadRequest)
+			return
+		}
+
+		people, err := folio.Search[*docs.Person](db, folio.Query{
+			Namespaces: []string{"default"},
+			Match:      req.Query,
+		})
+		if err != nil {
+			slog.Error("fetch", "error", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.ListContent(&render.Context{
+			Mode: render.ModeView,
+		}, people)); err != nil {
+			slog.Error("render template", "error", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		// Send log message.
+		slog.Info("search", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
 	})
 }

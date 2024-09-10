@@ -28,7 +28,8 @@ func runServer(registry folio.Registry, db folio.Storage) error {
 	http.HandleFunc("GET /api/hello-world", showContentAPIHandler)
 	http.Handle("GET /view/{urn}", createForm(render.ModeView, db))
 	http.Handle("GET /edit/{urn}", createForm(render.ModeEdit, db))
-	http.Handle("POST /save/{urn}", saveForm(registry, db))
+	http.Handle("POST /save/{urn}", saveForm(db))
+	http.Handle("POST /search", search(db))
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/

@@ -15,33 +15,7 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
 				<div class="w-full md:w-1/2">
-					<form class="flex items-center">
-						<label for="simple-search" class="sr-only">Search</label>
-						<div class="relative w-full">
-							<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-								<svg
-									aria-hidden="true"
-									class="w-5 h-5 text-gray-500 dark:text-gray-400"
-									fill="currentColor"
-									viewbox="0 0 20 20"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										fill-rule="evenodd"
-										d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-										clip-rule="evenodd"
-									></path>
-								</svg>
-							</div>
-							<input
-								type="text"
-								id="simple-search"
-								class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-								placeholder="Search"
-								required=""
-							/>
-						</div>
-					</form>
+					@SearchBar()
 				</div>
 				<div
 					class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0"
@@ -324,6 +298,30 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 	></div>
 }
 
+templ SearchBar() {
+	<form hx-post={ "/search" } hx-target="#list-content" hx-swap="outerHTML" hx-ext="json-enc" class="flex items-center">
+		<label for="simple-search" class="sr-only">Search</label>
+		<div class="relative w-full">
+			<div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+				<svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+					<path
+						fill-rule="evenodd"
+						clip-rule="evenodd"
+						d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+					></path>
+				</svg>
+			</div>
+			<input
+				type="text"
+				id="query"
+				name="query"
+				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+				placeholder="Search"
+			/>
+		</div>
+	</form>
+}
+
 templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
 	<ul id="list-content" role="list" class="divide-y divide-gray-100">
 		for v := range elements {
@@ -336,39 +334,41 @@ templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
 				hx-target="#drawer-content"
 				hx-get={ "/view/" + v.URN().String() }
 			>
-				@ListElementRow(v)
+				<div id={ v.URN().ID } class="w-full contents">
+					@ListElementRow(v)
+				</div>
 			</li>
 		}
 	</ul>
 }
 
-templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
-	@ListElementRow(value)
-	@ListElementEdit(rctx, value)
+templ ListElementUpdate(rctx *render.Context, v *docs.Person) {
+	<div id={ v.URN().ID } hx-swap-oob="true" class="w-full contents">
+		@ListElementRow(v)
+	</div>
+	@ListElementEdit(rctx, v)
 }
 
 templ ListElementRow(v folio.Object) {
-	<div id={ v.URN().ID } hx-swap-oob="true" class="w-full contents">
-		<div class="flex min-w-0 gap-x-4">
-			if render.StringOf(v, "Icon") != "" {
-				<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src={ render.StringOf(v, "Icon") } alt=""/>
-			}
-			<div class="min-w-0 flex-auto ">
-				<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
-					{ render.StringOf(v, "Title") }
-					for _, tag := range render.ListOf(v, "Badges") {
-						<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
-							{ tag }
-						</span>
-					}
-				</p>
-				<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.StringOf(v, "Subtitle") }</p>
-			</div>
+	<div class="flex min-w-0 gap-x-4">
+		if render.StringOf(v, "Icon") != "" {
+			<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src={ render.StringOf(v, "Icon") } alt=""/>
+		}
+		<div class="min-w-0 flex-auto ">
+			<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
+				{ render.StringOf(v, "Title") }
+				for _, tag := range render.ListOf(v, "Badges") {
+					<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
+						{ tag }
+					</span>
+				}
+			</p>
+			<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.StringOf(v, "Subtitle") }</p>
 		</div>
-		<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
-			@State(render.StringOf(v, "Status"))
-			<span class="mt-1 truncate text-xs leading-5 text-gray-500 px-2">{ updatedOf(v) }</span>
-		</div>
+	</div>
+	<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
+		@State(render.StringOf(v, "Status"))
+		<span class="mt-1 truncate text-xs leading-5 text-gray-500 px-2">{ updatedOf(v) }</span>
 	</div>
 }
 
