@@ -170,6 +170,14 @@ func queryFilterByJSON(path string, values []string) string {
 	return sb.String()
 }
 
+// sanitizeTerm tokenizes and prepares the query for FTS5 with NEAR
 func sanitizeTerm(query string) string {
-	return strings.ReplaceAll(query, " ", "*")
+	tokens := strings.Fields(query)
+	for i, token := range tokens {
+		tokens[i] = token + "*" // Add wildcard for partial matching
+	}
+
+	// Wrap with NEAR to match any of the tokens 10 words apart
+	nearClause := "NEAR(" + strings.Join(tokens, " ") + ", 10)"
+	return nearClause
 }

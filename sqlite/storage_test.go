@@ -103,7 +103,7 @@ func TestSearch_FullText(t *testing.T) {
 	testStorage(func(db folio.Storage, _ folio.Registry) {
 		for i := 0; i < 100; i++ {
 			v, _ := folio.New[*App]("my_project")
-			v.Name = fmt.Sprintf("Application %d", i)
+			v.Name = fmt.Sprintf("Application number %d", i)
 			_, err := db.Insert(v, "test")
 			assert.NoError(t, err)
 		}
@@ -118,7 +118,7 @@ func TestSearch_FullText(t *testing.T) {
 		count := 0
 		for result := range results {
 			count++
-			assert.Equal(t, "Application 47", result.(*App).Name)
+			assert.Equal(t, "Application number 47", result.(*App).Name)
 		}
 
 		assert.Equal(t, 1, count)
