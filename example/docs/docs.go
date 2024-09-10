@@ -11,6 +11,7 @@ type Person struct {
 	object.Meta `kind:"person" json:",inline"`
 	Name        string `json:"name"`
 	Age         int    `json:"age"`
+	Address     string `json:"address"`
 	Phone       string `json:"phone"`
 	Company     string `json:"company"`
 	JobTitle    string `json:"jobTitle"`
@@ -20,7 +21,7 @@ type Person struct {
 func NewPerson() *Person {
 	p, err := object.NewWith("default", func(p *Person) error {
 		p.Name = gofakeit.Name()
-		p.Desc = gofakeit.Address().Address
+		p.Address = gofakeit.Address().Address
 		p.Age = gofakeit.Number(18, 65)
 		p.Phone = gofakeit.Phone()
 		p.Company = gofakeit.Company()
@@ -49,4 +50,8 @@ func (p *Person) Badges() []string {
 func (p *Person) Icon() string {
 	const icon = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAMUExURe/x82h3h7zDy83T2GnaqlsAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABWSURBVDjL7dGxDcAgEANAmyxg2H/YACJK40ckFQWukE4vwI+TjZLfrMtzSJ9EkYwLrGgyk61cAuuYf1v7jBVWkZXegBN2KUbC3hhK2DV/7GdBhJNdAtxTeAm5sD159AAAAABJRU5ErkJggg=="
 	return icon
+}
+
+func (p *Person) Status() string {
+	return "Active"
 }

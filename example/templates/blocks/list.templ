@@ -348,25 +348,32 @@ templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
 }
 
 templ ListElementRow(v folio.Object) {
-	<div id={ v.URN().ID } hx-swap-oob="true" class="flex min-w-0 gap-x-4">
-		if render.StringOf(v, "Icon") != "" {
-			<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src={ render.StringOf(v, "Icon") } alt=""/>
-		}
-		<div class="min-w-0 flex-auto ">
-			<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
-				{ render.StringOf(v, "Title") }
-				for _, tag := range render.ListOf(v, "Badges") {
-					<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
-						{ tag }
-					</span>
-				}
-			</p>
-			<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.StringOf(v, "Subtitle") }</p>
+	<div id={ v.URN().ID } hx-swap-oob="true" class="w-full contents">
+		<div class="flex min-w-0 gap-x-4">
+			if render.StringOf(v, "Icon") != "" {
+				<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src={ render.StringOf(v, "Icon") } alt=""/>
+			}
+			<div class="min-w-0 flex-auto ">
+				<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
+					{ render.StringOf(v, "Title") }
+					for _, tag := range render.ListOf(v, "Badges") {
+						<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
+							{ tag }
+						</span>
+					}
+				</p>
+				<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.StringOf(v, "Subtitle") }</p>
+			</div>
+		</div>
+		<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
+			@State(render.StringOf(v, "Status"))
+			<span class="mt-1 truncate text-xs leading-5 text-gray-500 px-2">{ updatedOf(v) }</span>
 		</div>
 	</div>
-	<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
-		<!-- Actions -->
-	</div>
+}
+
+templ State(value string) {
+	<span class={ "bg-" + colorOf(value) + "-100 text-" + colorOf(value) + "-800 text-sm font-medium me-2 px-2 py-0.5 rounded" }>{ value }</span>
 }
 
 templ ListElementEdit(rctx *render.Context, value *docs.Person) {

@@ -25,7 +25,6 @@ func TestNewWith(t *testing.T) {
 	// Create a new resource using generic function
 	r, err := NewWith("my_project", func(r *Kind1) error {
 		r.Name = "my_name"
-		r.Desc = "my_description"
 		return nil
 	})
 
@@ -36,7 +35,6 @@ func TestNewWith(t *testing.T) {
 	assert.Equal(t, "my_project", r.Namespace)
 	assert.NotEmpty(t, r.ID)
 	assert.Equal(t, "my_name", r.Name)
-	assert.Equal(t, "my_description", r.Desc)
 }
 
 func TestMarshal(t *testing.T) {

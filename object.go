@@ -26,16 +26,14 @@ func (k Kind) String() string {
 
 // Meta represents a metadata of the object.
 type Meta struct {
-	ID        string   `json:"id"`                  // Globally unique identifier (e.g. "9m4e2mr0ui3e8a215n4g")
-	Kind      Kind     `json:"kind"`                // Meta kind (e.g. "deployment")
-	Namespace string   `json:"namespace"`           // Namespace of the object (e.g. "my_project")
-	Desc      string   `json:"desc,omitempty"`      // Desc is a short description of the resource (e.g. "My deployment")
-	Tags      []string `json:"tags,omitempty"`      // Tags are used to group resources
-	State     string   `json:"state,omitempty"`     // State is the current state of the resource
-	CreatedBy string   `json:"createdBy,omitempty"` // CreatedBy is the user who created the resource
-	CreatedAt int64    `json:"createdAt,omitempty"` // CreatedAt is the time when the resource was created
-	UpdatedBy string   `json:"updatedBy,omitempty"` // UpdatedBy is the user who last updated the resource
-	UpdatedAt int64    `json:"updatedAt,omitempty"` // UpdatedAt is the time when the resource was last updated
+	ID        string `json:"id"`                  // Globally unique identifier (e.g. "9m4e2mr0ui3e8a215n4g")
+	Kind      Kind   `json:"kind"`                // Meta kind (e.g. "deployment")
+	Namespace string `json:"namespace"`           // Namespace of the object (e.g. "my_project")
+	State     string `json:"state,omitempty"`     // State is the current state of the resource
+	CreatedBy string `json:"createdBy,omitempty"` // CreatedBy is the user who created the resource
+	CreatedAt int64  `json:"createdAt,omitempty"` // CreatedAt is the time when the resource was created
+	UpdatedBy string `json:"updatedBy,omitempty"` // UpdatedBy is the user who last updated the resource
+	UpdatedAt int64  `json:"updatedAt,omitempty"` // UpdatedAt is the time when the resource was last updated
 }
 
 // New creates a new instance of the specified resource kind.
@@ -99,11 +97,6 @@ func (r *Meta) Status() string {
 // Title returns the title of the resource.
 func (r *Meta) Title() string {
 	return r.ID
-}
-
-// Subtitle returns the subtitle of the resource.
-func (r *Meta) Subtitle() string {
-	return r.Desc
 }
 
 // ---------------------------------- URN ----------------------------------
