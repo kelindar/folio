@@ -55,6 +55,4 @@ func updatedOf(v folio.Object) string {
 	default:
 		return t.Format("Jan 2, 2006")
 	}
-
-	return d.Truncate(time.Hour * 24).String()
 }

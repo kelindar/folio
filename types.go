@@ -39,7 +39,7 @@ type Storage interface {
 	Upsert(v Object, updatedBy string) (Object, error)
 	Delete(urn URN, deletedBy string) (Object, error)
 	Fetch(urn URN) (Object, error)
-	Range(kind Kind, query Query) (iter.Seq[Object], error)
+	Search(kind Kind, query Query) (iter.Seq[Object], error)
 }
 
 // Query represents a query to filter records.
@@ -48,6 +48,7 @@ type Query struct {
 	States     []string            // States is a list of states to filter by
 	Indexes    []string            // Indexes is a list of indexes to filter by
 	Filters    map[string][]string // Filters is a map of filters to apply
+	Match      string              // Match is the full-text search query
 	SortBy     []string            `default:"[\"+id\"]"` // Sort is the set of fields to order by
 	Offset     int                 `default:"0"`         // Offset is the number of records to skip
 	Limit      int                 `default:"1000"`      // Limit is the maximum number of records to return

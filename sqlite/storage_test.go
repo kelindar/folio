@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/kelindar/folio"
@@ -76,14 +77,14 @@ func TestDelete(t *testing.T) {
 func TestSearch(t *testing.T) {
 	testStorage(func(db folio.Storage, _ folio.Registry) {
 		for i := 0; i < 10; i++ {
-			app, err := folio.New[*App]("my_project")
+			v, err := folio.New[*App]("my_project")
 			assert.NoError(t, err)
 
-			_, err = db.Insert(app, "test")
+			_, err = db.Insert(v, "test")
 			assert.NoError(t, err)
 		}
 
-		results, err := db.Range("App", folio.Query{
+		results, err := db.Search("App", folio.Query{
 			Namespaces: []string{"my_project"},
 			Offset:     1,
 			Limit:      5,
@@ -95,6 +96,32 @@ func TestSearch(t *testing.T) {
 			count++
 		}
 		assert.Equal(t, 5, count)
+	})
+}
+
+func TestSearch_FullText(t *testing.T) {
+	testStorage(func(db folio.Storage, _ folio.Registry) {
+		for i := 0; i < 100; i++ {
+			v, _ := folio.New[*App]("my_project")
+			v.Name = fmt.Sprintf("Application %d", i)
+			_, err := db.Insert(v, "test")
+			assert.NoError(t, err)
+		}
+
+		results, err := db.Search("App", folio.Query{
+			Namespaces: []string{"my_project"},
+			Match:      "appli 47",
+			Limit:      1,
+		})
+		assert.NoError(t, err)
+
+		count := 0
+		for result := range results {
+			count++
+			assert.Equal(t, "Application 47", result.(*App).Name)
+		}
+
+		assert.Equal(t, 1, count)
 	})
 }
 
@@ -122,6 +149,7 @@ type Deployment struct {
 
 type App struct {
 	folio.Meta `kind:"app" json:",inline"`
+	Name       string `json:"name"`
 }
 
 func newRegistry() folio.Registry {

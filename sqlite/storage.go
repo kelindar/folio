@@ -3,7 +3,6 @@ package sqlite
 import (
 	"database/sql"
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/creasty/defaults"
@@ -31,10 +30,7 @@ func Open(dsn string, registry folio.Registry) (folio.Storage, error) {
 	db.SetMaxOpenConns(1)
 
 	// Auto-create the tables
-	if err := registry.Range(func(k folio.Kind, _ reflect.Type) error {
-		_, err := db.Exec(createTableSQL(k.String()))
-		return err
-	}); err != nil {
+	if err := autoMigrate(db, registry); err != nil {
 		return nil, err
 	}
 
@@ -56,21 +52,6 @@ func OpenEphemeral(registry folio.Registry) folio.Storage {
 // Close closes the storage gracefully.
 func (s *rds) Close() error {
 	return s.db.Close()
-}
-
-// createTableSQL generates SQL to create a table for a specific resource kind.
-func createTableSQL(tableName string) string {
-	return fmt.Sprintf(`
-	CREATE TABLE IF NOT EXISTS %s (
-		id TEXT PRIMARY KEY,
-		namespace TEXT,
-		state TEXT,
-		data JSON,
-		created_by TEXT,
-		updated_by TEXT,
-		created_at INTEGER,
-		updated_at INTEGER
-	);`, tableName)
 }
 
 // ---------------------------------- Query ----------------------------------
@@ -112,6 +93,12 @@ func (s *rds) query(kind folio.Kind, q folio.Query) (*sql.Rows, error) {
 		if path != "" {
 			where = append(where, queryFilterByJSON(path, filter))
 		}
+	}
+
+	// If full-text search is requested, add it to the query using the corresponding _fts table
+	if q.Match != "" {
+		where = append(where, fmt.Sprintf(`id IN (SELECT id FROM %s_fts WHERE data match ?)`, tableOf(kind)))
+		args = append(args, sanitizeTerm(q.Match))
 	}
 
 	// Build the SQL query string
@@ -181,4 +168,8 @@ func queryFilterByJSON(path string, values []string) string {
 
 	sb.WriteString("))")
 	return sb.String()
+}
+
+func sanitizeTerm(query string) string {
+	return strings.ReplaceAll(query, " ", "*")
 }

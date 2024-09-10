@@ -61,7 +61,7 @@ func Search[T Object](db Storage, q Query) (iter.Seq[T], error) {
 		return nil, err
 	}
 
-	cursor, err := db.Range(kind, q)
+	cursor, err := db.Search(kind, q)
 	if err != nil {
 		return nil, err
 	}

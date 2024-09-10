@@ -74,3 +74,14 @@ func defaultOf[T any]() T {
 	var v T
 	return v
 }
+
+// indexOf returns the index data of the record
+func indexOf(r Record) string {
+	if indexer, ok := r.(interface {
+		Index() string
+	}); ok {
+		return indexer.Index()
+	}
+
+	return ""
+}

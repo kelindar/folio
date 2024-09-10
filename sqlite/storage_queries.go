@@ -34,14 +34,15 @@ func (s *rds) Insert(v Record, createdBy string) (Record, error) {
 	urn := v.URN()
 	now := time.Now()
 	sql := `INSERT INTO ` + tableOf(urn.Kind) +
-		` (id, namespace, state, data, created_by, updated_by, created_at, updated_at)` +
-		` VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+		` (id, namespace, state, indexed_by, data, created_by, updated_by, created_at, updated_at)` +
+		` VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
 
 	// Insert the record
 	if _, err := s.db.Exec(sql,
 		urn.ID,
 		urn.Namespace,
 		v.Status(),
+		indexOf(v),
 		data,
 		createdBy,
 		createdBy, // same as created_by
@@ -65,11 +66,11 @@ func (s *rds) Update(v Record, updatedBy string) (Record, error) {
 	urn := v.URN()
 	now := time.Now()
 	sql := `UPDATE ` + tableOf(urn.Kind) +
-		` SET state = ?, data = ?, updated_by = ?, updated_at = ?` +
+		` SET state = ?, indexed_by = ?, data = ?, updated_by = ?, updated_at = ?` +
 		` WHERE id = ? AND updated_at = ?`
 
 	// Update the record
-	r, err := s.db.Exec(sql, v.Status(), data, updatedBy, now.UnixNano(), urn.ID, version.UnixNano())
+	r, err := s.db.Exec(sql, v.Status(), indexOf(v), data, updatedBy, now.UnixNano(), urn.ID, version.UnixNano())
 	n, _ := r.RowsAffected()
 	switch {
 	case err != nil:
@@ -112,9 +113,9 @@ func (s *rds) Delete(urn folio.URN, deletedBy string) (Record, error) {
 	return deleted, nil
 }
 
-// Range performs a query against the storage layer and calls the specified
+// Search performs a query against the storage layer and calls the specified
 // function for each retrieved object.
-func (s *rds) Range(kind folio.Kind, q folio.Query) (iter.Seq[Record], error) {
+func (s *rds) Search(kind folio.Kind, q folio.Query) (iter.Seq[Record], error) {
 	rows, err := s.query(kind, q)
 	if err != nil {
 		return nil, err
