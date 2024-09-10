@@ -1,16 +1,74 @@
 html {
-    font-family: Poppins, sans-serif;
+  font-family: Poppins, sans-serif;
 }
 
 .material-symbols-outlined {
-  font-variation-settings:
-  'FILL' 0,
-  'wght' 400,
-  'GRAD' 0,
-  'opsz' 20
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 20;
 }
 
 .text-xxs {
-    font-size: 10px;
-    line-height: 10px;
+  font-size: 10px;
+  line-height: 10px;
+}
+
+#drawer {
+  position: fixed;
+  top: 0;
+  right: -600px;
+  height: 100%;
+  width: 600px;
+  background: #ffffff;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+  z-index: 10;
+}
+
+#page-content {
+  z-index: 1;
+}
+
+#drawer-toggle {
+  position: absolute;
+  display: none;
+  opacity: 0;
+}
+
+#drawer-overlay {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  left: 0px;
+  height: 0px;
+  width: 0px;
+  display: block;
+  position: fixed;
+  background: rgba(255, 255, 255, 0);
+  z-index: 1;
+}
+
+#drawer-toggle:checked ~ #drawer-overlay {
+  height: 100%;
+  width: calc(100% - 600px);
+}
+
+#drawer-toggle:checked ~ #drawer-overlay,
+#drawer-toggle:checked ~ header {
+  right: 600px;
+}
+
+#drawer-toggle:checked ~ #drawer {
+  right: 0px;
+  transition: 0.2s ease-in-out;
+}
+
+#drawer-toggle:checked ~ #page-content {
+  mix-blend-mode: luminosity;
+  filter: blur(0.5px) opacity(0.7);
+  overflow: hidden;
+  transition: 0.2s fade-in-out;
 }
