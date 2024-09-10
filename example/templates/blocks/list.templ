@@ -290,12 +290,10 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 	</div>
 	<!-- drawer -->
 	<div
-		id="drawer-content"
-		hx-swap-oob="innerHTML"
+		id="drawer-edit"
 		class="fixed top-0 right-0 z-40 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white min-w-96 w-2/5 dark:bg-gray-800"
 		tabindex="-1"
-		aria-labelledby="drawer-right-label"
-	></div>
+	><div id="drawer-content"></div></div>
 }
 
 templ SearchBar() {
@@ -323,14 +321,13 @@ templ SearchBar() {
 }
 
 templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
-	<ul id="list-content" role="list" class="divide-y divide-gray-100">
+	<ul id="list-content" role="list" class="divide-y divide-gray-100" hx-on::after-settle="initFlowbite()">
 		for v := range elements {
 			<li
 				class="flex justify-between gap-x-2 py-2 px-4 bg-white hover:bg-slate-100 hover:bg-opacity-50 hover:text-white transition duration-300"
-				data-drawer-target="drawer-content"
-				data-drawer-show="drawer-content"
+				data-drawer-target="drawer-edit"
+				data-drawer-show="drawer-edit"
 				data-drawer-placement="right"
-				aria-controls="drawer-content"
 				hx-target="#drawer-content"
 				hx-get={ "/view/" + v.URN().String() }
 			>
