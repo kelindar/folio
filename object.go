@@ -96,9 +96,14 @@ func (r *Meta) Status() string {
 	return r.State
 }
 
-// Metadata returns the metadata.
-func (r *Meta) Metadata() *Meta {
-	return r
+// Title returns the title of the resource.
+func (r *Meta) Title() string {
+	return r.ID
+}
+
+// Subtitle returns the subtitle of the resource.
+func (r *Meta) Subtitle() string {
+	return r.Desc
 }
 
 // ---------------------------------- URN ----------------------------------

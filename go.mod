@@ -3,7 +3,7 @@ module github.com/kelindar/folio
 go 1.23
 
 require (
-	github.com/a-h/templ v0.2.771
+	github.com/a-h/templ v0.2.778
 	github.com/angelofallars/htmx-go v0.5.0
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/creasty/defaults v1.8.0

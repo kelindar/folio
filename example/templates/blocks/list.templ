@@ -5,6 +5,7 @@ import (
 	"iter"
 	"time"
 
+	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/example/render"
 )
@@ -326,33 +327,16 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
 	<ul id="list-content" role="list" class="divide-y divide-gray-100">
 		for v := range elements {
-			<li class="flex justify-between gap-x-2 py-2 px-4">
+			<li
+				class="flex justify-between gap-x-2 py-2 px-4 bg-white hover:bg-slate-100 hover:bg-opacity-50 hover:text-white transition duration-300"
+				data-drawer-target="drawer-content"
+				data-drawer-show="drawer-content"
+				data-drawer-placement="right"
+				aria-controls="drawer-content"
+				hx-target="#drawer-content"
+				hx-get={ "/view/" + v.URN().String() }
+			>
 				@ListElementRow(v)
-				<!-- Action Buttons -->
-				<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-					<button
-						class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-						type="button"
-						data-drawer-target="drawer-content"
-						data-drawer-show="drawer-content"
-						data-drawer-placement="right"
-						aria-controls="drawer-content"
-						hx-target="#drawer-content"
-						hx-get={ "/view/" + v.URN().String() }
-					>
-						<svg
-							class="w-5 h-5"
-							aria-hidden="true"
-							fill="currentColor"
-							viewbox="0 0 20 20"
-							xmlns="http://www.w3.org/2000/svg"
-						>
-							<path
-								d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z"
-							></path>
-						</svg>
-					</button>
-				</div>
 			</li>
 		}
 	</ul>
@@ -363,13 +347,16 @@ templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
 	@ListElementEdit(rctx, value)
 }
 
-templ ListElementRow(v *docs.Person) {
-	<div id={ v.ID } hx-swap-oob="true" class="flex min-w-0 gap-x-4">
+templ ListElementRow(v folio.Object) {
+	<div id={ v.URN().ID } hx-swap-oob="true" class="flex min-w-0 gap-x-4">
 		<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAMUExURe/x82h3h7zDy83T2GnaqlsAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABWSURBVDjL7dGxDcAgEANAmyxg2H/YACJK40ckFQWukE4vwI+TjZLfrMtzSJ9EkYwLrGgyk61cAuuYf1v7jBVWkZXegBN2KUbC3hhK2DV/7GdBhJNdAtxTeAm5sD159AAAAABJRU5ErkJggg==" alt=""/>
 		<div class="min-w-0 flex-auto">
-			<p class="text-sm font-semibold leading-6 text-gray-900">{ v.Name }</p>
-			<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ v.Desc } { v.JobTitle }</p>
+			<p class="text-sm font-semibold leading-6 text-gray-900">{ render.Property(v, "Title") }</p>
+			<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.Property(v, "Subtitle") }</p>
 		</div>
+	</div>
+	<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
+		<!-- end -->
 	</div>
 }
 

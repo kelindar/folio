@@ -1,6 +1,8 @@
 package docs
 
 import (
+	"fmt"
+
 	"github.com/brianvoe/gofakeit/v7"
 	object "github.com/kelindar/folio"
 )
@@ -28,4 +30,12 @@ func NewPerson() *Person {
 		panic(err)
 	}
 	return p
+}
+
+func (p *Person) Title() string {
+	return p.Name
+}
+
+func (p *Person) Subtitle() string {
+	return fmt.Sprintf("%d years old, working as %s at %s", p.Age, p.JobTitle, p.Company)
 }
