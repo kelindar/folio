@@ -290,10 +290,10 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 	</div>
 	<!-- drawer -->
 	<div
-		id="drawer-edit"
-		class="fixed top-0 right-0 z-40 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white min-w-96 w-2/5 dark:bg-gray-800"
+		id="drawer-content"
 		tabindex="-1"
-	><div id="drawer-content"></div></div>
+		class="fixed top-0 right-0 z-40 h-screen p-4 overflow-y-auto transition-transform translate-x-full bg-white min-w-96 w-2/5 dark:bg-gray-800"
+	></div>
 }
 
 templ SearchBar() {
@@ -325,8 +325,8 @@ templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
 		for v := range elements {
 			<li
 				class="flex justify-between gap-x-2 py-2 px-4 bg-white hover:bg-slate-100 hover:bg-opacity-50 hover:text-white transition duration-300"
-				data-drawer-target="drawer-edit"
-				data-drawer-show="drawer-edit"
+				data-drawer-target="drawer-content"
+				data-drawer-show="drawer-content"
 				data-drawer-placement="right"
 				hx-target="#drawer-content"
 				hx-get={ "/view/" + v.URN().String() }
@@ -377,7 +377,8 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 	<form hx-post={ "/save/" + value.URN().String() } hx-target="#drawer-content" hx-ext="json-enc">
 		<div class="flex flex-row w-full">
 			<div class="flex-auto">
-				<strong>{ value.URN().ID }</strong>
+				<p class="text-md font-bold leading-6 text-gray-900 whitespace-nowrap truncate">{ render.StringOf(value, "Title") }</p>
+				<p class="text-xs mt-1 leading-5 text-gray-500truncate">{ render.StringOf(value, "Subtitle") }</p>
 			</div>
 			switch rctx.Mode {
 				case render.ModeView :
@@ -392,6 +393,8 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 					<div class="inline-flex rounded-md shadow-sm" role="group">
 						<button
 							class="px-4 py-2 text-sm font-medium text-gray-900 bg-white border border-gray-200 rounded-s-lg hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-800 dark:border-gray-700 dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-blue-500 dark:focus:text-white"
+							data-drawer-target="drawer-content"
+							data-drawer-hide="drawer-content"
 						>
 							Save
 						</button>
@@ -406,12 +409,6 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 			}
 		</div>
 		<div class="grid gap-6 mb-6">
-			@TextEdit(TextProps{
-				Mode:  render.ModeView,
-				Name:  "id",
-				Label: "ID",
-				Value: value.ID,
-			})
 			@Divider("Details")
 			@TextEdit(TextProps{
 				Mode:  rctx.Mode,
