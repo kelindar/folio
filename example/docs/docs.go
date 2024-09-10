@@ -39,3 +39,7 @@ func (p *Person) Title() string {
 func (p *Person) Subtitle() string {
 	return fmt.Sprintf("%d years old, working as %s at %s", p.Age, p.JobTitle, p.Company)
 }
+
+func (p *Person) Badges() []string {
+	return []string{p.Phone}
+}

@@ -20,8 +20,8 @@ type Context struct {
 
 // ---------------------------------- Inspect ----------------------------------
 
-// Property returns the value of the specified property.
-func Property(obj any, property string) string {
+// StringOf returns the string representation of the property.
+func StringOf(obj any, property string) string {
 	rv := reflect.ValueOf(obj)
 
 	// First lookup for a stringer method with the same name (i.e. <property>() string ) and
@@ -45,4 +45,26 @@ func Property(obj any, property string) string {
 	}
 
 	return ""
+}
+
+// ListOf returns the list of strings for the property.
+func ListOf(obj any, property string) []string {
+	rv := reflect.ValueOf(obj)
+	if method := rv.MethodByName(property); method.IsValid() &&
+		method.Type().NumIn() == 0 &&
+		method.Type().NumOut() == 1 &&
+		method.Type().Out(0).Kind() == reflect.Slice &&
+		method.Type().Out(0).Elem().Kind() == reflect.String {
+		return method.Call(nil)[0].Interface().([]string)
+	}
+
+	// Otherwise lookup for a field with the same name
+	if field := rv.FieldByName(property); field.IsValid() &&
+		field.CanInterface() &&
+		field.Kind() == reflect.Slice &&
+		field.Type().Elem().Kind() == reflect.String {
+		return field.Interface().([]string)
+	}
+
+	return nil
 }
