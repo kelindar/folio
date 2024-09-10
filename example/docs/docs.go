@@ -14,6 +14,7 @@ type Person struct {
 	Phone       string `json:"phone"`
 	Company     string `json:"company"`
 	JobTitle    string `json:"jobTitle"`
+	Country     string `json:"country"`
 }
 
 func NewPerson() *Person {
@@ -24,6 +25,7 @@ func NewPerson() *Person {
 		p.Phone = gofakeit.Phone()
 		p.Company = gofakeit.Company()
 		p.JobTitle = gofakeit.JobTitle()
+		p.Country = gofakeit.Country()
 		return nil
 	})
 	if err != nil {
@@ -41,5 +43,5 @@ func (p *Person) Subtitle() string {
 }
 
 func (p *Person) Badges() []string {
-	return []string{p.Phone}
+	return []string{p.Phone, p.Country}
 }

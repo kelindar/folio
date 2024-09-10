@@ -350,17 +350,20 @@ templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
 templ ListElementRow(v folio.Object) {
 	<div id={ v.URN().ID } hx-swap-oob="true" class="flex min-w-0 gap-x-4">
 		<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAMUExURe/x82h3h7zDy83T2GnaqlsAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABWSURBVDjL7dGxDcAgEANAmyxg2H/YACJK40ckFQWukE4vwI+TjZLfrMtzSJ9EkYwLrGgyk61cAuuYf1v7jBVWkZXegBN2KUbC3hhK2DV/7GdBhJNdAtxTeAm5sD159AAAAABJRU5ErkJggg==" alt=""/>
-		<div class="min-w-0 flex-auto">
-			<p class="text-sm font-semibold leading-6 text-gray-900">{ render.StringOf(v, "Title") }</p>
+		<div class="min-w-0 flex-auto ">
+			<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
+				{ render.StringOf(v, "Title") }
+				for _, tag := range render.ListOf(v, "Badges") {
+					<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
+						{ tag }
+					</span>
+				}
+			</p>
 			<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.StringOf(v, "Subtitle") }</p>
 		</div>
 	</div>
-	<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-		for _, v := range render.ListOf(v, "Badges") {
-			<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-				{ v }
-			</span>
-		}
+	<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
+		<!-- Actions -->
 	</div>
 }
 
