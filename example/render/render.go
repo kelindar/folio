@@ -33,7 +33,7 @@ func StringOf(obj any, property string) string {
 	}
 
 	// Otherwise lookup for a field with the same name
-	if field := rv.FieldByName(property); field.IsValid() {
+	if field := reflect.Indirect(rv).FieldByName(property); field.IsValid() {
 		switch field.Kind() {
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 			return strconv.FormatInt(field.Int(), 10)
@@ -59,7 +59,7 @@ func ListOf(obj any, property string) []string {
 	}
 
 	// Otherwise lookup for a field with the same name
-	if field := rv.FieldByName(property); field.IsValid() &&
+	if field := reflect.Indirect(rv).FieldByName(property); field.IsValid() &&
 		field.CanInterface() &&
 		field.Kind() == reflect.Slice &&
 		field.Type().Elem().Kind() == reflect.String {
