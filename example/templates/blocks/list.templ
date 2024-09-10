@@ -324,12 +324,12 @@ templ List(rctx *render.Context, items iter.Seq[*docs.Person]) {
 }
 
 templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
-	<div id="list-content">
+	<ul id="list-content" role="list" class="divide-y divide-gray-100">
 		for v := range elements {
-			<div class="grid grid-cols-12 py-1 border-b dark:border-gray-700">
+			<li class="flex justify-between gap-x-2 py-2 px-4">
 				@ListElementRow(v)
-				<div class="col-span-1 w-auto text-right px-4">
-					<!-- Action Buttons -->
+				<!-- Action Buttons -->
+				<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
 					<button
 						class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
 						type="button"
@@ -353,9 +353,9 @@ templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
 						</svg>
 					</button>
 				</div>
-			</div>
+			</li>
 		}
-	</div>
+	</ul>
 }
 
 templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
@@ -364,11 +364,12 @@ templ ListElementUpdate(rctx *render.Context, value *docs.Person) {
 }
 
 templ ListElementRow(v *docs.Person) {
-	<div id={ v.ID } hx-swap-oob="true" class="grid grid-cols-4 col-span-11">
-		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.Name }</div>
-		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.Company }</div>
-		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.JobTitle }</div>
-		<div class="col-span-1 px-4 overflow-hidden whitespace-nowrap truncate">{ v.Phone }</div>
+	<div id={ v.ID } hx-swap-oob="true" class="flex min-w-0 gap-x-4">
+		<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAMUExURe/x82h3h7zDy83T2GnaqlsAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABWSURBVDjL7dGxDcAgEANAmyxg2H/YACJK40ckFQWukE4vwI+TjZLfrMtzSJ9EkYwLrGgyk61cAuuYf1v7jBVWkZXegBN2KUbC3hhK2DV/7GdBhJNdAtxTeAm5sD159AAAAABJRU5ErkJggg==" alt=""/>
+		<div class="min-w-0 flex-auto">
+			<p class="text-sm font-semibold leading-6 text-gray-900">{ v.Name }</p>
+			<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ v.Desc } { v.JobTitle }</p>
+		</div>
 	</div>
 }
 

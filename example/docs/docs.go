@@ -17,6 +17,7 @@ type Person struct {
 func NewPerson() *Person {
 	p, err := object.NewWith("default", func(p *Person) error {
 		p.Name = gofakeit.Name()
+		p.Desc = gofakeit.Address().Address
 		p.Age = gofakeit.Number(18, 65)
 		p.Phone = gofakeit.Phone()
 		p.Company = gofakeit.Company()
