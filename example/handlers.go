@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -211,6 +212,15 @@ func deleteObject(db folio.Storage) http.Handler {
 		// Get the latest instance from the database
 		if _, err := db.Delete(urn, "sys"); err != nil {
 			slog.Error("fetch", "error", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.Alert(
+			"Successfully Deleted",
+			fmt.Sprintf("The object with ID %s has been successfully deleted.", urn),
+		)); err != nil {
+			slog.Error("render template", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
