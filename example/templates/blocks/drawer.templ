@@ -9,7 +9,7 @@ import (
 	"github.com/kelindar/folio/example/render"
 )
 
-templ DrawerHeader(v folio.Object) {
+templ DrawerHeader(rctx *render.Context, v folio.Object) {
 	<div class="px-4 py-6 bg-gray-50 sm:px-6">
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
@@ -20,24 +20,17 @@ templ DrawerHeader(v folio.Object) {
 					{ render.StringOf(v, "Subtitle") }
 				</p>
 			</div>
-			<div class="h-7 flex items-center">
-				<button type="button" class="text-gray-400 hover:text-gray-500">
-					<span class="sr-only">Close panel</span>
-					<!-- Heroicon name: outline/x -->
-					<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-					</svg>
-				</button>
+			<div class="mt-5 flex items-center">
+				@DrawerActions(rctx, v)
 			</div>
 		</div>
 	</div>
 }
 
 templ ListElementEdit(rctx *render.Context, value *docs.Person) {
-	@DrawerHeader(value)
 	<form hx-post={ "/save/" + value.URN().String() } hx-target="#drawer" hx-ext="json-enc">
-		@DrawerActions(rctx, value)
-		<div class="grid gap-6 mb-6 px-6">
+		@DrawerHeader(rctx, value)
+		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">
 				@DrawerSection("Details", "This section contains the basic details of the object.")
 				@TextEdit(TextProps{
@@ -83,7 +76,7 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 }
 
 templ DrawerActions(rctx *render.Context, value folio.Object) {
-	<div class="flex-shrink-0 px-4 border-t border-gray-200 py-5 sm:px-6">
+	<div class="flex-shrink-0 px-4 sm:px-6">
 		<div class="space-x-3 flex justify-end">
 			switch rctx.Mode {
 				case render.ModeView :
