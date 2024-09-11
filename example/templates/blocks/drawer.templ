@@ -38,44 +38,48 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 	<form hx-post={ "/save/" + value.URN().String() } hx-target="#drawer" hx-ext="json-enc">
 		@DrawerActions(rctx, value)
 		<div class="grid gap-6 mb-6 px-6">
-			@Divider("Details")
-			@TextEdit(TextProps{
-				Mode:  rctx.Mode,
-				Name:  "name",
-				Label: "Full Name",
-				Value: value.Name,
-			})
-			@TextEdit(TextProps{
-				Mode:  rctx.Mode,
-				Name:  "company",
-				Label: "Company",
-				Value: value.Company,
-			})
-			@TextEdit(TextProps{
-				Mode:  rctx.Mode,
-				Name:  "jobTitle",
-				Label: "Job Title",
-				Value: value.JobTitle,
-			})
-			@TextEdit(TextProps{
-				Mode:  rctx.Mode,
-				Name:  "phone",
-				Label: "Phone Number",
-				Value: value.Phone,
-			})
-			@Divider("Governance")
-			@TextEdit(TextProps{
-				Mode:  render.ModeView,
-				Name:  "created",
-				Label: "Created",
-				Value: fmt.Sprintf("by %v, at %v", value.CreatedBy, time.Unix(0, value.CreatedAt).String()),
-			})
-			@TextEdit(TextProps{
-				Mode:  render.ModeView,
-				Name:  "updated",
-				Label: "Modified",
-				Value: fmt.Sprintf("by %v, at %v", value.UpdatedBy, time.Unix(0, value.UpdatedAt).String()),
-			})
+			<dl class="divide-y divide-gray-100">
+				// @Divider("Details")
+				@DrawerSection("Details", "This section contains the basic details of the object.")
+				@TextEdit(TextProps{
+					Mode:  rctx.Mode,
+					Name:  "name",
+					Label: "Full Name",
+					Value: value.Name,
+				})
+				@TextEdit(TextProps{
+					Mode:  rctx.Mode,
+					Name:  "company",
+					Label: "Company",
+					Value: value.Company,
+				})
+				@TextEdit(TextProps{
+					Mode:  rctx.Mode,
+					Name:  "jobTitle",
+					Label: "Job Title",
+					Value: value.JobTitle,
+				})
+				@TextEdit(TextProps{
+					Mode:  rctx.Mode,
+					Name:  "phone",
+					Label: "Phone Number",
+					Value: value.Phone,
+				})
+				// @Divider("Governance")
+				@DrawerSection("Governance", "This section contains information about the governance of the object.")
+				@TextEdit(TextProps{
+					Mode:  render.ModeView,
+					Name:  "created",
+					Label: "Created",
+					Value: fmt.Sprintf("by %v, at %v", value.CreatedBy, time.Unix(0, value.CreatedAt).String()),
+				})
+				@TextEdit(TextProps{
+					Mode:  render.ModeView,
+					Name:  "updated",
+					Label: "Modified",
+					Value: fmt.Sprintf("by %v, at %v", value.UpdatedBy, time.Unix(0, value.UpdatedAt).String()),
+				})
+			</dl>
 		</div>
 	</form>
 }
@@ -117,23 +121,25 @@ type TextProps struct {
 }
 
 templ TextEdit(props TextProps) {
-	<div>
-		<label for={ props.Name } class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-			{ props.Label }
-		</label>
-		switch props.Mode {
-			case render.ModeView :
-				<p id={ props.Name }>{ props.Value }</p>
-			case render.ModeEdit:
-				<input
-					type="text"
-					id={ props.Name }
-					name={ props.Name }
-					class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-					placeholder={ props.Placeholder }
-					value={ props.Value }
-				/>
-		}
+	<div class="px-4 py-6 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
+		<dt class="leading-6">
+			<p class="text-sm text-gray-900 font-semibold">{ props.Label }</p>
+		</dt>
+		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
+			switch props.Mode {
+				case render.ModeView :
+					<p id={ props.Name }>{ props.Value }</p>
+				case render.ModeEdit:
+					<input
+						type="text"
+						id={ props.Name }
+						name={ props.Name }
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						placeholder={ props.Placeholder }
+						value={ props.Value }
+					/>
+			}
+		</dd>
 	</div>
 }
 
@@ -142,5 +148,19 @@ templ Divider(text string) {
 		<div class="border-t border-1 border-gray-200 flex-grow"></div>
 		<div class="px-3 text-gray-500 font-semibold text-sm">{ text }</div>
 		<div class="border-t border-1 border-gray-200 flex-grow"></div>
+	</div>
+}
+
+templ DrawerSection(title, subtitle string) {
+	<div class="px-4 py-6 sm:px-0">
+		<h3 class="text-base font-semibold leading-7 text-gray-900">
+			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3 inline align-middle mb-1">
+				<path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"></path>
+			</svg>
+			{ title }
+		</h3>
+		<p class="max-w-2xl text-xs leading-6 text-gray-500">
+			{ subtitle }
+		</p>
 	</div>
 }
