@@ -79,7 +79,7 @@ func showContentAPIHandler(w http.ResponseWriter, r *http.Request) {
 	slog.Info("request API", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
 }
 
-func createForm(mode render.Mode, db folio.Storage) http.Handler {
+func editObject(mode render.Mode, db folio.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
@@ -118,7 +118,7 @@ func createForm(mode render.Mode, db folio.Storage) http.Handler {
 
 }
 
-func saveForm(db folio.Storage) http.Handler {
+func saveObject(db folio.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
@@ -196,5 +196,23 @@ func search(db folio.Storage) http.Handler {
 
 		// Send log message.
 		slog.Info("search", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
+	})
+}
+
+func deleteObject(db folio.Storage) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		urn, err := folio.ParseURN(r.PathValue("urn"))
+		if err != nil {
+			slog.Error("parse urn", "error", err)
+			http.Error(w, "Invalid ID", http.StatusBadRequest)
+			return
+		}
+
+		// Get the latest instance from the database
+		if _, err := db.Delete(urn, "sys"); err != nil {
+			slog.Error("fetch", "error", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 	})
 }

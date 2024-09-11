@@ -39,7 +39,6 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 		@DrawerActions(rctx, value)
 		<div class="grid gap-6 mb-6 px-6">
 			<dl class="divide-y divide-gray-100">
-				// @Divider("Details")
 				@DrawerSection("Details", "This section contains the basic details of the object.")
 				@TextEdit(TextProps{
 					Mode:  rctx.Mode,
@@ -65,7 +64,6 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 					Label: "Phone Number",
 					Value: value.Phone,
 				})
-				// @Divider("Governance")
 				@DrawerSection("Governance", "This section contains information about the governance of the object.")
 				@TextEdit(TextProps{
 					Mode:  render.ModeView,
@@ -89,13 +87,11 @@ templ DrawerActions(rctx *render.Context, value folio.Object) {
 		<div class="space-x-3 flex justify-end">
 			switch rctx.Mode {
 				case render.ModeView :
-					<button
-						class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-						hx-target="#drawer"
-						hx-get={ "/edit/" + value.URN().String() }
-					>
-						Edit
-					</button>
+					@ButtonDropdown(ButtonDropdownProps{
+						ID:      "drawer-actions",
+						Primary: drawerEditButton(value.URN()),
+						Options: drawerExtraActions(value.URN()),
+					})
 				case render.ModeEdit:
 					<button
 						class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -110,6 +106,55 @@ templ DrawerActions(rctx *render.Context, value folio.Object) {
 			}
 		</div>
 	</div>
+}
+
+templ drawerEditButton(urn folio.URN) {
+	<button
+		type="button"
+		class="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
+		hx-target="#drawer"
+		hx-get={ "/edit/" + urn.String() }
+	>Edit</button>
+}
+
+templ drawerExtraActions(urn folio.URN) {
+	<a
+		href="#"
+		class="text-gray-700 block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+		hx-delete={ "/object/" + urn.String() }
+	>
+		Delete Object
+	</a>
+}
+
+type ButtonDropdownProps struct {
+	ID      string
+	Primary templ.Component
+	Options templ.Component
+}
+
+templ ButtonDropdown(props ButtonDropdownProps) {
+	<div class="btn-dropdown inline-flex rounded-md shadow-sm relative">
+		@props.Primary
+		<!-- Hidden checkbox for the dropdown toggle -->
+		<input type="checkbox" class="btn-dropdown-toggle hidden absolute" id={ props.ID + "-btn-dropdown-toggle" }/>
+		<!-- Label acts as the button to toggle the dropdown -->
+		<label for={ props.ID + "-btn-dropdown-toggle" } class="relative inline-flex items-center rounded-r-md bg-white px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 cursor-pointer">
+			<span class="sr-only">Open options</span>
+			<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"></path>
+			</svg>
+		</label>
+		<!-- Dropdown menu, initially hidden -->
+		<div class="btn-dropdown-menu absolute right-0 z-10 mt-11 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none transition-transform duration-200 transform opacity-0 scale-95 pointer-events-none">
+			<div class="py-1">
+				@props.Options
+			</div>
+		</div>
+	</div>
+	<style>
+
+</style>
 }
 
 type TextProps struct {
