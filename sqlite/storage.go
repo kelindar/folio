@@ -177,7 +177,7 @@ func sanitizeTerm(query string) string {
 		tokens[i] = token + "*" // Add wildcard for partial matching
 	}
 
-	// Wrap with NEAR to match any of the tokens 10 words apart
-	nearClause := "NEAR(" + strings.Join(tokens, " ") + ", 10)"
+	// Wrap with NEAR to match any of the tokens 30 words apart
+	nearClause := "NEAR(" + strings.Join(tokens, " ") + ", 30)"
 	return nearClause
 }

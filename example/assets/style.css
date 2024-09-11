@@ -14,13 +14,12 @@ html {
 #drawer {
   position: fixed;
   top: 0;
-  right: -600px;
+  right: -672px;
   height: 100%;
-  width: 600px;
+  width: 672px;
   background: #ffffff;
   overflow-x: hidden;
   overflow-y: scroll;
-  padding: 20px;
   -webkit-overflow-scrolling: touch;
   z-index: 10;
 }
@@ -53,12 +52,12 @@ html {
 
 #drawer-toggle:checked ~ #drawer-overlay {
   height: 100%;
-  width: calc(100% - 600px);
+  width: calc(100% - 672px);
 }
 
 #drawer-toggle:checked ~ #drawer-overlay,
 #drawer-toggle:checked ~ header {
-  right: 600px;
+  right: 672px;
 }
 
 #drawer-toggle:checked ~ #drawer {

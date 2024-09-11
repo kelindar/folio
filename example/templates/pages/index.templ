@@ -15,15 +15,19 @@ templ MetaTags(keywords, description string) {
 
 // BodyContent defines HTML content.
 templ BodyContent(rctx *render.Context, people iter.Seq[*docs.Person]) {
-	<input type="checkbox" id="drawer-toggle" name="drawer-toggle"/>
-	<label for="drawer-toggle" id="drawer-overlay"></label>
-	<nav id="drawer" class="shadow-md"></nav>
+	@Drawer()
 	<div id="page-content">
 		@blocks.Navigation()
 		<div class="container mx-auto">
 			@blocks.List(rctx, people)
 		</div>
 	</div>
+}
+
+templ Drawer() {
+	<input type="checkbox" id="drawer-toggle" name="drawer-toggle"/>
+	<label for="drawer-toggle" id="drawer-overlay"></label>
+	<nav id="drawer" class="shadow-md"></nav>
 }
 
 // BodyScripts defines JavaScript code.

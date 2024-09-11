@@ -1,0 +1,146 @@
+package blocks
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/example/docs"
+	"github.com/kelindar/folio/example/render"
+)
+
+templ DrawerHeader(v folio.Object) {
+	<div class="px-4 py-6 bg-gray-50 sm:px-6">
+		<div class="flex items-start justify-between space-x-3">
+			<div class="space-y-1">
+				<h2 class="text-lg font-medium text-gray-900" id="slide-over-title">
+					{ render.StringOf(v, "Title") }
+				</h2>
+				<p class="text-sm text-gray-500">
+					{ render.StringOf(v, "Subtitle") }
+				</p>
+			</div>
+			<div class="h-7 flex items-center">
+				<button type="button" class="text-gray-400 hover:text-gray-500">
+					<span class="sr-only">Close panel</span>
+					<!-- Heroicon name: outline/x -->
+					<svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+					</svg>
+				</button>
+			</div>
+		</div>
+	</div>
+}
+
+templ ListElementEdit(rctx *render.Context, value *docs.Person) {
+	@DrawerHeader(value)
+	<form hx-post={ "/save/" + value.URN().String() } hx-target="#drawer" hx-ext="json-enc">
+		@DrawerActions(rctx, value)
+		<div class="grid gap-6 mb-6 px-6">
+			@Divider("Details")
+			@TextEdit(TextProps{
+				Mode:  rctx.Mode,
+				Name:  "name",
+				Label: "Full Name",
+				Value: value.Name,
+			})
+			@TextEdit(TextProps{
+				Mode:  rctx.Mode,
+				Name:  "company",
+				Label: "Company",
+				Value: value.Company,
+			})
+			@TextEdit(TextProps{
+				Mode:  rctx.Mode,
+				Name:  "jobTitle",
+				Label: "Job Title",
+				Value: value.JobTitle,
+			})
+			@TextEdit(TextProps{
+				Mode:  rctx.Mode,
+				Name:  "phone",
+				Label: "Phone Number",
+				Value: value.Phone,
+			})
+			@Divider("Governance")
+			@TextEdit(TextProps{
+				Mode:  render.ModeView,
+				Name:  "created",
+				Label: "Created",
+				Value: fmt.Sprintf("by %v, at %v", value.CreatedBy, time.Unix(0, value.CreatedAt).String()),
+			})
+			@TextEdit(TextProps{
+				Mode:  render.ModeView,
+				Name:  "updated",
+				Label: "Modified",
+				Value: fmt.Sprintf("by %v, at %v", value.UpdatedBy, time.Unix(0, value.UpdatedAt).String()),
+			})
+		</div>
+	</form>
+}
+
+templ DrawerActions(rctx *render.Context, value folio.Object) {
+	<div class="flex-shrink-0 px-4 border-t border-gray-200 py-5 sm:px-6">
+		<div class="space-x-3 flex justify-end">
+			switch rctx.Mode {
+				case render.ModeView :
+					<button
+						class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+						hx-target="#drawer"
+						hx-get={ "/edit/" + value.URN().String() }
+					>
+						Edit
+					</button>
+				case render.ModeEdit:
+					<button
+						class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+						hx-target="#drawer"
+						hx-get={ "/view/" + value.URN().String() }
+					>
+						Cancel
+					</button>
+					<button class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+						Save
+					</button>
+			}
+		</div>
+	</div>
+}
+
+type TextProps struct {
+	Mode        render.Mode
+	Name        string
+	Label       string
+	Placeholder string `default:"Please enter a value..."`
+	Value       string
+}
+
+templ TextEdit(props TextProps) {
+	<div>
+		<label for={ props.Name } class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+			{ props.Label }
+		</label>
+		switch props.Mode {
+			case render.ModeView :
+				<p id={ props.Name }>{ props.Value }</p>
+			case render.ModeEdit:
+				<input
+					type="text"
+					id={ props.Name }
+					name={ props.Name }
+					class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					placeholder={ props.Placeholder }
+					value={ props.Value }
+				/>
+		}
+	</div>
+}
+
+templ Divider(text string) {
+	<div class="flex items-center">
+		<div class="border-t border-1 border-gray-200 flex-grow"></div>
+		<div class="px-3 text-gray-500 font-semibold text-sm">{ text }</div>
+		<div class="border-t border-1 border-gray-200 flex-grow"></div>
+	</div>
+}
