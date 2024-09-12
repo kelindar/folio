@@ -1,6 +1,7 @@
 package blocks
 
 import (
+	"fmt"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/example/render"
@@ -171,49 +172,65 @@ templ SearchBar() {
 }
 
 templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
-	<ul id="list-content" role="list" class="divide-y divide-gray-100" hx-on::after-settle="initFlowbite()">
+	<ul id="list-content" role="list" class="divide-y divide-gray-100">
 		for v := range elements {
-			<li
-				class="flex justify-between gap-x-2 py-2 px-4 bg-white hover:bg-slate-100 hover:bg-opacity-50 hover:text-white transition duration-300"
-				hx-on:click="document.getElementById('drawer-toggle').checked = true"
-				hx-target="#drawer"
-				hx-get={ "/view/" + v.URN().String() }
-			>
-				<div id={ v.URN().ID } class="w-full contents">
-					@ListElementRow(v)
-				</div>
+			<li id={ v.URN().ID }>
+				@ListElementRow(v)
 			</li>
 		}
 	</ul>
 }
 
 templ ListElementUpdate(rctx *render.Context, v *docs.Person) {
-	<div id={ v.URN().ID } hx-swap-oob="true" class="w-full contents">
+	<li id={ v.URN().ID } hx-swap-oob="true">
 		@ListElementRow(v)
-	</div>
+	</li>
+	@ListElementEdit(rctx, v)
+}
+
+templ ListElementDelete(urn folio.URN) {
+	<li id={ urn.ID } hx-swap-oob="delete"></li>
+	@Notification("Successfully Deleted",
+		fmt.Sprintf("The object with ID %s has been successfully deleted.", urn),
+	)
+}
+
+templ ListElementCreate(rctx *render.Context, v *docs.Person) {
+	<ul id="list-content" hx-swap-oob="beforeend" role="list" class="divide-y divide-gray-100">
+		<li id={ v.URN().ID }>
+			@ListElementRow(v)
+		</li>
+	</ul>
 	@ListElementEdit(rctx, v)
 }
 
 templ ListElementRow(v folio.Object) {
-	<div class="flex min-w-0 gap-x-4">
-		if render.StringOf(v, "Icon") != "" {
-			<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src={ render.StringOf(v, "Icon") } alt=""/>
-		}
-		<div class="min-w-0 flex-auto ">
-			<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
-				{ render.StringOf(v, "Title") }
-				for _, tag := range render.ListOf(v, "Badges") {
-					<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
-						{ tag }
-					</span>
-				}
-			</p>
-			<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.StringOf(v, "Subtitle") }</p>
+	<div
+		class="flex justify-between gap-x-2 py-2 px-4 bg-white hover:bg-slate-100 hover:bg-opacity-50 hover:text-white transition duration-300"
+		hx-on:click="document.getElementById('drawer-toggle').checked = true"
+		hx-target="#drawer"
+		hx-get={ "/view/" + v.URN().String() }
+	>
+		<div class="flex min-w-0 gap-x-4">
+			if render.StringOf(v, "Icon") != "" {
+				<img class="h-12 w-12 flex-none rounded-full bg-gray-50" src={ render.StringOf(v, "Icon") } alt=""/>
+			}
+			<div class="min-w-0 flex-auto ">
+				<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
+					{ render.StringOf(v, "Title") }
+					for _, tag := range render.ListOf(v, "Badges") {
+						<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
+							{ tag }
+						</span>
+					}
+				</p>
+				<p class="mt-1 truncate text-xs leading-5 text-gray-500">{ render.StringOf(v, "Subtitle") }</p>
+			</div>
 		</div>
-	</div>
-	<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
-		@State(render.StringOf(v, "Status"))
-		<span class="mt-1 truncate text-xs leading-5 text-gray-500 px-2">{ updatedOf(v) }</span>
+		<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
+			@State(render.StringOf(v, "Status"))
+			<span class="mt-1 truncate text-xs leading-5 text-gray-500 px-2">{ updatedOf(v) }</span>
+		</div>
 	</div>
 }
 
