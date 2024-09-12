@@ -33,44 +33,38 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">
 				@DrawerSection("Details", "This section contains the basic details of the object.")
-				@TextEdit(TextProps{
+				@WithLabel("Full name", TextEdit(TextProps{
 					Mode:  rctx.Mode,
 					Name:  "name",
-					Label: "Full Name",
 					Value: value.Name,
-				})
-				@TextEdit(TextProps{
+				}))
+				@WithLabel("Company", TextEdit(TextProps{
 					Mode:  rctx.Mode,
 					Name:  "company",
-					Label: "Company",
 					Value: value.Company,
-				})
-				@TextEdit(TextProps{
+				}))
+				@WithLabel("Job Title", TextEdit(TextProps{
 					Mode:  rctx.Mode,
 					Name:  "jobTitle",
-					Label: "Job Title",
 					Value: value.JobTitle,
-				})
-				@TextEdit(TextProps{
+				}))
+				@WithLabel("Phone Number", TextEdit(TextProps{
 					Mode:  rctx.Mode,
 					Name:  "phone",
-					Label: "Phone Number",
 					Value: value.Phone,
-				})
+				}))
 				if rctx.Mode != render.ModeCreate {
 					@DrawerSection("Governance", "This section contains information about the governance of the object.")
-					@TextEdit(TextProps{
+					@WithLabel("Created", TextEdit(TextProps{
 						Mode:  render.ModeView,
 						Name:  "created",
-						Label: "Created",
 						Value: fmt.Sprintf("by %v, at %v", value.CreatedBy, time.Unix(0, value.CreatedAt).String()),
-					})
-					@TextEdit(TextProps{
+					}))
+					@WithLabel("Modified", TextEdit(TextProps{
 						Mode:  render.ModeView,
 						Name:  "updated",
-						Label: "Modified",
 						Value: fmt.Sprintf("by %v, at %v", value.UpdatedBy, time.Unix(0, value.UpdatedAt).String()),
-					})
+					}))
 				}
 			</dl>
 		</div>
@@ -161,37 +155,6 @@ templ ButtonDropdown(props ButtonDropdownProps) {
 	</div>
 }
 
-type TextProps struct {
-	Mode        render.Mode
-	Name        string
-	Label       string
-	Placeholder string `default:"Please enter a value..."`
-	Value       string
-}
-
-templ TextEdit(props TextProps) {
-	<div class="px-4 py-6 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
-		<dt class="leading-6">
-			<p class="text-sm text-gray-900 font-semibold">{ props.Label }</p>
-		</dt>
-		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
-			switch props.Mode {
-				case render.ModeView :
-					<p id={ props.Name }>{ props.Value }</p>
-				case render.ModeEdit, render.ModeCreate:
-					<input
-						type="text"
-						id={ props.Name }
-						name={ props.Name }
-						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-						placeholder={ props.Placeholder }
-						value={ props.Value }
-					/>
-			}
-		</dd>
-	</div>
-}
-
 templ Divider(text string) {
 	<div class="flex items-center">
 		<div class="border-t border-1 border-gray-200 flex-grow"></div>
@@ -211,6 +174,17 @@ templ DrawerSection(title, subtitle string) {
 		<p class="max-w-2xl text-xs leading-6 text-gray-500">
 			{ subtitle }
 		</p>
+	</div>
+}
+
+templ WithLabel(label string, editor templ.Component) {
+	<div class="px-4 py-6 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
+		<dt class="leading-6">
+			<p class="text-sm text-gray-900 font-semibold">{ label }</p>
+		</dt>
+		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
+			@editor
+		</dd>
 	</div>
 }
 
