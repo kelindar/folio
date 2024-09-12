@@ -32,6 +32,9 @@ templ ListElementEdit(rctx *render.Context, value *docs.Person) {
 		@DrawerHeader(rctx, value)
 		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">
+				for _, edit := range Object(rctx.Mode, value) {
+					@edit
+				}
 				@DrawerSection("Details", "This section contains the basic details of the object.")
 				@WithLabel("Full name", TextEdit(TextProps{
 					Mode:  rctx.Mode,

@@ -126,6 +126,12 @@ func ListElementEdit(rctx *render.Context, value *docs.Person) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		for _, edit := range Object(rctx.Mode, value) {
+			templ_7745c5c3_Err = edit.Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
 		templ_7745c5c3_Err = DrawerSection("Details", "This section contains the basic details of the object.").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -243,7 +249,7 @@ func DrawerActions(rctx *render.Context, value folio.Object) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("/view/" + value.URN().String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 88, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 91, Col: 46}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -295,7 +301,7 @@ func drawerEditButton(urn folio.URN) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("/edit/" + urn.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 115, Col: 34}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 118, Col: 34}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -337,7 +343,7 @@ func drawerExtraActions(urn folio.URN) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("/obj/" + urn.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 125, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 128, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -350,7 +356,7 @@ func drawerExtraActions(urn folio.URN) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(urn.Kind.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 127, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 130, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -406,7 +412,7 @@ func ButtonDropdown(props ButtonDropdownProps) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(props.ID + "-btn-dropdown-toggle")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 141, Col: 107}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 144, Col: 107}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -419,7 +425,7 @@ func ButtonDropdown(props ButtonDropdownProps) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(props.ID + "-btn-dropdown-toggle")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 143, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 146, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -469,7 +475,7 @@ func Divider(text string) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 161, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 164, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -511,7 +517,7 @@ func DrawerSection(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 172, Col: 10}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 175, Col: 10}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -524,7 +530,7 @@ func DrawerSection(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(subtitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 175, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 178, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -566,7 +572,7 @@ func WithLabel(label string, editor templ.Component) templ.Component {
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 183, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 186, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -616,7 +622,7 @@ func Alert(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 200, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 203, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -629,7 +635,7 @@ func Alert(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var25 string
 		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(subtitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 202, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 205, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 		if templ_7745c5c3_Err != nil {
@@ -671,7 +677,7 @@ func Notification(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var27 string
 		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 221, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 224, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 		if templ_7745c5c3_Err != nil {
@@ -684,7 +690,7 @@ func Notification(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var28 string
 		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(subtitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 222, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 225, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 		if templ_7745c5c3_Err != nil {
