@@ -95,18 +95,22 @@ html {
   0% {
     opacity: 0;
     transform: translateY(2rem);
+    visibility: hidden;
   }
   10% {
     opacity: 1;
     transform: translateY(0);
+    visibility: visible;
   }
   80% {
     opacity: 1;
     transform: translateY(0);
+    visibility: visible;
   }
   100% {
     opacity: 0;
     transform: translateY(2rem);
+    visibility: hidden;
   }
 }
 
