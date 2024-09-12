@@ -6,9 +6,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/example/render"
 )
 
 var palette = []string{
@@ -31,8 +28,7 @@ func colorOf(v string) string {
 	return palette[crc32.ChecksumIEEE([]byte(v))%uint32(len(palette))]
 }
 
-func updatedOf(v folio.Object) string {
-	updatedAt := render.StringOf(v, "UpdatedAt")
+func updatedOf(updatedAt string) string {
 	i, err := strconv.ParseInt(updatedAt, 10, 64)
 	if err != nil {
 		return ""
