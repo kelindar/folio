@@ -216,7 +216,7 @@ func deleteObject(db folio.Storage) http.Handler {
 			return
 		}
 
-		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.Alert(
+		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.Notification(
 			"Successfully Deleted",
 			fmt.Sprintf("The object with ID %s has been successfully deleted.", urn),
 		)); err != nil {

@@ -22,6 +22,7 @@ templ BodyContent(rctx *render.Context, people iter.Seq[*docs.Person]) {
 			@blocks.List(rctx, people)
 		</div>
 	</div>
+	<div id="notification"></div>
 }
 
 templ Drawer() {

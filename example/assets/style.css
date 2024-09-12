@@ -88,3 +88,28 @@ html {
   opacity: 1;
   pointer-events: auto;
 }
+
+/* ---------------- Notification ---------------- */
+
+@keyframes notificationAnimation {
+  0% {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+}
+
+.notification-animation {
+  animation: notificationAnimation 3s ease-in-out forwards;
+}
