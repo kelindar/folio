@@ -3,6 +3,8 @@ package render
 import (
 	"reflect"
 	"strconv"
+
+	"github.com/kelindar/folio"
 )
 
 // Mode represents the rendering mode.
@@ -11,11 +13,14 @@ type Mode int
 const (
 	ModeView Mode = iota
 	ModeEdit
+	ModeCreate
 )
 
 // Context represents the rendering context.
 type Context struct {
 	Mode Mode
+	Kind folio.Kind
+	URN  folio.URN
 }
 
 // ---------------------------------- Inspect ----------------------------------

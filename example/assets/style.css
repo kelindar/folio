@@ -91,7 +91,7 @@ html {
 
 /* ---------------- Notification ---------------- */
 
-@keyframes notificationAnimation {
+@keyframes anim-notify {
   0% {
     opacity: 0;
     transform: translateY(2rem);
@@ -115,5 +115,5 @@ html {
 }
 
 .notification-animation {
-  animation: notificationAnimation 3s ease-in-out forwards;
+  animation: anim-notify 3s ease-in-out forwards;
 }

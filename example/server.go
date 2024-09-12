@@ -21,16 +21,20 @@ func runServer(registry folio.Registry, db folio.Storage) error {
 	// Handle static files from the embed FS (with a custom handler).
 	http.Handle("GET /assets/", serveStatic(http.FS(assets)))
 
-	// Handle index page view.
+	// Handle index page view
 	http.Handle("GET /", indexViewHandler(db))
 
-	// Handle API endpoints.
-	http.HandleFunc("GET /api/hello-world", showContentAPIHandler)
+	// Handle API endpoints
 	http.Handle("GET /view/{urn}", editObject(render.ModeView, db))
 	http.Handle("GET /edit/{urn}", editObject(render.ModeEdit, db))
-	http.Handle("POST /save/{urn}", saveObject(db))
+	http.Handle("GET /make/{kind}", makeObject(registry))
+
+	// Object CRUD endpoints
+	http.Handle("PUT /obj/{urn}", saveObject(registry, db))
+	http.Handle("DELETE /obj/{urn}", deleteObject(db))
+
+	// Search and listing endpoints
 	http.Handle("POST /search", search(db))
-	http.Handle("DELETE /object/{urn}", deleteObject(db))
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/

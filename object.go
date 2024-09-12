@@ -37,17 +37,45 @@ type Meta struct {
 }
 
 // New creates a new instance of the specified resource kind.
-func New[T Object](namespace string) (T, error) {
+func New[T Object](namespace string, funcs ...func(obj T) error) (T, error) {
 	typ := typeOfT[T]()
-	kind, err := KindOf(typ)
+	instance, err := NewByType(typ, namespace)
 	if err != nil {
 		return *new(T), err
+	}
+
+	// Apply the initializers
+	for _, init := range funcs {
+		if err := init(instance.(T)); err != nil {
+			return *new(T), err
+		}
+	}
+
+	return instance.(T), nil
+}
+
+// NewByURN creates a new instance of the specified resource kind.
+func NewByURN(c Registry, urn URN) (Object, error) {
+	typ, err := c.Resolve(urn.Kind)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a new instance
+	return NewByType(typ, urn.Namespace)
+}
+
+// New creates a new instance of the specified resource kind.
+func NewByType(typ reflect.Type, namespace string) (Object, error) {
+	kind, err := KindOf(typ)
+	if err != nil {
+		return nil, err
 	}
 
 	// Create a new URN (and validate it)
 	urn, err := NewURN(namespace, kind)
 	if err != nil {
-		return *new(T), err
+		return nil, err
 	}
 
 	// Create a new instance
@@ -56,18 +84,7 @@ func New[T Object](namespace string) (T, error) {
 	resource.Namespace = urn.Namespace
 	resource.Kind = urn.Kind
 	resource.ID = urn.ID
-	return instance.Interface().(T), nil
-}
-
-// NewWith creates a new instance of the specified resource kind and calls the
-// specified function to initialize it.
-func NewWith[T Object](namespace string, fn func(obj T) error) (T, error) {
-	r, err := New[T](namespace)
-	if err != nil {
-		return *new(T), err
-	}
-
-	return r, fn(r)
+	return instance.Interface().(Object), nil
 }
 
 // URN returns the URN of the object.

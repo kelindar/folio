@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -38,6 +37,7 @@ func indexViewHandler(db folio.Storage) http.Handler {
 		// Define template body content.
 		bodyContent := pages.BodyContent(&render.Context{
 			Mode: render.ModeView,
+			Kind: "person",
 		}, people)
 
 		// Define template layout for index page.
@@ -59,27 +59,6 @@ func indexViewHandler(db folio.Storage) http.Handler {
 	})
 }
 
-// showContentAPIHandler handles an API endpoint to show content.
-func showContentAPIHandler(w http.ResponseWriter, r *http.Request) {
-	// Check, if the current request has a 'HX-Request' header.
-	// For more information, see https://htmx.org/docs/#request-headers
-	if !htmx.IsHTMX(r) {
-		// If not, return HTTP 400 error.
-		slog.Error("request API", "method", r.Method, "status", http.StatusBadRequest, "path", r.URL.Path)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	// Write HTML content.
-	w.Write([]byte("<p>🎉 Yes, <strong>htmx</strong> is ready to use! (<code>GET /api/hello-world</code>)</p>"))
-
-	// Send htmx response.
-	htmx.NewResponse().Write(w)
-
-	// Send log message.
-	slog.Info("request API", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
-}
-
 func editObject(mode render.Mode, db folio.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
@@ -97,29 +76,21 @@ func editObject(mode render.Mode, db folio.Storage) http.Handler {
 			return
 		}
 
-		if err != nil {
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-
-		resp := htmx.NewResponse()
-		if err := errors.Join(
-			resp.RenderTempl(r.Context(), w, blocks.ListElementEdit(&render.Context{
-				Mode: mode,
-			}, document.(*docs.Person))),
-		); err != nil {
+		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.ListElementEdit(&render.Context{
+			Mode: mode,
+		}, document.(*docs.Person))); err != nil {
 			slog.Error("render template", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
 
 		// Send log message.
-		slog.Info("render person", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
+		slog.Info("edit object", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
 	})
 
 }
 
-func saveObject(db folio.Storage) http.Handler {
+func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
@@ -129,7 +100,7 @@ func saveObject(db folio.Storage) http.Handler {
 		}
 
 		// Get the latest instance from the database
-		instance, err := db.Fetch(urn)
+		instance, err := fetchOrCreate(registry, db, urn)
 		if err != nil {
 			slog.Error("fetch", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -144,7 +115,7 @@ func saveObject(db folio.Storage) http.Handler {
 		}
 
 		// Save the instance back to the database
-		updated, err := folio.Update(db, instance, "sys")
+		updated, err := folio.Upsert(db, instance, "sys")
 		if err != nil {
 			slog.Error("update", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
@@ -161,6 +132,35 @@ func saveObject(db folio.Storage) http.Handler {
 
 		// Send log message.
 		slog.Info("render person", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
+	})
+}
+
+func makeObject(registry folio.Registry) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		rt, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		if err != nil {
+			http.Error(w, "invalid kind", http.StatusBadRequest)
+			return
+		}
+
+		// Create a new instance
+		instance, err := folio.NewByType(rt, "default")
+		if err != nil {
+			slog.Error("create", "error", err)
+			http.Error(w, "unable to create", http.StatusBadRequest)
+			return
+		}
+
+		if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.ListElementEdit(&render.Context{
+			Mode: render.ModeCreate,
+		}, instance.(*docs.Person))); err != nil {
+			slog.Error("render template", "error", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
+		// Send log message.
+		slog.Info("create object", "method", r.Method, "status", http.StatusOK, "path", r.URL.Path)
 	})
 }
 
@@ -225,4 +225,14 @@ func deleteObject(db folio.Storage) http.Handler {
 			return
 		}
 	})
+}
+
+// fetchOrCreate fetches or creates an object from the database.
+func fetchOrCreate(registry folio.Registry, db folio.Storage, urn folio.URN) (folio.Object, error) {
+	instance, err := db.Fetch(urn)
+	if err != nil {
+		instance, err = folio.NewByURN(registry, urn)
+	}
+
+	return instance, err
 }

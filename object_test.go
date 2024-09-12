@@ -23,7 +23,7 @@ func BenchmarkResource(b *testing.B) {
 func TestNewWith(t *testing.T) {
 
 	// Create a new resource using generic function
-	r, err := NewWith("my_project", func(r *Kind1) error {
+	r, err := New("my_project", func(r *Kind1) error {
 		r.Name = "my_name"
 		return nil
 	})
