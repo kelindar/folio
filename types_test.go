@@ -14,13 +14,13 @@ func TestEmbed(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a new deployment with the associated app
-	dep, err := NewWith[*Kind2]("my_project", func(r *Kind2) error {
+	dep, err := New("my_project", func(r *Kind2) error {
 		r.App = app.URN()
 		return nil
 	})
 	assert.NoError(t, err)
 
-	req, err := NewWith[*Kind4]("my_project", func(r *Kind4) error {
+	req, err := New("my_project", func(r *Kind4) error {
 		r.After = Embed{Value: dep}
 		return nil
 	})
