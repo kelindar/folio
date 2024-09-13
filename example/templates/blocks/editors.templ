@@ -1,6 +1,10 @@
 package blocks
 
-import "github.com/kelindar/folio/example/render"
+import (
+	"fmt"
+	"github.com/kelindar/folio/example/render"
+	"time"
+)
 
 type TextProps struct {
 	Mode        render.Mode
@@ -23,4 +27,8 @@ templ TextEdit(props TextProps) {
 				value={ props.Value }
 			/>
 	}
+}
+
+templ timedAt(user string, at time.Time) {
+	<p>{ fmt.Sprintf("%v, %v", titleCase(user), since(at)) }</p>
 }

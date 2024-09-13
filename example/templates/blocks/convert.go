@@ -3,12 +3,30 @@ package blocks
 import (
 	"fmt"
 	"hash/crc32"
-	"strconv"
 	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
 )
+
+const (
+	levelHidden    = "-"
+	levelReadOnly  = "ro"
+	levelReadWrite = "rw"
+)
+
+func levelOf(tag string) string {
+	switch strings.ToLower(tag) {
+	case levelReadOnly: // read-only
+		return levelReadOnly
+	case levelReadWrite: // read-write
+		return levelReadWrite
+	case levelHidden: // hidden
+		fallthrough
+	default:
+		return levelHidden
+	}
+}
 
 var palette = []string{
 	"slate", "gray", "zinc", "neutral", "stone", "orange",
@@ -30,17 +48,8 @@ func colorOf(v string) string {
 	return palette[crc32.ChecksumIEEE([]byte(v))%uint32(len(palette))]
 }
 
-func updatedOf(updatedAt string) string {
-	i, err := strconv.ParseInt(updatedAt, 10, 64)
-	if err != nil {
-		return ""
-	}
-
-	// Calculate the duration
-	t := time.Unix(0, i)
+func since(t time.Time) string {
 	d := time.Now().Sub(t)
-
-	// Return the duration in a human readable format
 	switch {
 	case d.Minutes() < 1:
 		return "just now"

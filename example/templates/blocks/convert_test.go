@@ -1,7 +1,6 @@
 package blocks
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
@@ -44,13 +43,13 @@ func TestColorOf(t *testing.T) {
 }
 
 func TestUpdatedOf(t *testing.T) {
-	assert.Equal(t, "Oct 9, 2021", updatedOf("1633728000000000000"))
-	assert.Equal(t, "just now", updatedOf(fmt.Sprintf("%d", time.Now().UnixNano())))
+	assert.Equal(t, "Oct 9, 2021", since(time.Unix(0, 1633728000000000000)))
+	assert.Equal(t, "just now", since(time.Now()))
 }
 
 func TestTitleCase(t *testing.T) {
 	tests := map[string]string{
-		/*"":                 "",
+		"":                 "",
 		"lowercase":        "Lowercase",
 		"Class":            "Class",
 		"MyClass":          "My Class",
@@ -67,8 +66,8 @@ func TestTitleCase(t *testing.T) {
 		"BöseÜberraschung": "Böse Überraschung",
 		"Job title":        "Job Title",
 		"jobTitle":         "Job Title",
-		"job_title":        "Job Title",*/
-		"Two  Spaces": "Two Spaces",
+		"job_title":        "Job Title",
+		"Two  Spaces":      "Two Spaces",
 	}
 
 	for input, expected := range tests {

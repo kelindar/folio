@@ -1,11 +1,7 @@
 package blocks
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/example/render"
 )
 
@@ -27,47 +23,19 @@ templ DrawerHeader(rctx *render.Context, v folio.Object) {
 	</div>
 }
 
-templ ListElementEdit(rctx *render.Context, value *docs.Person) {
+templ ListElementEdit(rctx *render.Context, value folio.Object) {
 	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" hx-ext="json-enc">
 		@DrawerHeader(rctx, value)
 		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">
+				@DrawerSection("Details", "This section contains the basic details of the object.")
 				for _, edit := range Object(rctx.Mode, value) {
 					@edit
 				}
-				@DrawerSection("Details", "This section contains the basic details of the object.")
-				@WithLabel("Full name", TextEdit(TextProps{
-					Mode:  rctx.Mode,
-					Name:  "name",
-					Value: value.Name,
-				}))
-				@WithLabel("Company", TextEdit(TextProps{
-					Mode:  rctx.Mode,
-					Name:  "company",
-					Value: value.Company,
-				}))
-				@WithLabel("Job Title", TextEdit(TextProps{
-					Mode:  rctx.Mode,
-					Name:  "jobTitle",
-					Value: value.JobTitle,
-				}))
-				@WithLabel("Phone Number", TextEdit(TextProps{
-					Mode:  rctx.Mode,
-					Name:  "phone",
-					Value: value.Phone,
-				}))
 				if rctx.Mode != render.ModeCreate {
 					@DrawerSection("Governance", "This section contains information about the governance of the object.")
-					@WithLabel("Created", TextEdit(TextProps{
-						Mode:  render.ModeView,
-						Name:  "created",
-						Value: fmt.Sprintf("by %v, at %v", value.CreatedBy, time.Unix(0, value.CreatedAt).String()),
-					}))
-					@WithLabel("Modified", TextEdit(TextProps{
-						Mode:  render.ModeView,
-						Name:  "updated",
-						Value: fmt.Sprintf("by %v, at %v", value.UpdatedBy, time.Unix(0, value.UpdatedAt).String()),
-					}))
+					@WithLabel("Created", timedAt(value.Created()))
+					@WithLabel("Updated", timedAt(value.Updated()))
 				}
 			</dl>
 		</div>

@@ -9,11 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"fmt"
-	"time"
-
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/example/render"
 )
 
@@ -45,7 +41,7 @@ func DrawerHeader(rctx *render.Context, v folio.Object) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(render.StringOf(v, "Title"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 17, Col: 34}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 13, Col: 34}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -58,7 +54,7 @@ func DrawerHeader(rctx *render.Context, v folio.Object) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(render.StringOf(v, "Subtitle"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 20, Col: 37}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 16, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -80,7 +76,7 @@ func DrawerHeader(rctx *render.Context, v folio.Object) templ.Component {
 	})
 }
 
-func ListElementEdit(rctx *render.Context, value *docs.Person) templ.Component {
+func ListElementEdit(rctx *render.Context, value folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -108,7 +104,7 @@ func ListElementEdit(rctx *render.Context, value *docs.Person) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs("/obj/" + value.URN().String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 31, Col: 46}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 27, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -126,47 +122,15 @@ func ListElementEdit(rctx *render.Context, value *docs.Person) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = DrawerSection("Details", "This section contains the basic details of the object.").Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		for _, edit := range Object(rctx.Mode, value) {
 			templ_7745c5c3_Err = edit.Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-		}
-		templ_7745c5c3_Err = DrawerSection("Details", "This section contains the basic details of the object.").Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = WithLabel("Full name", TextEdit(TextProps{
-			Mode:  rctx.Mode,
-			Name:  "name",
-			Value: value.Name,
-		})).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = WithLabel("Company", TextEdit(TextProps{
-			Mode:  rctx.Mode,
-			Name:  "company",
-			Value: value.Company,
-		})).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = WithLabel("Job Title", TextEdit(TextProps{
-			Mode:  rctx.Mode,
-			Name:  "jobTitle",
-			Value: value.JobTitle,
-		})).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		templ_7745c5c3_Err = WithLabel("Phone Number", TextEdit(TextProps{
-			Mode:  rctx.Mode,
-			Name:  "phone",
-			Value: value.Phone,
-		})).Render(ctx, templ_7745c5c3_Buffer)
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
 		}
 		if rctx.Mode != render.ModeCreate {
 			templ_7745c5c3_Err = DrawerSection("Governance", "This section contains information about the governance of the object.").Render(ctx, templ_7745c5c3_Buffer)
@@ -177,11 +141,7 @@ func ListElementEdit(rctx *render.Context, value *docs.Person) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = WithLabel("Created", TextEdit(TextProps{
-				Mode:  render.ModeView,
-				Name:  "created",
-				Value: fmt.Sprintf("by %v, at %v", value.CreatedBy, time.Unix(0, value.CreatedAt).String()),
-			})).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = WithLabel("Created", timedAt(value.Created())).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -189,11 +149,7 @@ func ListElementEdit(rctx *render.Context, value *docs.Person) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = WithLabel("Modified", TextEdit(TextProps{
-				Mode:  render.ModeView,
-				Name:  "updated",
-				Value: fmt.Sprintf("by %v, at %v", value.UpdatedBy, time.Unix(0, value.UpdatedAt).String()),
-			})).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = WithLabel("Updated", timedAt(value.Updated())).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -249,7 +205,7 @@ func DrawerActions(rctx *render.Context, value folio.Object) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs("/view/" + value.URN().String())
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 91, Col: 46}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 59, Col: 46}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -301,7 +257,7 @@ func drawerEditButton(urn folio.URN) templ.Component {
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("/edit/" + urn.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 118, Col: 34}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 86, Col: 34}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -343,7 +299,7 @@ func drawerExtraActions(urn folio.URN) templ.Component {
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs("/obj/" + urn.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 128, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 96, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {
@@ -356,7 +312,7 @@ func drawerExtraActions(urn folio.URN) templ.Component {
 		var templ_7745c5c3_Var12 string
 		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(urn.Kind.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 130, Col: 28}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 98, Col: 28}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -412,7 +368,7 @@ func ButtonDropdown(props ButtonDropdownProps) templ.Component {
 		var templ_7745c5c3_Var14 string
 		templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(props.ID + "-btn-dropdown-toggle")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 144, Col: 107}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 112, Col: 107}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 		if templ_7745c5c3_Err != nil {
@@ -425,7 +381,7 @@ func ButtonDropdown(props ButtonDropdownProps) templ.Component {
 		var templ_7745c5c3_Var15 string
 		templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(props.ID + "-btn-dropdown-toggle")
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 146, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 114, Col: 48}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 		if templ_7745c5c3_Err != nil {
@@ -475,7 +431,7 @@ func Divider(text string) templ.Component {
 		var templ_7745c5c3_Var17 string
 		templ_7745c5c3_Var17, templ_7745c5c3_Err = templ.JoinStringErrs(text)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 164, Col: 62}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 132, Col: 62}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var17))
 		if templ_7745c5c3_Err != nil {
@@ -517,7 +473,7 @@ func DrawerSection(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var19 string
 		templ_7745c5c3_Var19, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 175, Col: 10}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 143, Col: 10}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var19))
 		if templ_7745c5c3_Err != nil {
@@ -530,7 +486,7 @@ func DrawerSection(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var20 string
 		templ_7745c5c3_Var20, templ_7745c5c3_Err = templ.JoinStringErrs(subtitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 178, Col: 13}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 146, Col: 13}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var20))
 		if templ_7745c5c3_Err != nil {
@@ -572,7 +528,7 @@ func WithLabel(label string, editor templ.Component) templ.Component {
 		var templ_7745c5c3_Var22 string
 		templ_7745c5c3_Var22, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 186, Col: 57}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 154, Col: 57}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var22))
 		if templ_7745c5c3_Err != nil {
@@ -622,7 +578,7 @@ func Alert(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var24 string
 		templ_7745c5c3_Var24, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 203, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 171, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var24))
 		if templ_7745c5c3_Err != nil {
@@ -635,7 +591,7 @@ func Alert(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var25 string
 		templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(subtitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 205, Col: 18}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 173, Col: 18}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 		if templ_7745c5c3_Err != nil {
@@ -677,7 +633,7 @@ func Notification(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var27 string
 		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 224, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 192, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 		if templ_7745c5c3_Err != nil {
@@ -690,7 +646,7 @@ func Notification(title, subtitle string) templ.Component {
 		var templ_7745c5c3_Var28 string
 		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(subtitle)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 225, Col: 55}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `templates/blocks/drawer.templ`, Line: 193, Col: 55}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 		if templ_7745c5c3_Err != nil {

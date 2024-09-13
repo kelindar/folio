@@ -22,15 +22,19 @@ func Object(mode render.Mode, obj folio.Object) (out []templ.Component) {
 }
 
 func editorOf(mode render.Mode, field reflect.StructField, rv reflect.Value) (string, templ.Component) {
+	switch levelOf(field.Tag.Get("form")) {
+	case levelHidden:
+		return "", nil
+	case levelReadOnly:
+		mode = render.ModeView
+	}
+
 	name := field.Name
 	if n := field.Tag.Get("json"); n != "" && n != "-" {
 		name = strings.Split(n, ",")[0]
 	}
 
 	label := titleCase(name)
-
-	//if f := field.Tag.Get("form"); f != "" {
-
 	switch rv.Kind() {
 	case reflect.String:
 		return label, TextEdit(TextProps{
@@ -41,7 +45,7 @@ func editorOf(mode render.Mode, field reflect.StructField, rv reflect.Value) (st
 		})
 	}
 
-	println("unsupported type", rv.Kind())
+	println("unsupported type", rv.Kind().String())
 
 	return "", nil
 }
