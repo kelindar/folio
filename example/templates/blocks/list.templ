@@ -3,6 +3,7 @@ package blocks
 import (
 	"fmt"
 	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/convert"
 	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/render"
 	"iter"
@@ -237,7 +238,7 @@ templ ListElementRow(v folio.Object) {
 }
 
 templ State(value string) {
-	<span class={ "bg-" + colorOf(value) + "-100 text-" + colorOf(value) + "-800 text-sm font-medium me-2 px-2 py-0.5 rounded" }>{ value }</span>
+	<span class={ "bg-" + convert.Color(value) + "-100 text-" + convert.Color(value) + "-800 text-sm font-medium me-2 px-2 py-0.5 rounded" }>{ value }</span>
 }
 
 templ CreateButton(kind folio.Kind) {

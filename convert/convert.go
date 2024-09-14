@@ -2,11 +2,14 @@ package convert
 
 import (
 	"fmt"
+	"hash/crc32"
 	"strings"
 	"time"
 	"unicode"
 	"unicode/utf8"
 )
+
+// ---------------------------------- Title Case ----------------------------------
 
 func TitleCase(input string) string {
 	words := splitCase(input)
@@ -80,6 +83,8 @@ func splitCase(src string) (entries []string) {
 	return
 }
 
+// ---------------------------------- Date/Time ----------------------------------
+
 // Since returns a human readable time format
 func Since(t time.Time) string {
 	d := time.Now().Sub(t)
@@ -95,4 +100,26 @@ func Since(t time.Time) string {
 	default:
 		return t.Format("Jan 2, 2006")
 	}
+}
+
+// ---------------------------------- Color ----------------------------------
+
+var palette = []string{
+	"slate", "gray", "zinc", "neutral", "stone", "orange",
+	"yellow", "lime", "green", "teal", "cyan", "sky", "blue",
+	"indigo", "violet", "purple", "fuchsia", "pink", "rose",
+}
+
+// Color returns a color for a hashed string (only tailwind colors)
+func Color(v string) string {
+	switch strings.ToLower(v) {
+	case "active", "enabled", "healthy", "success", "up", "completed":
+		return "emerald"
+	case "inactive", "disabled", "unhealthy", "failure", "down", "error":
+		return "red"
+	case "warning", "warn", "pending":
+		return "amber"
+	}
+
+	return palette[crc32.ChecksumIEEE([]byte(v))%uint32(len(palette))]
 }
