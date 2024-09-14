@@ -26,7 +26,7 @@ templ DrawerHeader(rctx *render.Context, v folio.Object) {
 }
 
 templ ListElementEdit(rctx *render.Context, value folio.Object) {
-	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" hx-ext="json-enc">
+	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" hx-ext="obj-enc">
 		@DrawerHeader(rctx, value)
 		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">

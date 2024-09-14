@@ -40,7 +40,7 @@ func editorOf(mode render.Mode, field reflect.StructField, rv reflect.Value) (st
 	props := TextProps{
 		Mode:        mode,
 		Name:        name,
-		Value:       rv.String(),
+		Value:       rv,
 		Placeholder: fmt.Sprintf("Enter %s...", label),
 	}
 

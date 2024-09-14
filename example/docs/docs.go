@@ -1,7 +1,6 @@
 package docs
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -10,9 +9,9 @@ import (
 
 type Person struct {
 	object.Meta `kind:"person" json:",inline"`
-	Name        string      `json:"name" form:"rw" validate:"required"`
-	Age         json.Number `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	//Age      int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Name        string `json:"name" form:"rw" validate:"required"`
+	//Age         json.Number `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Age      int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
 	Address  string `json:"address" form:"rw"`
 	Phone    string `json:"phone" form:"rw"`
 	Company  string `json:"company" form:"rw"`
