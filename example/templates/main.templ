@@ -4,7 +4,7 @@ import "github.com/kelindar/folio/example/templates/pages"
 
 templ Layout(title string, metaTags, bodyContent templ.Component) {
 	<!DOCTYPE html>
-	<html lang="en" data-theme="emerald">
+	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -26,9 +26,8 @@ templ Layout(title string, metaTags, bodyContent templ.Component) {
 			<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
 			<link rel="stylesheet" href="/assets/style.css" type="text/css"/>
 			<script src="https://cdn.tailwindcss.com"></script>
-			<script src="https://unpkg.com/htmx.org@1.9.12" crossorigin="anonymous"></script>
-			<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/json-enc.js" crossorigin="anonymous"></script>
-			<meta name="htmx-config" content='{"useTemplateFragments":"true"}'/>
+			<script src="https://unpkg.com/htmx.org@2.0.2" crossorigin="anonymous"></script>
+			<script src="https://unpkg.com/htmx.org@2.0.2/dist/ext/json-enc.js" crossorigin="anonymous"></script>
 		</head>
 		<body class="bg-gray-100 dark:bg-gray-900" onload={ pages.BodyScripts() }>
 			@bodyContent
