@@ -6,6 +6,10 @@ import (
 	"net/http"
 
 	"github.com/angelofallars/htmx-go"
+	"github.com/go-playground/locales/en"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/example/render"
@@ -155,6 +159,12 @@ func search(db folio.Storage) http.Handler {
 }
 
 func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
+	en := en.New()
+	uni := ut.New(en, en)
+	trans, _ := uni.GetTranslator("en")
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	en_translations.RegisterDefaultTranslations(validate, trans)
+
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
@@ -175,6 +185,19 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(instance); err != nil {
 			http.Error(w, "Invalid Data", http.StatusBadRequest)
+			return
+		}
+
+		if err := validate.Struct(instance); err != nil {
+			if err := htmx.NewResponse().
+				Reswap(htmx.SwapNone).
+				RenderTempl(
+					r.Context(), w,
+					blocks.ValidationErrors(instance, trans, err.(validator.ValidationErrors)),
+				); err != nil {
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+				return
+			}
 			return
 		}
 

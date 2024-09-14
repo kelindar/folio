@@ -181,7 +181,7 @@ templ ListContent(rctx *render.Context, elements iter.Seq[*docs.Person]) {
 	</ul>
 }
 
-templ ListElementUpdate(rctx *render.Context, v *docs.Person) {
+templ ListElementUpdate(rctx *render.Context, v folio.Object) {
 	<li id={ v.URN().ID } hx-swap-oob="true">
 		@ListElementRow(v)
 	</li>

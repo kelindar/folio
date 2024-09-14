@@ -1,6 +1,8 @@
 package blocks
 
 import (
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/example/render"
 )
@@ -155,8 +157,20 @@ templ WithLabel(label string, editor templ.Component) {
 		</dt>
 		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
 			@editor
+			<p id={ label + "-error" }></p>
 		</dd>
 	</div>
+}
+
+templ ValidationErrors(v folio.Object, translator ut.Translator, errors validator.ValidationErrors) {
+	for _, err := range errors {
+		<p id={ err.StructField() + "-error" } hx-swap-oob="true" class="mt-2 text-xs text-red-600">
+			<svg class="h-4 w-4 mb-0.5 text-red-500 inline" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+			</svg>
+			{ err.Translate(translator) }
+		</p>
+	}
 }
 
 templ Alert(title, subtitle string) {

@@ -9,13 +9,14 @@ import (
 
 type Person struct {
 	object.Meta `kind:"person" json:",inline"`
-	Name        string `json:"name" form:"rw"`
-	Age         int    `json:"age" form:"rw"`
+	Name        string `json:"name" form:"rw" validate:"required"`
+	Age         int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
 	Address     string `json:"address" form:"rw"`
 	Phone       string `json:"phone" form:"rw"`
 	Company     string `json:"company" form:"rw"`
 	JobTitle    string `json:"jobTitle" form:"rw"`
 	Country     string `json:"country" form:"rw"`
+	Gender      string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
 }
 
 func NewPerson() *Person {
