@@ -31,7 +31,7 @@ func WithLabel(label string, editor templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"px-4 py-6 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0\"><dt class=\"leading-6\"><p class=\"text-sm text-gray-900 font-semibold\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"px-4 py-4 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0\"><dt class=\"leading-6\"><p class=\"text-sm text-gray-900 font-semibold\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

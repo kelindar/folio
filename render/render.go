@@ -29,23 +29,13 @@ type Context struct {
 	URN  folio.URN
 }
 
-const (
-	levelHidden    = "-"
-	levelReadOnly  = "ro"
-	levelReadWrite = "rw"
-)
-
-func levelOf(tag string) string {
-	switch strings.ToLower(tag) {
-	case levelReadOnly: // read-only
-		return levelReadOnly
-	case levelReadWrite: // read-write
-		return levelReadWrite
-	case levelHidden: // hidden
-		fallthrough
-	default:
-		return levelHidden
-	}
+// Props represents the properties of the editor use to render the field.
+type Props struct {
+	Mode  Mode          // Mode of the editor
+	Name  string        // Name of the field (or the JSON tag)
+	Label string        // Label of the field, Title Case
+	Desc  string        // Description of the field, used for placeholder & tooltip
+	Value reflect.Value // Value of the field
 }
 
 // ---------------------------------- Inspect ----------------------------------
@@ -101,6 +91,25 @@ func ListOf(obj any, property string) []string {
 
 // ---------------------------------- Object Rendering ----------------------------------
 
+const (
+	levelHidden    = "-"
+	levelReadOnly  = "ro"
+	levelReadWrite = "rw"
+)
+
+func levelOf(tag string) string {
+	switch strings.ToLower(tag) {
+	case levelReadOnly: // read-only
+		return levelReadOnly
+	case levelReadWrite: // read-write
+		return levelReadWrite
+	case levelHidden: // hidden
+		fallthrough
+	default:
+		return levelHidden
+	}
+}
+
 // Object renders the object into a list of components for each field.
 func Object(mode Mode, obj folio.Object) (out []templ.Component) {
 	rv := reflect.Indirect(reflect.ValueOf(obj))
@@ -111,13 +120,6 @@ func Object(mode Mode, obj folio.Object) (out []templ.Component) {
 	}
 
 	return out
-}
-
-type Props struct {
-	Mode  Mode
-	Name  string
-	Desc  string
-	Value reflect.Value
 }
 
 func editorOf(mode Mode, field reflect.StructField, rv reflect.Value) (string, templ.Component) {
