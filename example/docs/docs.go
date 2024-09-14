@@ -17,7 +17,7 @@ type Person struct {
 	JobTitle    string `json:"jobTitle" form:"rw"`
 	Country     string `json:"country" form:"rw"`
 	Gender      string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
-	IsEmployed  bool   `json:"isEmployed" form:"rw"`
+	IsEmployed  bool   `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
 }
 
 func NewPerson() *Person {

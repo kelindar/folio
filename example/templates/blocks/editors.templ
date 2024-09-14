@@ -8,10 +8,10 @@ import (
 )
 
 type TextProps struct {
-	Mode        render.Mode
-	Name        string
-	Placeholder string `default:"Please enter a value..."`
-	Value       reflect.Value
+	Mode  render.Mode
+	Name  string
+	Desc  string
+	Value reflect.Value
 }
 
 templ TextEdit(props TextProps) {
@@ -24,7 +24,7 @@ templ TextEdit(props TextProps) {
 				id={ props.Name }
 				name={ props.Name }
 				class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-				placeholder={ props.Placeholder }
+				placeholder={ props.Desc }
 				value={ props.Value.String() }
 			/>
 	}
@@ -40,7 +40,7 @@ templ NumberEdit(props TextProps) {
 				id={ props.Name }
 				name={ props.Name }
 				class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-				placeholder={ props.Placeholder }
+				placeholder={ props.Desc }
 				value={ fmt.Sprintf("%v", props.Value.Interface()) }
 			/>
 	}
@@ -49,17 +49,38 @@ templ NumberEdit(props TextProps) {
 templ BoolEdit(props TextProps) {
 	switch props.Mode {
 		case render.ModeView :
-			<p id={ props.Name }>{ fmt.Sprintf("%v", props.Value.Bool()) }</p>
+			<div class="relative flex items-start">
+				<div class="flex h-6 items-center">
+					if props.Value.Bool() {
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+							<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
+						</svg>
+					} else {
+						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+						</svg>
+					}
+				</div>
+			</div>
 		case render.ModeEdit, render.ModeCreate:
-			<input
-				type="checkbox"
-				id={ props.Name }
-				name={ props.Name }
-				value={ fmt.Sprintf("%v", props.Value.Bool()) }
-				if props.Value.Bool() {
-					checked
-				}
-			/>
+			<div class="relative flex items-start">
+				<div class="flex h-6 items-center">
+					<input
+						id={ props.Name }
+						name={ props.Name }
+						aria-describedby="offers-description"
+						type="checkbox"
+						class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+						value={ fmt.Sprintf("%v", props.Value.Bool()) }
+						if props.Value.Bool() {
+							checked
+						}
+					/>
+				</div>
+				<div class="ml-3 text-sm leading-6">
+					<label for={ props.Name } class="text-gray-500">{ props.Desc }</label>
+				</div>
+			</div>
 	}
 }
 

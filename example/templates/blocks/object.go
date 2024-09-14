@@ -31,17 +31,24 @@ func editorOf(mode render.Mode, field reflect.StructField, rv reflect.Value) (st
 		mode = render.ModeView
 	}
 
+	// Get the name from the tag or use the field name
 	name := field.Name
 	if n := field.Tag.Get("json"); n != "" && n != "-" {
 		name = strings.Split(n, ",")[0]
 	}
 
+	// Get the description from the tag or create a default one
+	desc := fmt.Sprintf("Enter %s...", titleCase(name))
+	if d := field.Tag.Get("desc"); d != "" {
+		desc = d
+	}
+
 	label := titleCase(name)
 	props := TextProps{
-		Mode:        mode,
-		Name:        name,
-		Value:       rv,
-		Placeholder: fmt.Sprintf("Enter %s...", label),
+		Mode:  mode,
+		Name:  name,
+		Value: rv,
+		Desc:  desc,
 	}
 
 	switch rv.Type() {
