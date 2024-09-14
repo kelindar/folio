@@ -7,7 +7,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/a-h/templ"
+	"github.com/angelofallars/htmx-go"
 	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/errors"
 	"github.com/kelindar/folio/example/render"
 )
 
@@ -62,5 +65,50 @@ func serveStatic(fs http.FileSystem) http.Handler {
 
 		// File is found, serve it using the standard http.FileServer.
 		http.FileServer(fs).ServeHTTP(w, r)
+	})
+}
+
+type Response struct {
+	hx htmx.Response
+	r  *http.Request
+	w  http.ResponseWriter
+}
+
+// Render renders the given template
+func (r *Response) Render(template templ.Component) error {
+	if err := r.hx.RenderTempl(r.r.Context(), r.w, template); err != nil {
+		return errors.Internal("unable to render template, %w", err)
+	}
+	return nil
+}
+
+// RenderWith renders the given template with custom htmx response
+func (r *Response) RenderWith(template templ.Component, fn func(htmx.Response) htmx.Response) error {
+	if err := fn(r.hx).RenderTempl(r.r.Context(), r.w, template); err != nil {
+		return errors.Internal("unable to render template, %w", err)
+	}
+	return nil
+}
+
+func handle(fn func(r *http.Request, w *Response) error) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hx := &Response{
+			hx: htmx.NewResponse(),
+			r:  r,
+			w:  w,
+		}
+
+		if err := fn(r, hx); err != nil {
+			if httpErr := err.(interface {
+				HTTP() int
+			}); httpErr != nil {
+				http.Error(w, err.Error(), httpErr.HTTP())
+				return
+			}
+
+			slog.Error("error", "error", err)
+			http.Error(w, fmt.Sprintf("Internal server error has occured, due to %v", err),
+				http.StatusInternalServerError)
+		}
 	})
 }
