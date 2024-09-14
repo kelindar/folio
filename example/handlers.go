@@ -168,67 +168,50 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	en_translations.RegisterDefaultTranslations(validate, trans)
 
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return handle(func(r *http.Request, w *Response) error {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
-			slog.Error("parse urn", "error", err)
-			http.Error(w, "Invalid ID", http.StatusBadRequest)
-			return
+			return errors.BadRequest("Unable to decode URN, %v", err)
 		}
 
 		// Get the latest instance from the database
 		instance, err := fetchOrCreate(registry, db, urn)
 		if err != nil {
-			slog.Error("fetch", "error", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
+			return errors.Internal("Unable to fetch or create object, %v", err)
 		}
 
 		// Hydrate the instance with the new data we've received
 		defer r.Body.Close()
 		if err := json.NewDecoder(r.Body).Decode(instance); err != nil {
-			http.Error(w, "Invalid Data", http.StatusBadRequest)
-			return
+			return errors.BadRequest("Unable to decode request, %v", err)
 		}
 
+		// Validate the input data, and if it's invalid, return the validation errors. We also
+		// need to swap the response strategy to none, so that the client doesn't replace the
+		// entire form with the validation errors.
 		if err := validate.Struct(instance); err != nil {
-			if err := htmx.NewResponse().
-				Reswap(htmx.SwapNone).
-				RenderTempl(
-					r.Context(), w,
-					blocks.ValidationErrors(instance, trans, err.(validator.ValidationErrors)),
-				); err != nil {
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
-			return
+			return w.RenderWith(
+				blocks.ValidationErrors(instance, trans, err.(validator.ValidationErrors)),
+				func(r htmx.Response) htmx.Response {
+					return r.Reswap(htmx.SwapNone)
+				})
 		}
 
 		// Save the instance back to the database
 		updated, err := folio.Upsert(db, instance, "sys")
 		if err != nil {
-			slog.Error("update", "error", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
+			return errors.Internal("Unable to save %T, %v", instance, err)
 		}
 
 		switch {
 		case isCreated(updated):
-			if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.ListElementCreate(&render.Context{
+			return w.Render(blocks.ListElementCreate(&render.Context{
 				Mode: render.ModeView,
-			}, updated.(*docs.Person))); err != nil {
-				slog.Error("render template", "error", err)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
+			}, updated.(*docs.Person)))
 		default:
-			if err := htmx.NewResponse().RenderTempl(r.Context(), w, blocks.ListElementUpdate(&render.Context{
+			return w.Render(blocks.ListElementUpdate(&render.Context{
 				Mode: render.ModeView,
-			}, updated.(*docs.Person))); err != nil {
-				slog.Error("render template", "error", err)
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-				return
-			}
+			}, updated.(*docs.Person)))
 		}
 	})
 }
@@ -274,22 +257,36 @@ func deleteObject(db folio.Storage) http.Handler {
 }
 
 type Response struct {
-	htmx.Response
-	r *http.Request
-	w http.ResponseWriter
+	hx htmx.Response
+	r  *http.Request
+	w  http.ResponseWriter
 }
 
-// RenderTempl renders the given template
-func (r *Response) RenderTempl(template templ.Component) error {
-	if err := r.Response.RenderTempl(r.r.Context(), r.w, template); err != nil {
+// Render renders the given template
+func (r *Response) Render(template templ.Component) error {
+	if err := r.hx.RenderTempl(r.r.Context(), r.w, template); err != nil {
 		return errors.Internal("unable to render template, %w", err)
 	}
 	return nil
 }
 
-func handle(fn func(r *http.Request, w Response) error) http.Handler {
+// RenderWith renders the given template with custom htmx response
+func (r *Response) RenderWith(template templ.Component, fn func(htmx.Response) htmx.Response) error {
+	if err := fn(r.hx).RenderTempl(r.r.Context(), r.w, template); err != nil {
+		return errors.Internal("unable to render template, %w", err)
+	}
+	return nil
+}
+
+func handle(fn func(r *http.Request, w *Response) error) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if err := fn(r, Response{r: r, w: w}); err != nil {
+		hx := &Response{
+			hx: htmx.NewResponse(),
+			r:  r,
+			w:  w,
+		}
+
+		if err := fn(r, hx); err != nil {
 			if httpErr := err.(interface {
 				HTTP() int
 			}); httpErr != nil {
