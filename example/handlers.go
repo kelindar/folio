@@ -2,15 +2,18 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 
+	"github.com/a-h/templ"
 	"github.com/angelofallars/htmx-go"
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/errors"
 	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/example/render"
 	"github.com/kelindar/folio/example/templates"
@@ -266,6 +269,37 @@ func deleteObject(db folio.Storage) http.Handler {
 			slog.Error("render template", "error", err)
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
+		}
+	})
+}
+
+type Response struct {
+	htmx.Response
+	r *http.Request
+	w http.ResponseWriter
+}
+
+// RenderTempl renders the given template
+func (r *Response) RenderTempl(template templ.Component) error {
+	if err := r.Response.RenderTempl(r.r.Context(), r.w, template); err != nil {
+		return errors.Internal("unable to render template, %w", err)
+	}
+	return nil
+}
+
+func handle(fn func(r *http.Request, w Response) error) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if err := fn(r, Response{r: r, w: w}); err != nil {
+			if httpErr := err.(interface {
+				HTTP() int
+			}); httpErr != nil {
+				http.Error(w, err.Error(), httpErr.HTTP())
+				return
+			}
+
+			slog.Error("error", "error", err)
+			http.Error(w, fmt.Sprintf("Internal server error has occured, due to %v", err),
+				http.StatusInternalServerError)
 		}
 	})
 }
