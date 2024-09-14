@@ -29,6 +29,23 @@ templ TextEdit(props TextProps) {
 	}
 }
 
+templ NumberEdit(props TextProps) {
+	switch props.Mode {
+		case render.ModeView :
+			<p id={ props.Name }>{ props.Value }</p>
+		case render.ModeEdit, render.ModeCreate:
+			<input
+				type="number"
+				id={ props.Name }
+				name={ props.Name }
+				data-type="number"
+				class="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+				placeholder={ props.Placeholder }
+				value={ props.Value }
+			/>
+	}
+}
+
 templ timedAt(user string, at time.Time) {
 	<p>{ fmt.Sprintf("%v, %v", titleCase(user), since(at)) }</p>
 }

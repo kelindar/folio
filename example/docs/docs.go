@@ -1,6 +1,7 @@
 package docs
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/brianvoe/gofakeit/v7"
@@ -9,21 +10,22 @@ import (
 
 type Person struct {
 	object.Meta `kind:"person" json:",inline"`
-	Name        string `json:"name" form:"rw" validate:"required"`
-	Age         int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Address     string `json:"address" form:"rw"`
-	Phone       string `json:"phone" form:"rw"`
-	Company     string `json:"company" form:"rw"`
-	JobTitle    string `json:"jobTitle" form:"rw"`
-	Country     string `json:"country" form:"rw"`
-	Gender      string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	Name        string      `json:"name" form:"rw" validate:"required"`
+	Age         json.Number `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	//Age      int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Address  string `json:"address" form:"rw"`
+	Phone    string `json:"phone" form:"rw"`
+	Company  string `json:"company" form:"rw"`
+	JobTitle string `json:"jobTitle" form:"rw"`
+	Country  string `json:"country" form:"rw"`
+	Gender   string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
 }
 
 func NewPerson() *Person {
 	p, err := object.New("default", func(p *Person) error {
 		p.Name = gofakeit.Name()
 		p.Address = gofakeit.Address().Address
-		p.Age = gofakeit.Number(18, 65)
+		//	p.Age = gofakeit.Number(18, 65)
 		p.Phone = gofakeit.Phone()
 		p.Company = gofakeit.Company()
 		p.JobTitle = gofakeit.JobTitle()
@@ -41,7 +43,7 @@ func (p *Person) Title() string {
 }
 
 func (p *Person) Subtitle() string {
-	return fmt.Sprintf("%d years old, working as %s at %s", p.Age, p.JobTitle, p.Company)
+	return fmt.Sprintf("%v years old, working as %s at %s", p.Age, p.JobTitle, p.Company)
 }
 
 func (p *Person) Badges() []string {

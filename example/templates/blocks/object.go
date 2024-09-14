@@ -1,7 +1,9 @@
 package blocks
 
 import (
+	"encoding/json"
 	"fmt"
+	"log/slog"
 	"reflect"
 	"strings"
 
@@ -35,17 +37,28 @@ func editorOf(mode render.Mode, field reflect.StructField, rv reflect.Value) (st
 	}
 
 	label := titleCase(name)
-	switch rv.Kind() {
-	case reflect.String:
-		return label, TextEdit(TextProps{
-			Mode:        mode,
-			Name:        name,
-			Value:       rv.String(),
-			Placeholder: fmt.Sprintf("Enter %s...", label),
-		})
+	props := TextProps{
+		Mode:        mode,
+		Name:        name,
+		Value:       rv.String(),
+		Placeholder: fmt.Sprintf("Enter %s...", label),
 	}
 
-	println("unsupported type", rv.Kind().String())
+	switch rv.Type() {
+	case reflect.TypeOf(json.Number("")):
+		return label, NumberEdit(props)
+	}
+
+	switch rv.Kind() {
+	case reflect.String:
+		return label, TextEdit(props)
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Float32, reflect.Float64:
+		return label, NumberEdit(props)
+	default:
+		slog.Warn("Unsupported editor type", "type", rv.Kind())
+	}
 
 	return "", nil
 }

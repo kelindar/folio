@@ -150,7 +150,9 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 
 		// Hydrate the instance with the new data we've received
 		defer r.Body.Close()
-		if err := json.NewDecoder(r.Body).Decode(instance); err != nil {
+		decoder := json.NewDecoder(r.Body)
+		decoder.UseNumber()
+		if err := decoder.Decode(instance); err != nil {
 			return errors.BadRequest("Unable to decode request, %v", err)
 		}
 
