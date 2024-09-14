@@ -11,7 +11,7 @@ import (
 	"github.com/angelofallars/htmx-go"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/errors"
-	"github.com/kelindar/folio/example/render"
+	"github.com/kelindar/folio/render"
 )
 
 //go:embed all:assets

@@ -10,8 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"github.com/kelindar/folio/example/docs"
-	"github.com/kelindar/folio/example/render"
 	"github.com/kelindar/folio/example/templates/blocks"
+	"github.com/kelindar/folio/render"
 	"iter"
 )
 

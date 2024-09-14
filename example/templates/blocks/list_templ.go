@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/example/docs"
-	"github.com/kelindar/folio/example/render"
+	"github.com/kelindar/folio/render"
 	"iter"
 )
 

@@ -1,24 +1,24 @@
-package blocks
+package render
 
-import (
-	"fmt"
-	"github.com/kelindar/folio/example/render"
-	"reflect"
-	"time"
-)
+import "fmt"
 
-type TextProps struct {
-	Mode  render.Mode
-	Name  string
-	Desc  string
-	Value reflect.Value
+templ WithLabel(label string, editor templ.Component) {
+	<div class="px-4 py-6 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
+		<dt class="leading-6">
+			<p class="text-sm text-gray-900 font-semibold">{ label }</p>
+		</dt>
+		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
+			@editor
+			<p id={ label + "-error" }></p>
+		</dd>
+	</div>
 }
 
-templ TextEdit(props TextProps) {
+templ TextEdit(props Props) {
 	switch props.Mode {
-		case render.ModeView :
+		case ModeView :
 			<p id={ props.Name }>{ props.Value.String() }</p>
-		case render.ModeEdit, render.ModeCreate:
+		case ModeEdit, ModeCreate:
 			<input
 				type="text"
 				id={ props.Name }
@@ -30,11 +30,11 @@ templ TextEdit(props TextProps) {
 	}
 }
 
-templ NumberEdit(props TextProps) {
+templ NumberEdit(props Props) {
 	switch props.Mode {
-		case render.ModeView :
+		case ModeView :
 			<p id={ props.Name }>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
-		case render.ModeEdit, render.ModeCreate:
+		case ModeEdit, ModeCreate:
 			<input
 				type="number"
 				id={ props.Name }
@@ -46,9 +46,9 @@ templ NumberEdit(props TextProps) {
 	}
 }
 
-templ BoolEdit(props TextProps) {
+templ BoolEdit(props Props) {
 	switch props.Mode {
-		case render.ModeView :
+		case ModeView :
 			<div class="relative flex items-start">
 				<div class="flex h-6 items-center">
 					if props.Value.Bool() {
@@ -62,7 +62,7 @@ templ BoolEdit(props TextProps) {
 					}
 				</div>
 			</div>
-		case render.ModeEdit, render.ModeCreate:
+		case ModeEdit, ModeCreate:
 			<div class="relative flex items-start">
 				<div class="flex h-6 items-center">
 					<input
@@ -82,8 +82,4 @@ templ BoolEdit(props TextProps) {
 				</div>
 			</div>
 	}
-}
-
-templ timedAt(user string, at time.Time) {
-	<p>{ fmt.Sprintf("%v, %v", titleCase(user), since(at)) }</p>
 }

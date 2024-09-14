@@ -12,10 +12,10 @@ import (
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/errors"
 	"github.com/kelindar/folio/example/docs"
-	"github.com/kelindar/folio/example/render"
 	"github.com/kelindar/folio/example/templates"
 	"github.com/kelindar/folio/example/templates/blocks"
 	"github.com/kelindar/folio/example/templates/pages"
+	"github.com/kelindar/folio/render"
 )
 
 // indexViewHandler handles a view for the index page.

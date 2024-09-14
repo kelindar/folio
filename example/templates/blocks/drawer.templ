@@ -1,10 +1,14 @@
 package blocks
 
 import (
+	"fmt"
+	"time"
+
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/example/render"
+	"github.com/kelindar/folio/convert"
+	"github.com/kelindar/folio/render"
 )
 
 templ DrawerHeader(rctx *render.Context, v folio.Object) {
@@ -31,13 +35,13 @@ templ ListElementEdit(rctx *render.Context, value folio.Object) {
 		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">
 				@DrawerSection("Details", "This section contains the basic details of the object.")
-				for _, edit := range Object(rctx.Mode, value) {
+				for _, edit := range render.Object(rctx.Mode, value) {
 					@edit
 				}
 				if rctx.Mode != render.ModeCreate {
 					@DrawerSection("Governance", "This section contains information about the governance of the object.")
-					@WithLabel("Created", timedAt(value.Created()))
-					@WithLabel("Updated", timedAt(value.Updated()))
+					@render.WithLabel("Created", timedAt(value.Created()))
+					@render.WithLabel("Updated", timedAt(value.Updated()))
 				}
 			</dl>
 		</div>
@@ -150,18 +154,6 @@ templ DrawerSection(title, subtitle string) {
 	</div>
 }
 
-templ WithLabel(label string, editor templ.Component) {
-	<div class="px-4 py-6 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
-		<dt class="leading-6">
-			<p class="text-sm text-gray-900 font-semibold">{ label }</p>
-		</dt>
-		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
-			@editor
-			<p id={ label + "-error" }></p>
-		</dd>
-	</div>
-}
-
 templ ValidationErrors(v folio.Object, translator ut.Translator, errors validator.ValidationErrors) {
 	for _, err := range errors {
 		<p id={ err.StructField() + "-error" } hx-swap-oob="true" class="mt-2 text-xs text-red-600">
@@ -211,4 +203,8 @@ templ Notification(title, subtitle string) {
 			</div>
 		</div>
 	</div>
+}
+
+templ timedAt(user string, at time.Time) {
+	<p>{ fmt.Sprintf("%v, %v", convert.TitleCase(user), convert.Since(at)) }</p>
 }
