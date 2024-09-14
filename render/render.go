@@ -150,18 +150,18 @@ func editorOf(mode Mode, field reflect.StructField, rv reflect.Value) (string, t
 
 	switch rv.Type() {
 	case reflect.TypeOf(json.Number("")):
-		return label, NumberEdit(props)
+		return label, Number(props)
 	}
 
 	switch rv.Kind() {
 	case reflect.String:
-		return label, TextEdit(props)
+		return label, String(props)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64:
-		return label, NumberEdit(props)
+		return label, Number(props)
 	case reflect.Bool:
-		return label, BoolEdit(props)
+		return label, Bool(props)
 	default:
 		slog.Warn("Unsupported editor type", "type", rv.Kind())
 	}

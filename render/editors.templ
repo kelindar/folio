@@ -14,7 +14,7 @@ templ WithLabel(label string, editor templ.Component) {
 	</div>
 }
 
-templ TextEdit(props Props) {
+templ String(props Props) {
 	switch props.Mode {
 		case ModeView :
 			<p id={ props.Name }>{ props.Value.String() }</p>
@@ -30,7 +30,7 @@ templ TextEdit(props Props) {
 	}
 }
 
-templ NumberEdit(props Props) {
+templ Number(props Props) {
 	switch props.Mode {
 		case ModeView :
 			<p id={ props.Name }>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
@@ -46,7 +46,7 @@ templ NumberEdit(props Props) {
 	}
 }
 
-templ BoolEdit(props Props) {
+templ Bool(props Props) {
 	switch props.Mode {
 		case ModeView :
 			<div class="relative flex items-start">
