@@ -10,21 +10,21 @@ import (
 type Person struct {
 	object.Meta `kind:"person" json:",inline"`
 	Name        string `json:"name" form:"rw" validate:"required"`
-	//Age         json.Number `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Age      int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Address  string `json:"address" form:"rw"`
-	Phone    string `json:"phone" form:"rw"`
-	Company  string `json:"company" form:"rw"`
-	JobTitle string `json:"jobTitle" form:"rw"`
-	Country  string `json:"country" form:"rw"`
-	Gender   string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	Age         int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Address     string `json:"address" form:"rw"`
+	Phone       string `json:"phone" form:"rw"`
+	Company     string `json:"company" form:"rw"`
+	JobTitle    string `json:"jobTitle" form:"rw"`
+	Country     string `json:"country" form:"rw"`
+	Gender      string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	IsEmployed  bool   `json:"isEmployed" form:"rw"`
 }
 
 func NewPerson() *Person {
 	p, err := object.New("default", func(p *Person) error {
 		p.Name = gofakeit.Name()
 		p.Address = gofakeit.Address().Address
-		//	p.Age = gofakeit.Number(18, 65)
+		p.Age = gofakeit.Number(18, 65)
 		p.Phone = gofakeit.Phone()
 		p.Company = gofakeit.Company()
 		p.JobTitle = gofakeit.JobTitle()

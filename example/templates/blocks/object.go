@@ -56,6 +56,8 @@ func editorOf(mode render.Mode, field reflect.StructField, rv reflect.Value) (st
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64:
 		return label, NumberEdit(props)
+	case reflect.Bool:
+		return label, BoolEdit(props)
 	default:
 		slog.Warn("Unsupported editor type", "type", rv.Kind())
 	}
