@@ -117,3 +117,15 @@ html {
 .notification-animation {
   animation: anim-notify 3s ease-in-out forwards;
 }
+
+/* ---------------- Combo Box ---------------- */
+
+/* Hide the checkmark icon by default */
+.combobox-option .checkmark {
+  display: none;
+}
+
+/* Show the checkmark icon when the option has the 'selected' class */
+.combobox-option.selected .checkmark {
+  display: flex;
+}

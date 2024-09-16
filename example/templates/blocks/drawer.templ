@@ -35,7 +35,7 @@ templ ListElementEdit(rctx *render.Context, value folio.Object) {
 		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">
 				@DrawerSection("Details", "This section contains the basic details of the object.")
-				for _, edit := range render.Object(rctx.Mode, value) {
+				for _, edit := range render.Object(rctx, value) {
 					@edit
 				}
 				if rctx.Mode != render.ModeCreate {

@@ -132,7 +132,7 @@ func ListElementEdit(rctx *render.Context, value folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, edit := range render.Object(rctx.Mode, value) {
+		for _, edit := range render.Object(rctx, value) {
 			templ_7745c5c3_Err = edit.Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

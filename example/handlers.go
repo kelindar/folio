@@ -37,8 +37,9 @@ func indexViewHandler(db folio.Storage) http.Handler {
 
 		// Define template body content.
 		bodyContent := pages.BodyContent(&render.Context{
-			Mode: render.ModeView,
-			Kind: "person",
+			Mode:  render.ModeView,
+			Kind:  "person",
+			Store: db,
 		}, people)
 
 		return w.Render(templates.Layout(
@@ -63,13 +64,14 @@ func editObject(mode render.Mode, db folio.Storage) http.Handler {
 		}
 
 		return w.Render(blocks.ListElementEdit(&render.Context{
-			Mode: mode,
+			Mode:  mode,
+			Store: db,
 		}, document))
 	})
 
 }
 
-func makeObject(registry folio.Registry) http.Handler {
+func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		rt, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
 		if err != nil {
@@ -83,7 +85,8 @@ func makeObject(registry folio.Registry) http.Handler {
 		}
 
 		return w.Render(blocks.ListElementEdit(&render.Context{
-			Mode: render.ModeCreate,
+			Mode:  render.ModeCreate,
+			Store: db,
 		}, instance))
 	})
 }
@@ -150,9 +153,7 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 
 		// Hydrate the instance with the new data we've received
 		defer r.Body.Close()
-		decoder := json.NewDecoder(r.Body)
-		decoder.UseNumber()
-		if err := decoder.Decode(instance); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(instance); err != nil {
 			return errors.BadRequest("Unable to decode request, %v", err)
 		}
 
@@ -176,11 +177,13 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		switch {
 		case isCreated(updated):
 			return w.Render(blocks.ListElementCreate(&render.Context{
-				Mode: render.ModeView,
+				Mode:  render.ModeView,
+				Store: db,
 			}, updated.(*docs.Person)))
 		default:
 			return w.Render(blocks.ListElementUpdate(&render.Context{
-				Mode: render.ModeView,
+				Mode:  render.ModeView,
+				Store: db,
 			}, updated.(*docs.Person)))
 		}
 	})

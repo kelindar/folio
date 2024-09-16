@@ -1,7 +1,6 @@
 package render
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"reflect"
@@ -24,18 +23,21 @@ const (
 
 // Context represents the rendering context.
 type Context struct {
-	Mode Mode
-	Kind folio.Kind
-	URN  folio.URN
+	Mode  Mode
+	Kind  folio.Kind
+	URN   folio.URN
+	Store folio.Storage
 }
 
 // Props represents the properties of the editor use to render the field.
 type Props struct {
-	Mode  Mode          // Mode of the editor
-	Name  string        // Name of the field (or the JSON tag)
-	Label string        // Label of the field, Title Case
-	Desc  string        // Description of the field, used for placeholder & tooltip
-	Value reflect.Value // Value of the field
+	Mode   Mode          // Mode of the editor
+	Name   string        // Name of the field (or the JSON tag)
+	Label  string        // Label of the field, Title Case
+	Desc   string        // Description of the field, used for placeholder & tooltip
+	Value  reflect.Value // Value of the field
+	Parent folio.Object  // Object to which the field belongs
+	Store  folio.Storage // Storage to use for lookups
 }
 
 // ---------------------------------- Inspect ----------------------------------
@@ -111,10 +113,10 @@ func levelOf(tag string) string {
 }
 
 // Object renders the object into a list of components for each field.
-func Object(mode Mode, obj folio.Object) (out []templ.Component) {
+func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 	rv := reflect.Indirect(reflect.ValueOf(obj))
 	for _, field := range reflect.VisibleFields(rv.Type()) {
-		if label, component := editorOf(mode, field, rv.FieldByName(field.Name)); component != nil {
+		if label, component := editorOf(rctx, obj, field, rv.FieldByName(field.Name)); component != nil {
 			out = append(out, WithLabel(label, component))
 		}
 	}
@@ -122,7 +124,8 @@ func Object(mode Mode, obj folio.Object) (out []templ.Component) {
 	return out
 }
 
-func editorOf(mode Mode, field reflect.StructField, rv reflect.Value) (string, templ.Component) {
+func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv reflect.Value) (string, templ.Component) {
+	mode := rctx.Mode
 	switch levelOf(field.Tag.Get("form")) {
 	case levelHidden:
 		return "", nil
@@ -144,16 +147,34 @@ func editorOf(mode Mode, field reflect.StructField, rv reflect.Value) (string, t
 
 	label := convert.TitleCase(name)
 	props := Props{
-		Mode:  mode,
-		Name:  name,
-		Value: rv,
-		Desc:  desc,
+		Mode:   mode,
+		Name:   name,
+		Value:  rv,
+		Desc:   desc,
+		Parent: obj,
+		Store:  rctx.Store,
 	}
 
-	switch rv.Type() {
-	case reflect.TypeOf(json.Number("")):
-		return label, Number(props)
+	// If the field has a oneof tag, we need to create a lookup wrapper
+	if strings.Contains(field.Tag.Get("validate"), "oneof=") {
+		//rv = reflect.ValueOf(newEnum(field, rv))
+		return label, Select(props, newEnum(field, rv))
+		//println("newEnum")
 	}
+
+	/*if rv.Type().Implements(reflect.TypeOf((*Lookup)(nil)).Elem()) {
+		println("IMPLEMENTS Lookup")
+		props.Lookup = rv.Interface().(Lookup)
+	}
+
+	if lookup, ok := rv.Interface().(Lookup); ok {
+		println("Lookup")
+		props.Lookup = lookup
+	}
+
+	if props.Lookup != nil {
+		return label, Select(props)
+	}*/
 
 	switch rv.Kind() {
 	case reflect.String:

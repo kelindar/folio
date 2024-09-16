@@ -30,7 +30,7 @@ func runServer(registry folio.Registry, db folio.Storage) error {
 	// Handle API endpoints
 	http.Handle("GET /view/{urn}", editObject(render.ModeView, db))
 	http.Handle("GET /edit/{urn}", editObject(render.ModeEdit, db))
-	http.Handle("GET /make/{kind}", makeObject(registry))
+	http.Handle("GET /make/{kind}", makeObject(registry, db))
 
 	// Object CRUD endpoints
 	http.Handle("PUT /obj/{urn}", saveObject(registry, db))
