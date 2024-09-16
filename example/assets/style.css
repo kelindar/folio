@@ -74,21 +74,6 @@ html {
   transition: 0.2s fade-in-out;
 }
 
-/* ---------------- Button Dropdown ---------------- */
-
-.btn-dropdown-menu {
-  transform: scale(0.95);
-  opacity: 0;
-  pointer-events: none;
-  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-}
-
-.btn-dropdown-toggle:checked ~ .btn-dropdown-menu {
-  transform: scale(1);
-  opacity: 1;
-  pointer-events: auto;
-}
-
 /* ---------------- Notification ---------------- */
 
 @keyframes anim-notify {
@@ -118,6 +103,21 @@ html {
   animation: anim-notify 3s ease-in-out forwards;
 }
 
+/* ---------------- Button Dropdown ---------------- */
+
+.btn-dropdown-menu {
+  transform: scale(0.95);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.btn-dropdown-toggle:checked ~ .btn-dropdown-menu {
+  transform: scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* ---------------- Combo Box ---------------- */
 
 /* Hide the options list by default */
@@ -137,5 +137,5 @@ html {
 
 /* Show the checkmark icon when the option has the 'selected' class */
 .combobox-option.selected .checkmark {
-  display: flex; /* or 'inline-flex' */
+  display: flex;
 }

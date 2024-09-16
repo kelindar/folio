@@ -12,8 +12,9 @@ import (
 // Lookup represents a lookup for a field.
 type Lookup interface {
 	Select(string) bool
-	Value() string
 	Choices(folio.Object, folio.Storage) iter.Seq2[string, string]
+	Key() string
+	Value() string
 }
 
 type enum struct {
@@ -39,9 +40,14 @@ func (o *enum) Select(value string) bool {
 	return false
 }
 
-// Current returns the current value.
-func (o *enum) Value() string {
+// Key returns the currently selected key.
+func (o *enum) Key() string {
 	return o.current.String()
+}
+
+// Value returns the currently selected value.
+func (o *enum) Value() string {
+	return convert.TitleCase(o.current.String())
 }
 
 // Choices returns the choices for the given state.
