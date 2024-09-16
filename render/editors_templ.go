@@ -562,33 +562,33 @@ func Select(props Props, lookup Lookup) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" aria-expanded=\"false\" autocomplete=\"off\" hx-on:input=\"onComboboxInput(event)\" hx-on:keydown=\"onComboboxKeyDown(event)\"><!-- Dropdown Button --><label for=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" aria-expanded=\"false\" autocomplete=\"off\" hx-on:input=\"onComboboxInput(event)\" hx-on:keydown=\"onComboboxKeyDown(event)\"> <label for=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var33 string
 			templ_7745c5c3_Var33, templ_7745c5c3_Err = templ.JoinStringErrs(props.Name + "_toggle")
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 120, Col: 39}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 119, Col: 39}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var33))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 cursor-pointer combobox-button\"><svg class=\"h-5 w-5 text-gray-400\" viewBox=\"0 0 20 20\" fill=\"currentColor\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" d=\"M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z\" clip-rule=\"evenodd\"></path></svg></label><!-- Options List --><ul id=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 cursor-pointer combobox-button\"><svg class=\"h-5 w-5 text-gray-400\" viewBox=\"0 0 20 20\" fill=\"currentColor\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" d=\"M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z\" clip-rule=\"evenodd\"></path></svg></label><ul id=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var34 string
 			templ_7745c5c3_Var34, templ_7745c5c3_Err = templ.JoinStringErrs(props.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 127, Col: 20}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 125, Col: 20}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var34))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options\" role=\"listbox\"><!-- Loop through choices -->")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options\" role=\"listbox\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -615,7 +615,7 @@ func Select(props Props, lookup Lookup) templ.Component {
 				var templ_7745c5c3_Var35 string
 				templ_7745c5c3_Var35, templ_7745c5c3_Err = templ.JoinStringErrs(key)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 139, Col: 23}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 136, Col: 23}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var35))
 				if templ_7745c5c3_Err != nil {
@@ -628,7 +628,7 @@ func Select(props Props, lookup Lookup) templ.Component {
 				var templ_7745c5c3_Var36 string
 				templ_7745c5c3_Var36, templ_7745c5c3_Err = templ.JoinStringErrs(props.Name + "_" + key)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 140, Col: 34}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 137, Col: 34}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var36))
 				if templ_7745c5c3_Err != nil {
@@ -641,7 +641,7 @@ func Select(props Props, lookup Lookup) templ.Component {
 				var templ_7745c5c3_Var37 string
 				templ_7745c5c3_Var37, templ_7745c5c3_Err = templ.JoinStringErrs(label)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 146, Col: 43}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/editors.templ`, Line: 143, Col: 43}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var37))
 				if templ_7745c5c3_Err != nil {

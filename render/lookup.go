@@ -30,10 +30,10 @@ func newEnum(field reflect.StructField, rv reflect.Value) *enum {
 }
 
 // Select selects the given value.
-func (o *enum) Select(value string) bool {
+func (o *enum) Select(key string) bool {
 	for _, choice := range o.choices {
-		if choice == value {
-			o.current.SetString(value)
+		if choice == key {
+			o.current.SetString(key)
 			return true
 		}
 	}

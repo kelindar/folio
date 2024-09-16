@@ -116,19 +116,16 @@ templ Select(props Props, lookup Lookup) {
 					hx-on:input="onComboboxInput(event)"
 					hx-on:keydown="onComboboxKeyDown(event)"
 				/>
-				<!-- Dropdown Button -->
 				<label for={ props.Name + "_toggle" } class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 cursor-pointer combobox-button">
 					<svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 						<path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path>
 					</svg>
 				</label>
-				<!-- Options List -->
 				<ul
 					id={ props.Name }
 					class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options"
 					role="listbox"
 				>
-					<!-- Loop through choices -->
 					for key, label := range lookup.Choices(props.Parent, props.Store) {
 						<li
 							if lookup.Key() == key {
