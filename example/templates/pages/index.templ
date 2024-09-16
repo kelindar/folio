@@ -35,13 +35,4 @@ templ Drawer() {
 
 script BodyScripts() {
 
-    // Loop through all button dropdowns, and if the user clicks outside the dropdown, close it
-    document.addEventListener('click', function(event) {
-		document.querySelectorAll('.btn-dropdown').forEach(function(dropdown) {
-			const checkbox = dropdown.querySelector('.btn-dropdown-toggle');
-			if (!dropdown.contains(event.target)) {
-				checkbox.checked = false;
-			}
-		});
-	});
 }

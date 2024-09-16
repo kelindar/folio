@@ -52,52 +52,16 @@ htmx.defineExtension("obj-enc", {
   },
 });
 
-document.addEventListener("DOMContentLoaded", function () {
-  var comboboxes = document.querySelectorAll(".combobox");
-
-  comboboxes.forEach(function (combobox) {
-    var comboboxInput = combobox.querySelector(".combobox-input");
-    var comboboxToggle = combobox.querySelector(".combobox-toggle");
-    var optionsList = combobox.querySelector(".combobox-options");
-    var options = combobox.querySelectorAll(".combobox-option");
-    var hiddenInput = combobox.querySelector(".combobox-value");
-
-    // Filter options as the user types
-    comboboxInput.addEventListener("input", function () {
-      var filter = comboboxInput.value.toLowerCase();
-      var anyVisible = false;
-
-      options.forEach(function (option) {
-        var text = option.textContent.toLowerCase();
-        if (text.includes(filter)) {
-          option.style.display = "";
-          anyVisible = true;
-        } else {
-          option.style.display = "none";
-        }
-      });
-
-      // Open the dropdown if any options are visible
-      comboboxToggle.checked = anyVisible;
-    });
-
-    // Update input value and hidden input when an option is clicked
-    options.forEach(function (option) {
-      option.addEventListener("click", function () {
-        var selectedValue = option.getAttribute("data-value");
-        comboboxInput.value = option.textContent;
-        hiddenInput.value = selectedValue;
-        comboboxToggle.checked = false;
-
-        // Optionally, trigger any additional events or validation here
-      });
-    });
-
-    // Close the dropdown when clicking outside
-    document.addEventListener("click", function (event) {
-      if (!combobox.contains(event.target)) {
-        comboboxToggle.checked = false;
+// Loop through all dropdowns & comboboxes and hide them when clicking outside
+document.addEventListener("click", function (event) {
+  document
+    .querySelectorAll(".btn-dropdown, .combobox")
+    .forEach(function (element) {
+      var toggle = element.querySelector(
+        ".btn-dropdown-toggle, .combobox-toggle"
+      );
+      if (!element.contains(event.target)) {
+        toggle.checked = false;
       }
     });
-  });
 });

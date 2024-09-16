@@ -120,6 +120,16 @@ html {
 
 /* ---------------- Combo Box ---------------- */
 
+/* Hide the options list by default */
+.combobox-options {
+  display: none;
+}
+
+/* Show the options list when the checkbox is checked */
+.combobox-toggle:checked ~ .combobox-options {
+  display: block;
+}
+
 /* Hide the checkmark icon by default */
 .combobox-option .checkmark {
   display: none;
@@ -127,5 +137,5 @@ html {
 
 /* Show the checkmark icon when the option has the 'selected' class */
 .combobox-option.selected .checkmark {
-  display: flex;
+  display: flex; /* or 'inline-flex' */
 }

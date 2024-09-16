@@ -85,7 +85,26 @@ templ Bool(props Props) {
 }
 
 templ Select(props Props, lookup Lookup) {
-	<div class="relative mt-2 combobox">
+	<div
+		class="relative mt-2 combobox"
+		hx-on:load="
+      var combobox = this;
+      var hiddenInput = combobox.querySelector('.combobox-value');
+      var options = combobox.querySelectorAll('.combobox-option');
+      var initialValue = hiddenInput.value;
+      var comboboxInput = combobox.querySelector('.combobox-input');
+
+      options.forEach(function(option) {
+        if (option.getAttribute('data-value') === initialValue) {
+          option.classList.add('selected');
+          var selectedText = option.querySelector('.block.truncate').textContent.trim();
+          comboboxInput.value = selectedText;
+        } else {
+          option.classList.remove('selected');
+        }
+      });
+    "
+	>
 		<!-- Hidden Checkbox to control dropdown visibility -->
 		<input type="checkbox" id={ props.Name + "_toggle" } class="combobox-toggle hidden"/>
 		<!-- Hidden Input to store the selected key -->
@@ -103,24 +122,70 @@ templ Select(props Props, lookup Lookup) {
 			role="combobox"
 			aria-controls={ props.Name }
 			aria-expanded="false"
-			value={ lookup.Value() }
 			autocomplete="off"
+			hx-on:input="
+        var filter = this.value.toLowerCase();
+        var combobox = this.closest('.combobox');
+        var options = combobox.querySelectorAll('.combobox-option');
+        var anyVisible = false;
+        options.forEach(function(option) {
+          var text = option.querySelector('.block.truncate').textContent.toLowerCase();
+          if (text.includes(filter)) {
+            option.style.display = '';
+            anyVisible = true;
+          } else {
+            option.style.display = 'none';
+          }
+        });
+        var comboboxToggle = combobox.querySelector('.combobox-toggle');
+        comboboxToggle.checked = anyVisible;
+      "
 		/>
 		<!-- Dropdown Button -->
 		<label for={ props.Name + "_toggle" } class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 cursor-pointer combobox-button">
 			<svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-				<path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path>
+				<!-- SVG Path -->
 			</svg>
 		</label>
 		<!-- Options List -->
 		<ul class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options" id={ props.Name } role="listbox">
 			<!-- Loop through choices -->
 			for key, label := range lookup.Choices(props.Parent, props.Store) {
-				<li class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 combobox-option" data-value={ key } id={ props.Name + "_" + key } role="option" tabindex="-1">
+				<li
+					class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 combobox-option"
+					data-value={ key }
+					id={ props.Name + "_" + key }
+					role="option"
+					tabindex="-1"
+					hx-on:click="
+            var combobox = this.closest('.combobox');
+            var comboboxInput = combobox.querySelector('.combobox-input');
+            var hiddenInput = combobox.querySelector('.combobox-value');
+            var options = combobox.querySelectorAll('.combobox-option');
+
+            var selectedText = this.querySelector('.block.truncate').textContent.trim();
+            comboboxInput.value = selectedText;
+            hiddenInput.value = this.getAttribute('data-value');
+
+            // Remove 'selected' class from all options
+            options.forEach(function(opt) {
+              opt.classList.remove('selected');
+            });
+
+            // Add 'selected' class to the clicked option
+            this.classList.add('selected');
+
+            // Close the dropdown
+            var comboboxToggle = combobox.querySelector('.combobox-toggle');
+            comboboxToggle.checked = false;
+          "
+				>
+					<!-- Label -->
 					<span class="block truncate">{ label }</span>
-					<span class="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
+					<!-- Checkmark Icon (hidden by default) -->
+					<span class="checkmark absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
 						<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-							<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"></path>
+							<!-- SVG Path -->
 						</svg>
 					</span>
 				</li>

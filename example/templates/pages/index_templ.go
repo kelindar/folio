@@ -153,19 +153,10 @@ func Drawer() templ.Component {
 // BodyScripts defines JavaScript code.
 func BodyScripts() templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_BodyScripts_7cc8`,
-		Function: `function __templ_BodyScripts_7cc8(){// Loop through all button dropdowns, and if the user clicks outside the dropdown, close it
-    document.addEventListener('click', function(event) {
-		document.querySelectorAll('.btn-dropdown').forEach(function(dropdown) {
-			const checkbox = dropdown.querySelector('.btn-dropdown-toggle');
-			if (!dropdown.contains(event.target)) {
-				checkbox.checked = false;
-			}
-		});
-	});
-}`,
-		Call:       templ.SafeScript(`__templ_BodyScripts_7cc8`),
-		CallInline: templ.SafeScriptInline(`__templ_BodyScripts_7cc8`),
+		Name:       `__templ_BodyScripts_01ba`,
+		Function:   `function __templ_BodyScripts_01ba(){}`,
+		Call:       templ.SafeScript(`__templ_BodyScripts_01ba`),
+		CallInline: templ.SafeScriptInline(`__templ_BodyScripts_01ba`),
 	}
 }
 
