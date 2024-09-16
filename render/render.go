@@ -31,13 +31,14 @@ type Context struct {
 
 // Props represents the properties of the editor use to render the field.
 type Props struct {
-	Mode   Mode          // Mode of the editor
-	Name   string        // Name of the field (or the JSON tag)
-	Label  string        // Label of the field, Title Case
-	Desc   string        // Description of the field, used for placeholder & tooltip
-	Value  reflect.Value // Value of the field
-	Parent folio.Object  // Object to which the field belongs
-	Store  folio.Storage // Storage to use for lookups
+	Mode   Mode                // Mode of the editor
+	Name   string              // Name of the field (or the JSON tag)
+	Label  string              // Label of the field, Title Case
+	Desc   string              // Description of the field, used for placeholder & tooltip
+	Value  reflect.Value       // Value of the field
+	Parent folio.Object        // Object to which the field belongs
+	Store  folio.Storage       // Storage to use for lookups
+	Field  reflect.StructField // Field of the object
 }
 
 // ---------------------------------- Inspect ----------------------------------
@@ -91,6 +92,34 @@ func ListOf(obj any, property string) []string {
 	return nil
 }
 
+// ---------------------------------- Section ----------------------------------
+
+type Renderer interface {
+	Render(Props) templ.Component
+}
+
+// Section represents a section of the form. It should contain the tags "name" and "desc"
+// that will be automatically used to render the section.
+type Section struct{}
+
+// Render renders the section.
+func (s Section) Render(props Props) templ.Component {
+	name := convert.TitleCase(props.Field.Name)
+	desc := ""
+
+	// Get the name and description from the tag
+	if n := props.Field.Tag.Get("name"); n != "" {
+		name = n
+	}
+
+	// Get the description from the tag
+	if d := props.Field.Tag.Get("desc"); d != "" {
+		desc = d
+	}
+
+	return section(name, desc)
+}
+
 // ---------------------------------- Object Rendering ----------------------------------
 
 const (
@@ -116,7 +145,11 @@ func levelOf(tag string) string {
 func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 	rv := reflect.Indirect(reflect.ValueOf(obj))
 	for _, field := range reflect.VisibleFields(rv.Type()) {
-		if label, component := editorOf(rctx, obj, field, rv.FieldByName(field.Name)); component != nil {
+		label, component := editorOf(rctx, obj, field, rv.FieldByName(field.Name))
+		switch {
+		case label == "" && component != nil:
+			out = append(out, component)
+		case component != nil:
 			out = append(out, WithLabel(label, component))
 		}
 	}
@@ -125,43 +158,39 @@ func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 }
 
 func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv reflect.Value) (string, templ.Component) {
-	mode := rctx.Mode
+	name := nameOf(field)
+	label := convert.TitleCase(name)
+	props := Props{
+		Mode:   rctx.Mode,
+		Name:   name,
+		Value:  rv,
+		Desc:   descOf(name, field),
+		Parent: obj,
+		Store:  rctx.Store,
+		Field:  field,
+	}
+
+	// If the field implements the Renderer interface, we can render it directly
+	if render, ok := rv.Interface().(Renderer); ok {
+		return "", render.Render(props)
+	}
+
+	// Check the level of the field
 	switch levelOf(field.Tag.Get("form")) {
 	case levelHidden:
 		return "", nil
 	case levelReadOnly:
-		mode = ModeView
+		props.Mode = ModeView
 	}
 
-	// Get the name from the tag or use the field name
-	name := field.Name
-	if n := field.Tag.Get("json"); n != "" && n != "-" {
-		name = strings.Split(n, ",")[0]
-	}
-
-	// Get the description from the tag or create a default one
-	desc := fmt.Sprintf("Enter %s...", convert.TitleCase(name))
-	if d := field.Tag.Get("desc"); d != "" {
-		desc = d
-	}
-
-	label := convert.TitleCase(name)
-	props := Props{
-		Mode:   mode,
-		Name:   name,
-		Value:  rv,
-		Desc:   desc,
-		Parent: obj,
-		Store:  rctx.Store,
+	// If the field implements the Lookup interface, we can render it directly
+	if lookup, ok := rv.Interface().(Lookup); ok {
+		return label, Select(props, lookup)
 	}
 
 	// If the field has a oneof tag, we need to create a lookup wrapper
 	if strings.Contains(field.Tag.Get("validate"), "oneof=") {
 		return label, Select(props, newEnum(field, rv))
-	}
-
-	if lookup, ok := rv.Interface().(Lookup); ok {
-		return label, Select(props, lookup)
 	}
 
 	switch rv.Kind() {
@@ -178,4 +207,20 @@ func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv ref
 	}
 
 	return "", nil
+}
+
+func descOf(name string, field reflect.StructField) string {
+	desc := fmt.Sprintf("Enter %s...", convert.TitleCase(name))
+	if d := field.Tag.Get("desc"); d != "" {
+		desc = d
+	}
+	return desc
+}
+
+func nameOf(field reflect.StructField) string {
+	name := field.Name
+	if n := field.Tag.Get("json"); n != "" && n != "-" {
+		name = strings.Split(n, ",")[0]
+	}
+	return name
 }

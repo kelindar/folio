@@ -34,7 +34,6 @@ templ ListElementEdit(rctx *render.Context, value folio.Object) {
 		@DrawerHeader(rctx, value)
 		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
 			<dl class="divide-y divide-gray-100">
-				@DrawerSection("Details", "This section contains the basic details of the object.")
 				for _, edit := range render.Object(rctx, value) {
 					@edit
 				}
@@ -129,14 +128,6 @@ templ ButtonDropdown(props ButtonDropdownProps) {
 				@props.Options
 			</div>
 		</div>
-	</div>
-}
-
-templ Divider(text string) {
-	<div class="flex items-center">
-		<div class="border-t border-1 border-gray-200 flex-grow"></div>
-		<div class="px-3 text-gray-500 font-semibold text-sm">{ text }</div>
-		<div class="border-t border-1 border-gray-200 flex-grow"></div>
 	</div>
 }
 
