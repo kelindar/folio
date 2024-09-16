@@ -4,24 +4,24 @@ import (
 	"fmt"
 
 	"github.com/brianvoe/gofakeit/v7"
-	object "github.com/kelindar/folio"
+	"github.com/kelindar/folio"
 )
 
 type Person struct {
-	object.Meta `kind:"person" json:",inline"`
-	Name        string `json:"name" form:"rw" validate:"required"`
-	Age         int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Address     string `json:"address" form:"rw"`
-	Phone       string `json:"phone" form:"rw"`
-	Company     string `json:"company" form:"rw"`
-	JobTitle    string `json:"jobTitle" form:"rw"`
-	Country     string `json:"country" form:"rw"`
-	Gender      string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
-	IsEmployed  bool   `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
+	folio.Meta `kind:"person" json:",inline"`
+	Name       string `json:"name" form:"rw" validate:"required"`
+	Age        int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Address    string `json:"address" form:"rw"`
+	Phone      string `json:"phone" form:"rw"`
+	Company    string `json:"company" form:"rw"`
+	JobTitle   string `json:"jobTitle" form:"rw"`
+	Country    string `json:"country" form:"rw"`
+	Gender     string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	IsEmployed bool   `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
 }
 
 func NewPerson() *Person {
-	p, err := object.New("default", func(p *Person) error {
+	p, err := folio.New("default", func(p *Person) error {
 		p.Name = gofakeit.Name()
 		p.Address = gofakeit.Address().Address
 		p.Age = gofakeit.Number(18, 65)

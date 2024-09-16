@@ -157,24 +157,12 @@ func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv ref
 
 	// If the field has a oneof tag, we need to create a lookup wrapper
 	if strings.Contains(field.Tag.Get("validate"), "oneof=") {
-		//rv = reflect.ValueOf(newEnum(field, rv))
 		return label, Select(props, newEnum(field, rv))
-		//println("newEnum")
-	}
-
-	/*if rv.Type().Implements(reflect.TypeOf((*Lookup)(nil)).Elem()) {
-		println("IMPLEMENTS Lookup")
-		props.Lookup = rv.Interface().(Lookup)
 	}
 
 	if lookup, ok := rv.Interface().(Lookup); ok {
-		println("Lookup")
-		props.Lookup = lookup
+		return label, Select(props, lookup)
 	}
-
-	if props.Lookup != nil {
-		return label, Select(props)
-	}*/
 
 	switch rv.Kind() {
 	case reflect.String:
