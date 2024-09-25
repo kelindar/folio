@@ -104,7 +104,7 @@ templ Select(props Props, lookup Lookup) {
 			<p id={ props.Name }>{ lookup.Value() }</p>
 		case ModeEdit, ModeCreate:
 			<div
-				class="relative mt-2 combobox"
+				class="relative combobox"
 				hx-trigger="load"
 				hx-on:load="onComboboxLoad(event)"
 			>
@@ -137,7 +137,7 @@ templ Select(props Props, lookup Lookup) {
 				</label>
 				<ul
 					id={ props.Name }
-					class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options"
+					class="absolute z-10 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options"
 					role="listbox"
 				>
 					for key, label := range lookup.Choices(props.Parent, props.Store) {

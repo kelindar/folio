@@ -11,6 +11,13 @@ htmx.defineExtension("obj-enc", {
     const formData = new FormData(elt);
     const obj = {};
 
+    // Add missing checkboxes to the form data
+    elt.querySelectorAll("input[type=checkbox]").forEach((val) => {
+      if (val.name !== "" && !formData.has(val.name)) {
+        formData.append(val.name, false);
+      }
+    });
+
     formData.forEach(function (v, key) {
       let out = v;
 

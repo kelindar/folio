@@ -21,8 +21,6 @@ func TestEnum(t *testing.T) {
 	enum := newEnum(field, fv)
 	assert.NotNil(t, enum)
 
-	assert.True(t, enum.Select("one"))
-	assert.False(t, enum.Select("four"))
 	assert.Equal(t, "one", enum.Key())
 	assert.Equal(t, "One", enum.Value())
 	assert.Equal(t, []string{"one", "two", "three"}, enum.choices)

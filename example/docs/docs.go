@@ -2,6 +2,7 @@ package docs
 
 import (
 	"fmt"
+	"iter"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/kelindar/folio"
@@ -95,30 +96,21 @@ func NewCompany() *Company {
 	return c
 }
 
-/*
-type CompanyLookup *string
+type CompanyLookup string
 
-var _ render.Lookup = CompanyLookup{}
-
-
-// Select selects the given value.
-func (c CompanyLookup) Select(key string) bool {
-	*c = key
-	return true
-}
+var _ render.Lookup = CompanyLookup("")
 
 // Key returns the currently selected key.
 func (c CompanyLookup) Key() string {
-	return string(*c)
+	return string(c)
 }
 
 // Value returns the currently selected value.
 func (c CompanyLookup) Value() string {
-	return string(*c)
+	return string(c)
 }
 
 // Choices returns the choices for the given state.
 func (c CompanyLookup) Choices(_ folio.Object, db folio.Storage) iter.Seq2[string, string] {
 	return nil
 }
-*/

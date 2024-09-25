@@ -11,7 +11,6 @@ import (
 
 // Lookup represents a lookup for a field.
 type Lookup interface {
-	Select(string) bool
 	Choices(folio.Object, folio.Storage) iter.Seq2[string, string]
 	Key() string
 	Value() string
@@ -27,17 +26,6 @@ func newEnum(field reflect.StructField, rv reflect.Value) *enum {
 		current: rv,
 		choices: parseOneOf(field.Tag.Get("validate")),
 	}
-}
-
-// Select selects the given value.
-func (o *enum) Select(key string) bool {
-	for _, choice := range o.choices {
-		if choice == key {
-			o.current.SetString(key)
-			return true
-		}
-	}
-	return false
 }
 
 // Key returns the currently selected key.

@@ -539,7 +539,7 @@ func Select(props Props, lookup Lookup) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		case ModeEdit, ModeCreate:
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"relative mt-2 combobox\" hx-trigger=\"load\" hx-on:load=\"onComboboxLoad(event)\"><!-- Hidden Checkbox to control dropdown visibility --><input type=\"checkbox\" id=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"relative combobox\" hx-trigger=\"load\" hx-on:load=\"onComboboxLoad(event)\"><!-- Hidden Checkbox to control dropdown visibility --><input type=\"checkbox\" id=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -643,7 +643,7 @@ func Select(props Props, lookup Lookup) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options\" role=\"listbox\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"absolute z-10 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options\" role=\"listbox\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
