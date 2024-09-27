@@ -159,11 +159,11 @@ templ hxSearchBar(kind folio.Kind) {
 					></path>
 				</svg>
 			</div>
-			<input type="hidden" name="kind" id="kind" value={ kind.String() }/>
+			<input type="hidden" name="search_kind" id="search_kind" value={ kind.String() }/>
 			<input
 				type="text"
-				id="query"
-				name="query"
+				id="search_query"
+				name="search_query"
 				class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
 				placeholder="Search"
 			/>

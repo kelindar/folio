@@ -81,8 +81,8 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 func search(db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		var req struct {
-			Kind  string `json:"kind"`
-			Query string `json:"query"`
+			Kind  string `json:"search_kind"`
+			Query string `json:"search_query"`
 		}
 
 		defer r.Body.Close()
