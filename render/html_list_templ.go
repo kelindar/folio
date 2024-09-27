@@ -48,7 +48,7 @@ func hxList(rctx *Context, items iter.Seq[folio.Object]) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = hxCreateButton(rctx.Kind).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxCreateButton(rctx).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -584,7 +584,7 @@ func hxState(value string) templ.Component {
 	})
 }
 
-func hxCreateButton(kind folio.Kind) templ.Component {
+func hxCreateButton(rctx *Context) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -610,9 +610,9 @@ func hxCreateButton(kind folio.Kind) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var27 string
-		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs("/make/" + kind.String())
+		templ_7745c5c3_Var27, templ_7745c5c3_Err = templ.JoinStringErrs("/make/" + rctx.Kind.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_list.templ`, Line: 248, Col: 35}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_list.templ`, Line: 248, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var27))
 		if templ_7745c5c3_Err != nil {
@@ -623,9 +623,9 @@ func hxCreateButton(kind folio.Kind) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var28 string
-		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(kind.String())
+		templ_7745c5c3_Var28, templ_7745c5c3_Err = templ.JoinStringErrs(rctx.Type.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_list.templ`, Line: 250, Col: 24}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_list.templ`, Line: 250, Col: 26}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var28))
 		if templ_7745c5c3_Err != nil {
