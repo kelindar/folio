@@ -110,7 +110,7 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 		}
 
 		// Make sure this kind exists
-		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		typ, err := registry.Resolve(folio.Kind(req.Kind))
 		if err != nil {
 			return errors.BadRequest("invalid kind, %v", err)
 		}
@@ -164,7 +164,7 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		}
 
 		// Make sure this kind exists
-		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		typ, err := registry.Resolve(urn.Kind)
 		if err != nil {
 			return errors.BadRequest("invalid kind, %v", err)
 		}
