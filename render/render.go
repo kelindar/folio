@@ -150,7 +150,7 @@ func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 		case label == "" && component != nil:
 			out = append(out, component)
 		case component != nil:
-			out = append(out, WithLabel(label, component))
+			out = append(out, htmlWithLabel(label, component))
 		}
 	}
 

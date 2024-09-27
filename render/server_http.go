@@ -1,4 +1,4 @@
-package main
+package render
 
 import (
 	"encoding/json"
@@ -11,24 +11,12 @@ import (
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/errors"
-	"github.com/kelindar/folio/example/docs"
-	"github.com/kelindar/folio/example/templates"
-	"github.com/kelindar/folio/example/templates/blocks"
-	"github.com/kelindar/folio/example/templates/pages"
-	"github.com/kelindar/folio/render"
 )
 
 // indexViewHandler handles a view for the index page.
 func indexViewHandler(db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-
-		// Define template meta tags.
-		metaTags := pages.MetaTags(
-			"gowebly, htmx example page, go with htmx",               // define meta keywords
-			"Welcome to example! You're here because it worked out.", // define meta description
-		)
-
-		people, err := folio.Search[*docs.Person](db, folio.Query{
+		found, err := db.Search("person", folio.Query{
 			Namespaces: []string{"default"},
 		})
 		if err != nil {
@@ -36,21 +24,20 @@ func indexViewHandler(db folio.Storage) http.Handler {
 		}
 
 		// Define template body content.
-		bodyContent := pages.BodyContent(&render.Context{
-			Mode:  render.ModeView,
+		bodyContent := contentList(&Context{
+			Mode:  ModeView,
 			Kind:  "person",
 			Store: db,
-		}, people)
+		}, found)
 
-		return w.Render(templates.Layout(
-			"kelindar/folio", // define title text
-			metaTags,         // define meta tags
-			bodyContent,      // define body content
+		return w.Render(htmlLayout(
+			"kelindar/folio",
+			bodyContent,
 		))
 	})
 }
 
-func editObject(mode render.Mode, db folio.Storage) http.Handler {
+func editObject(mode Mode, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
@@ -63,7 +50,7 @@ func editObject(mode render.Mode, db folio.Storage) http.Handler {
 			return errors.Internal("Unable to fetch object, %v", err)
 		}
 
-		return w.Render(blocks.ListElementEdit(&render.Context{
+		return w.Render(htmlListElementEdit(&Context{
 			Mode:  mode,
 			Store: db,
 		}, document))
@@ -84,8 +71,8 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.Internal("Unable to create object, %v", err)
 		}
 
-		return w.Render(blocks.ListElementEdit(&render.Context{
-			Mode:  render.ModeCreate,
+		return w.Render(htmlListElementEdit(&Context{
+			Mode:  ModeCreate,
 			Store: db,
 		}, instance))
 	})
@@ -94,6 +81,7 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 func search(db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		var req struct {
+			Kind  string `json:"kind"`
 			Query string `json:"query"`
 		}
 
@@ -102,7 +90,7 @@ func search(db folio.Storage) http.Handler {
 			return errors.BadRequest("Unable to decode request, %v", err)
 		}
 
-		people, err := folio.Search[*docs.Person](db, folio.Query{
+		found, err := db.Search(folio.Kind(req.Kind), folio.Query{
 			Namespaces: []string{"default"},
 			Match:      req.Query,
 		})
@@ -110,9 +98,9 @@ func search(db folio.Storage) http.Handler {
 			return errors.Internal("Unable to search, %v", err)
 		}
 
-		return w.Render(blocks.ListContent(&render.Context{
-			Mode: render.ModeView,
-		}, people))
+		return w.Render(htmlListContent(&Context{
+			Mode: ModeView,
+		}, found))
 	})
 }
 
@@ -128,7 +116,7 @@ func deleteObject(db folio.Storage) http.Handler {
 			return errors.Internal("Unable to delete object, %v", err)
 		}
 
-		return w.Render(blocks.ListElementDelete(urn))
+		return w.Render(htmlListElementDelete(urn))
 	})
 }
 
@@ -162,7 +150,7 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		// entire form with the validation errors.
 		if err := validate.Struct(instance); err != nil {
 			return w.RenderWith(
-				blocks.ValidationErrors(instance, trans, err.(validator.ValidationErrors)),
+				htmlValidationErrors(instance, trans, err.(validator.ValidationErrors)),
 				func(r htmx.Response) htmx.Response {
 					return r.Reswap(htmx.SwapNone)
 				})
@@ -176,15 +164,15 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 
 		switch {
 		case isCreated(updated):
-			return w.Render(blocks.ListElementCreate(&render.Context{
-				Mode:  render.ModeView,
+			return w.Render(htmlListElementCreate(&Context{
+				Mode:  ModeView,
 				Store: db,
-			}, updated.(*docs.Person)))
+			}, updated))
 		default:
-			return w.Render(blocks.ListElementUpdate(&render.Context{
-				Mode:  render.ModeView,
+			return w.Render(htmlListElementUpdate(&Context{
+				Mode:  ModeView,
 				Store: db,
-			}, updated.(*docs.Person)))
+			}, updated))
 		}
 	})
 }

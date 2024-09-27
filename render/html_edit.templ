@@ -2,32 +2,6 @@ package render
 
 import "fmt"
 
-templ section(title, subtitle string) {
-	<div class="px-4 py-6 sm:px-0">
-		<h3 class="text-base font-semibold leading-7 text-gray-900">
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3 inline align-middle mb-1">
-				<path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"></path>
-			</svg>
-			{ title }
-		</h3>
-		<p class="max-w-2xl text-xs leading-6 text-gray-500">
-			{ subtitle }
-		</p>
-	</div>
-}
-
-templ WithLabel(label string, editor templ.Component) {
-	<div class="px-4 py-4 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
-		<dt class="leading-6">
-			<p class="text-sm text-gray-900 font-semibold">{ label }</p>
-		</dt>
-		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
-			@editor
-			<p id={ label + "-error" }></p>
-		</dd>
-	</div>
-}
-
 templ String(props Props) {
 	switch props.Mode {
 		case ModeView :

@@ -6,6 +6,7 @@ import (
 
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/example/docs"
+	"github.com/kelindar/folio/render"
 	"github.com/kelindar/folio/sqlite"
 )
 
@@ -22,7 +23,7 @@ func main() {
 		folio.Insert(db, docs.NewPerson(), "sys")
 	}*/
 
-	if err := runServer(reg, db); err != nil {
+	if err := render.ListenAndServe(7000, reg, db); err != nil {
 		slog.Error("Failed to start server!", "details", err.Error())
 		os.Exit(1)
 	}

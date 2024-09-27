@@ -1,4 +1,4 @@
-package main
+package render
 
 import (
 	"embed"
@@ -11,15 +11,13 @@ import (
 	"github.com/angelofallars/htmx-go"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/errors"
-	"github.com/kelindar/folio/render"
 )
 
 //go:embed all:assets
 var assets embed.FS
 
-// runServer runs a new HTTP server with the loaded environment variables.
-func runServer(registry folio.Registry, db folio.Storage) error {
-	const port = 7000
+// ListenAndServe starts the server on the given port.
+func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 
 	// Handle static files from the embed FS (with a custom handler).
 	http.Handle("GET /assets/", serveStatic(http.FS(assets)))
@@ -28,8 +26,8 @@ func runServer(registry folio.Registry, db folio.Storage) error {
 	http.Handle("GET /", indexViewHandler(db))
 
 	// Handle API endpoints
-	http.Handle("GET /view/{urn}", editObject(render.ModeView, db))
-	http.Handle("GET /edit/{urn}", editObject(render.ModeEdit, db))
+	http.Handle("GET /view/{urn}", editObject(ModeView, db))
+	http.Handle("GET /edit/{urn}", editObject(ModeEdit, db))
 	http.Handle("GET /make/{kind}", makeObject(registry, db))
 
 	// Object CRUD endpoints

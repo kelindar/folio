@@ -1,8 +1,11 @@
-package templates
+package render
 
-import "github.com/kelindar/folio/example/templates/pages"
+import (
+	"github.com/kelindar/folio"
+	"iter"
+)
 
-templ Layout(title string, metaTags, bodyContent templ.Component) {
+templ htmlLayout(title string, bodyContent templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -12,7 +15,6 @@ templ Layout(title string, metaTags, bodyContent templ.Component) {
 			<meta http-equiv="Content-Security-Policy" content="default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;font-src 'self' data: https://fonts.gstatic.com;script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; connect-src 'self' ws://localhost:*;img-src 'self' data:*;"/>
 			<meta name="theme-color" content="#FEFEF5"/>
 			<title>{ title }</title>
-			@metaTags
 			<link rel="dns-prefetch" href="//fonts.googleapis.com"/>
 			<link rel="dns-prefetch" href="//fonts.gstatic.com"/>
 			<link rel="preconnect" href="//fonts.googleapis.com" crossorigin/>
@@ -29,8 +31,26 @@ templ Layout(title string, metaTags, bodyContent templ.Component) {
 			<script src="https://unpkg.com/htmx.org@2.0.2" crossorigin="anonymous"></script>
 			<script src="/assets/scripts.js"></script>
 		</head>
-		<body class="bg-gray-100 dark:bg-gray-900" onload={ pages.BodyScripts() }>
+		<body class="bg-gray-100 dark:bg-gray-900">
 			@bodyContent
 		</body>
 	</html>
+}
+
+templ htmlDrawer() {
+	<input type="checkbox" id="drawer-toggle" name="drawer-toggle"/>
+	<label for="drawer-toggle" id="drawer-overlay"></label>
+	<nav id="drawer" class="shadow-md"></nav>
+}
+
+// contentList renders the content list
+templ contentList(rctx *Context, people iter.Seq[folio.Object]) {
+	@htmlDrawer()
+	<div id="page-content">
+		@htmlNavigation()
+		<div class="container mx-auto">
+			@htmlList(rctx, people)
+		</div>
+	</div>
+	<div id="notification"></div>
 }
