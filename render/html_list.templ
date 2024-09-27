@@ -20,7 +20,7 @@ templ hxList(rctx *Context, items iter.Seq[folio.Object]) {
 			</div>
 			<div class="overflow-x-auto">
 				<h2 class="text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white p-4">
-					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage Users</span>
+					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage { rctx.Type.Plural }</span>
 				</h2>
 				@hxListContent(rctx, items)
 			</div>

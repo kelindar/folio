@@ -25,6 +25,7 @@ const (
 type Context struct {
 	Mode     Mode
 	Kind     folio.Kind
+	Type     folio.Type
 	URN      folio.URN
 	Store    folio.Storage
 	Registry folio.Registry

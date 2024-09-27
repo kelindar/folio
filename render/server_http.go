@@ -11,19 +11,18 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/convert"
 	"github.com/kelindar/folio/errors"
 )
 
 // page handles a page request for a given kind, inferred from path.
 func page(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		kind := folio.Kind(r.PathValue("kind"))
-		if _, err := registry.Resolve(kind); err != nil {
+		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		if err != nil {
 			return errors.BadRequest("invalid kind, %v", err)
 		}
 
-		found, err := db.Search(kind, folio.Query{
+		found, err := db.Search(typ.Kind, folio.Query{
 			Namespaces: []string{"default"},
 		})
 		if err != nil {
@@ -33,23 +32,29 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 		// Define template body content.
 		bodyContent := contentList(&Context{
 			Mode:     ModeView,
-			Kind:     kind,
+			Kind:     typ.Kind,
+			Type:     typ,
 			Store:    db,
 			Registry: registry,
 		}, found)
 
 		return w.Render(hxLayout(
-			fmt.Sprintf("Folio - %s", convert.TitleCase(kind.String())),
+			fmt.Sprintf("Folio - %s", typ.Plural),
 			bodyContent,
 		))
 	})
 }
 
-func editObject(mode Mode, db folio.Storage) http.Handler {
+func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
 			return errors.BadRequest("Unable to decode URN, %v", err)
+		}
+
+		typ, err := registry.Resolve(urn.Kind)
+		if err != nil {
+			return errors.BadRequest("invalid kind, %v", err)
 		}
 
 		// Get the person from the database
@@ -59,8 +64,11 @@ func editObject(mode Mode, db folio.Storage) http.Handler {
 		}
 
 		return w.Render(hxFormContent(&Context{
-			Mode:  mode,
-			Store: db,
+			Mode:     mode,
+			Kind:     typ.Kind,
+			Type:     typ,
+			Store:    db,
+			Registry: registry,
 		}, document))
 	})
 
@@ -68,19 +76,21 @@ func editObject(mode Mode, db folio.Storage) http.Handler {
 
 func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		rt, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
 		if err != nil {
 			return errors.BadRequest("invalid kind, %v", err)
 		}
 
 		// Create a new instance
-		instance, err := folio.NewByType(rt.Type, "default")
+		instance, err := folio.NewByType(typ.Type, "default")
 		if err != nil {
 			return errors.Internal("Unable to create object, %v", err)
 		}
 
 		return w.Render(hxFormContent(&Context{
 			Mode:     ModeCreate,
+			Kind:     typ.Kind,
+			Type:     typ,
 			Store:    db,
 			Registry: registry,
 		}, instance))
@@ -99,6 +109,13 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.BadRequest("Unable to decode request, %v", err)
 		}
 
+		// Make sure this kind exists
+		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		if err != nil {
+			return errors.BadRequest("invalid kind, %v", err)
+		}
+
+		// Search for the objects
 		found, err := db.Search(folio.Kind(req.Kind), folio.Query{
 			Namespaces: []string{"default"},
 			Match:      req.Query,
@@ -109,7 +126,8 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 
 		return w.Render(hxListContent(&Context{
 			Mode:     ModeView,
-			Kind:     folio.Kind(req.Kind),
+			Kind:     typ.Kind,
+			Type:     typ,
 			Store:    db,
 			Registry: registry,
 		}, found))
@@ -145,6 +163,12 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.BadRequest("Unable to decode URN, %v", err)
 		}
 
+		// Make sure this kind exists
+		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		if err != nil {
+			return errors.BadRequest("invalid kind, %v", err)
+		}
+
 		// Get the latest instance from the database
 		instance, err := fetchOrCreate(registry, db, urn)
 		if err != nil {
@@ -178,14 +202,16 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		case isCreated(updated):
 			return w.Render(hxListElementCreate(&Context{
 				Mode:     ModeView,
-				Kind:     urn.Kind,
+				Kind:     typ.Kind,
+				Type:     typ,
 				Store:    db,
 				Registry: registry,
 			}, updated))
 		default:
 			return w.Render(hxListElementUpdate(&Context{
 				Mode:     ModeView,
-				Kind:     urn.Kind,
+				Kind:     typ.Kind,
+				Type:     typ,
 				Store:    db,
 				Registry: registry,
 			}, updated))
