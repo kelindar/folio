@@ -30,7 +30,7 @@ func indexViewHandler(db folio.Storage) http.Handler {
 			Store: db,
 		}, found)
 
-		return w.Render(htmlLayout(
+		return w.Render(hxLayout(
 			"kelindar/folio",
 			bodyContent,
 		))
@@ -50,7 +50,7 @@ func editObject(mode Mode, db folio.Storage) http.Handler {
 			return errors.Internal("Unable to fetch object, %v", err)
 		}
 
-		return w.Render(htmlListElementEdit(&Context{
+		return w.Render(hxFormContent(&Context{
 			Mode:  mode,
 			Store: db,
 		}, document))
@@ -71,7 +71,7 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.Internal("Unable to create object, %v", err)
 		}
 
-		return w.Render(htmlListElementEdit(&Context{
+		return w.Render(hxFormContent(&Context{
 			Mode:  ModeCreate,
 			Store: db,
 		}, instance))
@@ -98,7 +98,7 @@ func search(db folio.Storage) http.Handler {
 			return errors.Internal("Unable to search, %v", err)
 		}
 
-		return w.Render(htmlListContent(&Context{
+		return w.Render(hxListContent(&Context{
 			Mode: ModeView,
 		}, found))
 	})
@@ -116,7 +116,7 @@ func deleteObject(db folio.Storage) http.Handler {
 			return errors.Internal("Unable to delete object, %v", err)
 		}
 
-		return w.Render(htmlListElementDelete(urn))
+		return w.Render(hxListElementDelete(urn))
 	})
 }
 
@@ -150,7 +150,7 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		// entire form with the validation errors.
 		if err := validate.Struct(instance); err != nil {
 			return w.RenderWith(
-				htmlValidationErrors(instance, trans, err.(validator.ValidationErrors)),
+				hxValidationErrors(instance, trans, err.(validator.ValidationErrors)),
 				func(r htmx.Response) htmx.Response {
 					return r.Reswap(htmx.SwapNone)
 				})
@@ -164,12 +164,12 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 
 		switch {
 		case isCreated(updated):
-			return w.Render(htmlListElementCreate(&Context{
+			return w.Render(hxListElementCreate(&Context{
 				Mode:  ModeView,
 				Store: db,
 			}, updated))
 		default:
-			return w.Render(htmlListElementUpdate(&Context{
+			return w.Render(hxListElementUpdate(&Context{
 				Mode:  ModeView,
 				Store: db,
 			}, updated))

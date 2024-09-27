@@ -8,7 +8,7 @@ package render
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-func htmlNavigation() templ.Component {
+func hxNavigation() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -33,19 +33,19 @@ func htmlNavigation() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlLink("photo_library", "Sprites", "/sprites").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxLink("photo_library", "Sprites", "/sprites").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlLink("diamond", "Materials", "/materials").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxLink("diamond", "Materials", "/materials").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlLink("apparel", "Equipment", "/equipment").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxLink("apparel", "Equipment", "/equipment").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlLink("forest", "Plants", "/plants").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxLink("forest", "Plants", "/plants").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -57,8 +57,8 @@ func htmlNavigation() templ.Component {
 	})
 }
 
-// htmlLink renders a link with an icon
-func htmlLink(icon, name string, url templ.SafeURL) templ.Component {
+// hxLink renders a link with an icon
+func hxLink(icon, name string, url templ.SafeURL) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -92,7 +92,7 @@ func htmlLink(icon, name string, url templ.SafeURL) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlIcon(icon).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxIcon(icon).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -117,8 +117,8 @@ func htmlLink(icon, name string, url templ.SafeURL) templ.Component {
 	})
 }
 
-// htmlIcon renders a material icon
-func htmlIcon(icon string) templ.Component {
+// hxIcon renders a material icon
+func hxIcon(icon string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

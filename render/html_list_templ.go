@@ -15,7 +15,7 @@ import (
 	"iter"
 )
 
-func htmlList(rctx *Context, items iter.Seq[folio.Object]) templ.Component {
+func hxList(rctx *Context, items iter.Seq[folio.Object]) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -40,7 +40,7 @@ func htmlList(rctx *Context, items iter.Seq[folio.Object]) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlSearchBar().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxSearchBar().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -48,7 +48,7 @@ func htmlList(rctx *Context, items iter.Seq[folio.Object]) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlCreateButton(rctx.Kind).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxCreateButton(rctx.Kind).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -56,7 +56,7 @@ func htmlList(rctx *Context, items iter.Seq[folio.Object]) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlListContent(rctx, items).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxListContent(rctx, items).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -68,7 +68,7 @@ func htmlList(rctx *Context, items iter.Seq[folio.Object]) templ.Component {
 	})
 }
 
-func htmlListHeading() templ.Component {
+func hxListHeading() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -110,7 +110,7 @@ func htmlListHeading() templ.Component {
 	})
 }
 
-func htmlSearchBar() templ.Component {
+func hxSearchBar() templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -152,7 +152,7 @@ func htmlSearchBar() templ.Component {
 	})
 }
 
-func htmlListContent(rctx *Context, elements iter.Seq[folio.Object]) templ.Component {
+func hxListContent(rctx *Context, elements iter.Seq[folio.Object]) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -195,7 +195,7 @@ func htmlListContent(rctx *Context, elements iter.Seq[folio.Object]) templ.Compo
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = htmlListElementRow(v).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = hxListElementRow(v).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -212,7 +212,7 @@ func htmlListContent(rctx *Context, elements iter.Seq[folio.Object]) templ.Compo
 	})
 }
 
-func htmlListElementUpdate(rctx *Context, v folio.Object) templ.Component {
+func hxListElementUpdate(rctx *Context, v folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -250,7 +250,7 @@ func htmlListElementUpdate(rctx *Context, v folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlListElementRow(v).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxListElementRow(v).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -258,7 +258,7 @@ func htmlListElementUpdate(rctx *Context, v folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlListElementEdit(rctx, v).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxFormContent(rctx, v).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -266,7 +266,7 @@ func htmlListElementUpdate(rctx *Context, v folio.Object) templ.Component {
 	})
 }
 
-func htmlListElementDelete(urn folio.URN) templ.Component {
+func hxListElementDelete(urn folio.URN) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -304,7 +304,7 @@ func htmlListElementDelete(urn folio.URN) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlNotification("Successfully Deleted",
+		templ_7745c5c3_Err = hxNotification("Successfully Deleted",
 			fmt.Sprintf("The object with ID %s has been successfully deleted.", urn),
 		).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
@@ -314,7 +314,7 @@ func htmlListElementDelete(urn folio.URN) templ.Component {
 	})
 }
 
-func htmlListElementCreate(rctx *Context, v folio.Object) templ.Component {
+func hxListElementCreate(rctx *Context, v folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -352,7 +352,7 @@ func htmlListElementCreate(rctx *Context, v folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlListElementRow(v).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxListElementRow(v).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -360,7 +360,7 @@ func htmlListElementCreate(rctx *Context, v folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlListElementEdit(rctx, v).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxFormContent(rctx, v).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -368,7 +368,7 @@ func htmlListElementCreate(rctx *Context, v folio.Object) templ.Component {
 	})
 }
 
-func htmlListElementRow(v folio.Object) templ.Component {
+func hxListElementRow(v folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -478,7 +478,7 @@ func htmlListElementRow(v folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = htmlState(StringOf(v, "Status")).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxState(StringOf(v, "Status")).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -498,7 +498,7 @@ func htmlListElementRow(v folio.Object) templ.Component {
 	})
 }
 
-func htmlState(value string) templ.Component {
+func hxState(value string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -558,7 +558,7 @@ func htmlState(value string) templ.Component {
 	})
 }
 
-func htmlCreateButton(kind folio.Kind) templ.Component {
+func hxCreateButton(kind folio.Kind) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {

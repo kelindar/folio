@@ -7,22 +7,22 @@ import (
 	"iter"
 )
 
-templ htmlList(rctx *Context, items iter.Seq[folio.Object]) {
+templ hxList(rctx *Context, items iter.Seq[folio.Object]) {
 	<div class="mx-auto max-w-screen-xl px-4 lg:px-12">
 		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
 				<div class="w-full md:w-1/2">
-					@htmlSearchBar()
+					@hxSearchBar()
 				</div>
 				<div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-					@htmlCreateButton(rctx.Kind)
+					@hxCreateButton(rctx.Kind)
 				</div>
 			</div>
 			<div class="overflow-x-auto">
 				<h2 class="text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white p-4">
 					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage Users</span>
 				</h2>
-				@htmlListContent(rctx, items)
+				@hxListContent(rctx, items)
 			</div>
 			<nav
 				class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
@@ -114,7 +114,7 @@ templ htmlList(rctx *Context, items iter.Seq[folio.Object]) {
 	</div>
 }
 
-templ htmlListHeading() {
+templ hxListHeading() {
 	<div class="border-b border-gray-200 pb-5 sm:flex sm:items-center sm:justify-between">
 		<h3 class="text-base font-semibold leading-6 text-gray-900">Job Postings</h3>
 		<div class="mt-3 sm:ml-4 sm:mt-0">
@@ -146,7 +146,7 @@ templ htmlListHeading() {
 	</div>
 }
 
-templ htmlSearchBar() {
+templ hxSearchBar() {
 	<form hx-post={ "/search" } hx-target="#list-content" hx-swap="outerHTML" hx-ext="json-enc" class="flex items-center">
 		<label for="simple-search" class="sr-only">Search</label>
 		<div class="relative w-full">
@@ -170,40 +170,40 @@ templ htmlSearchBar() {
 	</form>
 }
 
-templ htmlListContent(rctx *Context, elements iter.Seq[folio.Object]) {
+templ hxListContent(rctx *Context, elements iter.Seq[folio.Object]) {
 	<ul id="list-content" role="list" class="divide-y divide-gray-100">
 		for v := range elements {
 			<li id={ v.URN().ID }>
-				@htmlListElementRow(v)
+				@hxListElementRow(v)
 			</li>
 		}
 	</ul>
 }
 
-templ htmlListElementUpdate(rctx *Context, v folio.Object) {
+templ hxListElementUpdate(rctx *Context, v folio.Object) {
 	<li id={ v.URN().ID } hx-swap-oob="true">
-		@htmlListElementRow(v)
+		@hxListElementRow(v)
 	</li>
-	@htmlListElementEdit(rctx, v)
+	@hxFormContent(rctx, v)
 }
 
-templ htmlListElementDelete(urn folio.URN) {
+templ hxListElementDelete(urn folio.URN) {
 	<li id={ urn.ID } hx-swap-oob="delete"></li>
-	@htmlNotification("Successfully Deleted",
+	@hxNotification("Successfully Deleted",
 		fmt.Sprintf("The object with ID %s has been successfully deleted.", urn),
 	)
 }
 
-templ htmlListElementCreate(rctx *Context, v folio.Object) {
+templ hxListElementCreate(rctx *Context, v folio.Object) {
 	<ul id="list-content" hx-swap-oob="beforeend" role="list" class="divide-y divide-gray-100">
 		<li id={ v.URN().ID }>
-			@htmlListElementRow(v)
+			@hxListElementRow(v)
 		</li>
 	</ul>
-	@htmlListElementEdit(rctx, v)
+	@hxFormContent(rctx, v)
 }
 
-templ htmlListElementRow(v folio.Object) {
+templ hxListElementRow(v folio.Object) {
 	<div
 		class="flex justify-between gap-x-2 py-2 px-4 bg-white hover:bg-slate-100 hover:bg-opacity-50 hover:text-white transition duration-300"
 		hx-on:click="document.getElementById('drawer-toggle').checked = true"
@@ -227,7 +227,7 @@ templ htmlListElementRow(v folio.Object) {
 			</div>
 		</div>
 		<div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end gap-y-0.5">
-			@htmlState(StringOf(v, "Status"))
+			@hxState(StringOf(v, "Status"))
 			<span class="mt-1 truncate text-xs leading-5 text-gray-500 px-2">
 				@timedAt(v.Updated())
 			</span>
@@ -235,11 +235,11 @@ templ htmlListElementRow(v folio.Object) {
 	</div>
 }
 
-templ htmlState(value string) {
+templ hxState(value string) {
 	<span class={ "bg-" + convert.Color(value) + "-100 text-" + convert.Color(value) + "-800 text-sm font-medium me-2 px-2 py-0.5 rounded" }>{ value }</span>
 }
 
-templ htmlCreateButton(kind folio.Kind) {
+templ hxCreateButton(kind folio.Kind) {
 	<button
 		class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
 		hx-on:click="document.getElementById('drawer-toggle').checked = true"

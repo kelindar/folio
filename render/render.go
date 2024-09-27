@@ -117,7 +117,7 @@ func (s Section) Render(props Props) templ.Component {
 		desc = d
 	}
 
-	return section(name, desc)
+	return hxFormSection(name, desc)
 }
 
 // ---------------------------------- Object Rendering ----------------------------------
@@ -150,7 +150,7 @@ func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 		case label == "" && component != nil:
 			out = append(out, component)
 		case component != nil:
-			out = append(out, htmlWithLabel(label, component))
+			out = append(out, hxFormRow(label, component))
 		}
 	}
 

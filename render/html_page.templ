@@ -5,7 +5,7 @@ import (
 	"iter"
 )
 
-templ htmlLayout(title string, bodyContent templ.Component) {
+templ hxLayout(title string, bodyContent templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
@@ -37,7 +37,7 @@ templ htmlLayout(title string, bodyContent templ.Component) {
 	</html>
 }
 
-templ htmlDrawer() {
+templ hxDrawer() {
 	<input type="checkbox" id="drawer-toggle" name="drawer-toggle"/>
 	<label for="drawer-toggle" id="drawer-overlay"></label>
 	<nav id="drawer" class="shadow-md"></nav>
@@ -45,11 +45,11 @@ templ htmlDrawer() {
 
 // contentList renders the content list
 templ contentList(rctx *Context, people iter.Seq[folio.Object]) {
-	@htmlDrawer()
+	@hxDrawer()
 	<div id="page-content">
-		@htmlNavigation()
+		@hxNavigation()
 		<div class="container mx-auto">
-			@htmlList(rctx, people)
+			@hxList(rctx, people)
 		</div>
 	</div>
 	<div id="notification"></div>

@@ -10,7 +10,25 @@ import (
 	"github.com/kelindar/folio/convert"
 )
 
-templ section(title, subtitle string) {
+templ hxFormContent(rctx *Context, value folio.Object) {
+	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" hx-ext="obj-enc">
+		@hxFormHeader(rctx, value)
+		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
+			<dl class="divide-y divide-gray-100">
+				for _, edit := range Object(rctx, value) {
+					@edit
+				}
+				if rctx.Mode != ModeCreate {
+					@hxFormSection("Governance", "This section contains information about the governance of the object.")
+					@hxFormRow("Created", timedAt(value.Created()))
+					@hxFormRow("Updated", timedAt(value.Updated()))
+				}
+			</dl>
+		</div>
+	</form>
+}
+
+templ hxFormSection(title, subtitle string) {
 	<div class="px-4 py-6 sm:px-0">
 		<h3 class="text-base font-semibold leading-7 text-gray-900">
 			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3 inline align-middle mb-1">
@@ -24,7 +42,7 @@ templ section(title, subtitle string) {
 	</div>
 }
 
-templ htmlWithLabel(label string, editor templ.Component) {
+templ hxFormRow(label string, editor templ.Component) {
 	<div class="px-4 py-4 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
 		<dt class="leading-6">
 			<p class="text-sm text-gray-900 font-semibold">{ label }</p>
@@ -36,7 +54,7 @@ templ htmlWithLabel(label string, editor templ.Component) {
 	</div>
 }
 
-templ htmlDrawerHeader(rctx *Context, v folio.Object) {
+templ hxFormHeader(rctx *Context, v folio.Object) {
 	<div class="px-4 py-6 bg-gray-50 sm:px-6">
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
@@ -48,39 +66,21 @@ templ htmlDrawerHeader(rctx *Context, v folio.Object) {
 				</p>
 			</div>
 			<div class="mt-5 flex items-center">
-				@htmlDrawerActions(rctx, v)
+				@hxFormActions(rctx, v)
 			</div>
 		</div>
 	</div>
 }
 
-templ htmlListElementEdit(rctx *Context, value folio.Object) {
-	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" hx-ext="obj-enc">
-		@htmlDrawerHeader(rctx, value)
-		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
-			<dl class="divide-y divide-gray-100">
-				for _, edit := range Object(rctx, value) {
-					@edit
-				}
-				if rctx.Mode != ModeCreate {
-					@htmlDrawerSection("Governance", "This section contains information about the governance of the object.")
-					@htmlWithLabel("Created", timedAt(value.Created()))
-					@htmlWithLabel("Updated", timedAt(value.Updated()))
-				}
-			</dl>
-		</div>
-	</form>
-}
-
-templ htmlDrawerActions(rctx *Context, value folio.Object) {
+templ hxFormActions(rctx *Context, value folio.Object) {
 	<div class="flex-shrink-0 px-4 sm:px-6">
 		<div class="space-x-3 flex justify-end">
 			switch rctx.Mode {
 				case ModeView :
-					@htmlButtonDropdown(ButtonDropdownProps{
+					@hxButtonDropdown(ButtonDropdownProps{
 						ID:      "drawer-actions",
-						Primary: htmlDrawerEditButton(value.URN()),
-						Options: htmlDrawerExtraActions(value.URN()),
+						Primary: hxFormEditButton(value.URN()),
+						Options: hxFormExtraActions(value.URN()),
 					})
 				case ModeEdit:
 					<button
@@ -108,7 +108,7 @@ templ htmlDrawerActions(rctx *Context, value folio.Object) {
 	</div>
 }
 
-templ htmlDrawerEditButton(urn folio.URN) {
+templ hxFormEditButton(urn folio.URN) {
 	<button
 		type="button"
 		class="relative inline-flex items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
@@ -117,7 +117,7 @@ templ htmlDrawerEditButton(urn folio.URN) {
 	>Edit</button>
 }
 
-templ htmlDrawerExtraActions(urn folio.URN) {
+templ hxFormExtraActions(urn folio.URN) {
 	<a
 		href="#"
 		class="text-gray-700 block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -135,7 +135,7 @@ type ButtonDropdownProps struct {
 	Options templ.Component
 }
 
-templ htmlButtonDropdown(props ButtonDropdownProps) {
+templ hxButtonDropdown(props ButtonDropdownProps) {
 	<div class="btn-dropdown inline-flex rounded-md shadow-sm relative">
 		@props.Primary
 		<!-- Hidden checkbox for the dropdown toggle -->
@@ -156,21 +156,7 @@ templ htmlButtonDropdown(props ButtonDropdownProps) {
 	</div>
 }
 
-templ htmlDrawerSection(title, subtitle string) {
-	<div class="px-4 py-6 sm:px-0">
-		<h3 class="text-base font-semibold leading-7 text-gray-900">
-			<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-3 inline align-middle mb-1">
-				<path stroke-linecap="round" stroke-linejoin="round" d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"></path>
-			</svg>
-			{ title }
-		</h3>
-		<p class="max-w-2xl text-xs leading-6 text-gray-500">
-			{ subtitle }
-		</p>
-	</div>
-}
-
-templ htmlValidationErrors(v folio.Object, translator ut.Translator, errors validator.ValidationErrors) {
+templ hxValidationErrors(v folio.Object, translator ut.Translator, errors validator.ValidationErrors) {
 	for _, err := range errors {
 		<p id={ err.StructField() + "-error" } hx-swap-oob="true" class="mt-2 text-xs text-red-600">
 			<svg class="h-4 w-4 mb-0.5 text-red-500 inline" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -181,7 +167,7 @@ templ htmlValidationErrors(v folio.Object, translator ut.Translator, errors vali
 	}
 }
 
-templ htmlAlert(title, subtitle string) {
+templ hxAlert(title, subtitle string) {
 	<div class="rounded-md bg-yellow-50 p-4">
 		<div class="flex">
 			<div class="flex-shrink-0">
@@ -199,7 +185,7 @@ templ htmlAlert(title, subtitle string) {
 	</div>
 }
 
-templ htmlNotification(title, subtitle string) {
+templ hxNotification(title, subtitle string) {
 	<div id="notification" hx-swap-oob="true" aria-live="assertive" class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 z-10">
 		<div class="flex w-full flex-col items-center space-y-4 sm:items-end">
 			<div class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 notification-animation opacity-0 translate-y-2 sm:translate-x-2">
