@@ -62,7 +62,7 @@ func NewByURN(c Registry, urn URN) (Object, error) {
 	}
 
 	// Create a new instance
-	return NewByType(typ, urn.Namespace)
+	return NewByType(typ.Type, urn.Namespace)
 }
 
 // New creates a new instance of the specified resource kind.
@@ -125,7 +125,7 @@ func FromKind(c Registry, kind Kind) (Object, error) {
 	}
 
 	// Create a new instance and prepare it for unmarshalling
-	instance := reflect.New(typ).Interface().(Object)
+	instance := reflect.New(typ.Type).Interface().(Object)
 	if err := walkEmbeds(c, instance, func(rv reflect.Value) {
 		rv.Set(reflect.ValueOf(Embed{Registry: c}))
 	}); err != nil {

@@ -2,6 +2,7 @@ package render
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/angelofallars/htmx-go"
@@ -10,13 +11,19 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/convert"
 	"github.com/kelindar/folio/errors"
 )
 
-// indexViewHandler handles a view for the index page.
-func indexViewHandler(db folio.Storage) http.Handler {
+// page handles a page request for a given kind, inferred from path.
+func page(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		found, err := db.Search("person", folio.Query{
+		kind := folio.Kind(r.PathValue("kind"))
+		if _, err := registry.Resolve(kind); err != nil {
+			return errors.BadRequest("invalid kind, %v", err)
+		}
+
+		found, err := db.Search(kind, folio.Query{
 			Namespaces: []string{"default"},
 		})
 		if err != nil {
@@ -25,13 +32,14 @@ func indexViewHandler(db folio.Storage) http.Handler {
 
 		// Define template body content.
 		bodyContent := contentList(&Context{
-			Mode:  ModeView,
-			Kind:  "person",
-			Store: db,
+			Mode:     ModeView,
+			Kind:     kind,
+			Store:    db,
+			Registry: registry,
 		}, found)
 
 		return w.Render(hxLayout(
-			"kelindar/folio",
+			fmt.Sprintf("Folio - %s", convert.TitleCase(kind.String())),
 			bodyContent,
 		))
 	})
@@ -66,19 +74,20 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 		}
 
 		// Create a new instance
-		instance, err := folio.NewByType(rt, "default")
+		instance, err := folio.NewByType(rt.Type, "default")
 		if err != nil {
 			return errors.Internal("Unable to create object, %v", err)
 		}
 
 		return w.Render(hxFormContent(&Context{
-			Mode:  ModeCreate,
-			Store: db,
+			Mode:     ModeCreate,
+			Store:    db,
+			Registry: registry,
 		}, instance))
 	})
 }
 
-func search(db folio.Storage) http.Handler {
+func search(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		var req struct {
 			Kind  string `json:"search_kind"`
@@ -99,7 +108,10 @@ func search(db folio.Storage) http.Handler {
 		}
 
 		return w.Render(hxListContent(&Context{
-			Mode: ModeView,
+			Mode:     ModeView,
+			Kind:     folio.Kind(req.Kind),
+			Store:    db,
+			Registry: registry,
 		}, found))
 	})
 }
@@ -165,13 +177,17 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		switch {
 		case isCreated(updated):
 			return w.Render(hxListElementCreate(&Context{
-				Mode:  ModeView,
-				Store: db,
+				Mode:     ModeView,
+				Kind:     urn.Kind,
+				Store:    db,
+				Registry: registry,
 			}, updated))
 		default:
 			return w.Render(hxListElementUpdate(&Context{
-				Mode:  ModeView,
-				Store: db,
+				Mode:     ModeView,
+				Kind:     urn.Kind,
+				Store:    db,
+				Registry: registry,
 			}, updated))
 		}
 	})

@@ -22,8 +22,8 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	// Handle static files from the embed FS (with a custom handler).
 	http.Handle("GET /assets/", serveStatic(http.FS(assets)))
 
-	// Handle index page view
-	http.Handle("GET /", indexViewHandler(db))
+	// Handle page view
+	http.Handle("GET /{kind}", page(registry, db))
 
 	// Handle API endpoints
 	http.Handle("GET /view/{urn}", editObject(ModeView, db))
@@ -35,7 +35,7 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	http.Handle("DELETE /obj/{urn}", deleteObject(db))
 
 	// Search and listing endpoints
-	http.Handle("POST /search", search(db))
+	http.Handle("POST /search", search(registry, db))
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/

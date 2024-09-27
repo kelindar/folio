@@ -3,7 +3,10 @@ package folio
 import (
 	"errors"
 	"fmt"
+	"iter"
+	"maps"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 )
@@ -14,74 +17,84 @@ var (
 
 // Registry represents a registry of various object kinds.
 type Registry interface {
-	Range(func(kind Kind, typ reflect.Type) error) error
-	Register(Kind, reflect.Type)
-	Resolve(Kind) (reflect.Type, error)
+	Types() iter.Seq[Type]
+	Register(Type)
+	Resolve(Kind) (Type, error)
 }
 
-// entry represents a registry entry
-type entry struct {
-	Kind Kind         // Kind of the resource
-	Type reflect.Type // Type of the resource
+// Type represents a registration of a resource kind.
+type Type struct {
+	Kind    Kind         // Kind of the resource
+	Type    reflect.Type // Type of the resource
+	Options              // Options of the resource
 }
 
 // registry represents a registry of various resource kinds.
 type registry struct {
 	mu   sync.RWMutex
-	data map[Kind]entry
+	data map[Kind]Type
+	sort []Type // sorted
 }
 
 // NewRegistry creates a new registry.
 func NewRegistry() Registry {
 	return &registry{
-		data: make(map[Kind]entry),
+		data: make(map[Kind]Type),
 	}
 }
 
 // Register registers a resource kind into the specified registry.
-func (c *registry) Register(kind Kind, typ reflect.Type) {
+func (c *registry) Register(typ Type) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.data[kind] = entry{
-		Kind: kind,
-		Type: typ,
-	}
+
+	c.data[typ.Kind] = typ
+	c.sort = slices.SortedFunc(maps.Values(c.data), func(a Type, b Type) int {
+		return strings.Compare(
+			fmt.Sprintf("%s/%s", a.Sort, a.Kind),
+			fmt.Sprintf("%s/%s", a.Sort, a.Kind),
+		)
+	})
 }
 
-// Range iterates over all the registered resource kinds.
-func (c *registry) Range(fn func(kind Kind, typ reflect.Type) error) error {
+// Types iterates over all the registered resource kinds.
+func (c *registry) Types() iter.Seq[Type] {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	for _, e := range c.data {
-		if err := fn(e.Kind, e.Type); err != nil {
-			return err
-		}
-	}
-	return nil
+	return slices.Values(c.sort)
 }
 
 // Resolve returns the reflect.Type of the specified resource kind.
-func (c *registry) Resolve(kind Kind) (reflect.Type, error) {
+func (c *registry) Resolve(kind Kind) (Type, error) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	if e, ok := c.data[kind]; ok {
-		return e.Type, nil
+	if t, ok := c.data[kind]; ok {
+		return t, nil
 	}
-	return nil, fmt.Errorf("%w (%s)", ErrKindNotFound, kind)
+	return Type{}, fmt.Errorf("%w (%s)", ErrKindNotFound, kind)
 }
 
 // ---------------------------------- Generic ----------------------------------
 
 // Register registers a resource kind into the specified registry.
-func Register[T Object](c Registry) {
+func Register[T Object](c Registry, opts ...Options) {
 	typ := typeOfT[T]()
 	kind, err := KindOf(typ)
 	if err != nil {
 		panic(err)
 	}
 
-	c.Register(kind, typ)
+	options := defaultOptions(kind)
+	if len(opts) > 0 {
+		options = opts[0]
+	}
+
+	c.Register(Type{
+		Kind:    kind,
+		Type:    typ,
+		Options: options,
+	})
 }
 
 // ---------------------------------- Reflection ----------------------------------

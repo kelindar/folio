@@ -4,21 +4,19 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/kelindar/folio"
 )
 
 func autoMigrate(db *sql.DB, registry folio.Registry) error {
-	if err := registry.Range(func(k folio.Kind, _ reflect.Type) error {
-		return errors.Join(
-			createTable(db, tableOf(k)),
-			createSearchIndex(db, tableOf(k)),
-		)
-	}); err != nil {
-		return err
+	for t := range registry.Types() {
+		if err := errors.Join(
+			createTable(db, tableOf(t.Kind)),
+			createSearchIndex(db, tableOf(t.Kind)),
+		); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 

@@ -7,6 +7,8 @@ import (
 	"io"
 	"iter"
 	"reflect"
+
+	"github.com/kelindar/folio/convert"
 )
 
 var (
@@ -130,4 +132,24 @@ func walkEmbeds(r Registry, value any, fn func(reflect.Value)) error {
 	}
 
 	return nil
+}
+
+// ---------------------------------- Options & Metadata ----------------------------------
+
+// Options represents the options for a document
+type Options struct {
+	Icon   string `json:"icon,omitempty"`   // Icon name from https://fonts.google.com/icons
+	Title  string `json:"title,omitempty"`  // Title of the document (e.g. Person)
+	Plural string `json:"plural,omitempty"` // Plural name of the document (e.g. People)
+	Sort   string `json:"sort,omitempty"`   // Sort field
+}
+
+// defaultOptions returns the default options for the specified kind
+func defaultOptions(kind Kind) Options {
+	return Options{
+		Icon:   "text_snippet",
+		Title:  convert.TitleCase(string(kind)),
+		Plural: convert.TitleCase(string(kind)),
+		Sort:   string(kind),
+	}
 }

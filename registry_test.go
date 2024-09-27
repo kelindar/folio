@@ -33,10 +33,10 @@ func TestRegistryRange(t *testing.T) {
 
 	// Range over the registered kinds
 	count := 0
-	assert.NoError(t, registry.Range(func(k Kind, typ reflect.Type) error {
+	for typ := range registry.Types() {
+		assert.NotNil(t, typ)
 		count++
-		return nil
-	}))
+	}
 	assert.Equal(t, 1, count)
 
 	// Get the reflect.Type of the specified resource kind

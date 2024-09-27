@@ -12,7 +12,19 @@ import (
 
 func main() {
 	reg := folio.NewRegistry()
-	folio.Register[*docs.Person](reg)
+	folio.Register[*docs.Person](reg, folio.Options{
+		Icon:   "person",
+		Title:  "Person",
+		Plural: "People",
+		Sort:   "1",
+	})
+
+	folio.Register[*docs.Company](reg, folio.Options{
+		Icon:   "storefront",
+		Title:  "Company",
+		Plural: "Companies",
+		Sort:   "2",
+	})
 
 	db, err := sqlite.Open("file:data.db?_journal_mode=WAL", reg)
 	if err != nil {
