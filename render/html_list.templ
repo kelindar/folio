@@ -207,7 +207,7 @@ templ hxListElementCreate(rctx *Context, v folio.Object) {
 templ hxListElementRow(v folio.Object) {
 	<div
 		class="flex justify-between gap-x-2 py-2 px-4 bg-white hover:bg-slate-100 hover:bg-opacity-50 hover:text-white transition duration-300"
-		hx-on:click="document.getElementById('drawer-toggle').checked = true"
+		uk-toggle="target: #drawer-toggle"
 		hx-target="#drawer"
 		hx-get={ "/view/" + v.URN().String() }
 	>
@@ -243,7 +243,7 @@ templ hxState(value string) {
 templ hxCreateButton(rctx *Context) {
 	<button
 		class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-		hx-on:click="document.getElementById('drawer-toggle').checked = true"
+		uk-toggle="target: #drawer-toggle"
 		hx-target="#drawer"
 		hx-get={ "/make/" + rctx.Kind.String() }
 	>

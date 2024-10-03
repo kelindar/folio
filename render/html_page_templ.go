@@ -34,7 +34,7 @@ func hxLayout(title string, bodyContent templ.Component) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src &#39;self&#39;;style-src &#39;self&#39; &#39;unsafe-inline&#39; https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;font-src &#39;self&#39; data: https://fonts.gstatic.com;script-src &#39;self&#39; &#39;unsafe-inline&#39; &#39;unsafe-eval&#39; https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; connect-src &#39;self&#39; ws://localhost:*;img-src &#39;self&#39; data:*;\"><meta name=\"theme-color\" content=\"#FEFEF5\"><title>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<!doctype html><html lang=\"en\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><meta http-equiv=\"X-UA-Compatible\" content=\"ie=edge\"><meta http-equiv=\"Content-Security-Policy\" content=\"default-src &#39;self&#39;;style-src &#39;self&#39; &#39;unsafe-inline&#39; https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net;font-src &#39;self&#39; data: https://fonts.gstatic.com;script-src &#39;self&#39; &#39;unsafe-inline&#39; &#39;unsafe-eval&#39; https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; connect-src &#39;self&#39; ws://localhost:*;img-src &#39;self&#39; data:*;\"><meta name=\"theme-color\" content=\"#FEFEF5\"><title>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -47,15 +47,15 @@ func hxLayout(title string, bodyContent templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link rel=\"shortcut icon\" href=\"/assets/favicon.ico\" type=\"image/x-icon\"><link rel=\"stylesheet\" href=\"/assets/style.css\" type=\"text/css\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link rel=\"shortcut icon\" href=\"/assets/favicon.ico\" type=\"image/x-icon\"><link rel=\"stylesheet\" href=\"/assets/style.css\" type=\"text/css\"><link rel=\"stylesheet\" href=\"https://unpkg.com/franken-ui/dist/css/core.min.css\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = hxPreconnect("//fonts.googleapis.com", "//cdn.tailwindcss.com", "//unpkg.com").Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxPreconnect("//fonts.googleapis.com", "//cdn.tailwindcss.com", "//unpkg.com", "https://rsms.me/", "https://rsms.me/inter/inter.css").Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@2.0.2\" crossorigin=\"anonymous\"></script><script src=\"/assets/scripts.js\"></script></head><body class=\"bg-gray-100 dark:bg-gray-900\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@2.0.2\" crossorigin=\"anonymous\"></script><script type=\"module\" src=\"https://unpkg.com/franken-ui/dist/js/core.iife.js\"></script><script type=\"module\" src=\"https://unpkg.com/franken-ui/dist/js/icon.iife.js\"></script><script src=\"/assets/scripts.js\"></script></head><body class=\"bg-gray-100 dark:bg-gray-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -130,7 +130,7 @@ func hxPreconnectUrl(url string) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(url)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_page.templ`, Line: 38, Col: 36}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_page.templ`, Line: 41, Col: 36}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -143,7 +143,7 @@ func hxPreconnectUrl(url string) templ.Component {
 		var templ_7745c5c3_Var6 string
 		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(url)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_page.templ`, Line: 39, Col: 34}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_page.templ`, Line: 42, Col: 34}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {
@@ -178,7 +178,7 @@ func hxDrawer() templ.Component {
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input type=\"checkbox\" id=\"drawer-toggle\" name=\"drawer-toggle\"> <label for=\"drawer-toggle\" id=\"drawer-overlay\"></label><nav id=\"drawer\" class=\"shadow-md\"></nav>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"drawer-toggle\" uk-offcanvas=\"overlay: true\"><div class=\"uk-offcanvas-bar drawer-panel\"><button class=\"uk-offcanvas-close\" type=\"button\" uk-close></button><div id=\"drawer\"></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

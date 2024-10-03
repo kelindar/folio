@@ -12,14 +12,17 @@ templ hxLayout(title string, bodyContent templ.Component) {
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-			<meta http-equiv="Content-Security-Policy" content="default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net;font-src 'self' data: https://fonts.gstatic.com;script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; connect-src 'self' ws://localhost:*;img-src 'self' data:*;"/>
+			<meta http-equiv="Content-Security-Policy" content="default-src 'self';style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net;font-src 'self' data: https://fonts.gstatic.com;script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://unpkg.com https://cdn.jsdelivr.net; connect-src 'self' ws://localhost:*;img-src 'self' data:*;"/>
 			<meta name="theme-color" content="#FEFEF5"/>
 			<title>{ title }</title>
 			<link rel="shortcut icon" href="/assets/favicon.ico" type="image/x-icon"/>
 			<link rel="stylesheet" href="/assets/style.css" type="text/css"/>
-			@hxPreconnect("//fonts.googleapis.com", "//cdn.tailwindcss.com", "//unpkg.com")
+			<link rel="stylesheet" href="https://unpkg.com/franken-ui/dist/css/core.min.css"/>
+			@hxPreconnect("//fonts.googleapis.com", "//cdn.tailwindcss.com", "//unpkg.com", "https://rsms.me/", "https://rsms.me/inter/inter.css")
 			<script src="https://cdn.tailwindcss.com"></script>
 			<script src="https://unpkg.com/htmx.org@2.0.2" crossorigin="anonymous"></script>
+			<script type="module" src="https://unpkg.com/franken-ui/dist/js/core.iife.js"></script>
+			<script type="module" src="https://unpkg.com/franken-ui/dist/js/icon.iife.js"></script>
 			<script src="/assets/scripts.js"></script>
 		</head>
 		<body class="bg-gray-100 dark:bg-gray-900">
@@ -40,9 +43,12 @@ templ hxPreconnectUrl(url string) {
 }
 
 templ hxDrawer() {
-	<input type="checkbox" id="drawer-toggle" name="drawer-toggle"/>
-	<label for="drawer-toggle" id="drawer-overlay"></label>
-	<nav id="drawer" class="shadow-md"></nav>
+	<div id="drawer-toggle" uk-offcanvas="overlay: true">
+		<div class="uk-offcanvas-bar drawer-panel">
+			<button class="uk-offcanvas-close" type="button" uk-close></button>
+			<div id="drawer"></div>
+		</div>
+	</div>
 }
 
 // contentList renders the content list
