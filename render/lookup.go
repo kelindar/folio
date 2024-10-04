@@ -26,7 +26,7 @@ type lookupEnum struct {
 }
 
 // Parses oneof tag from validator e.g.: "required,oneof=male female prefer_not_to"
-func parseOneOf(tag string) []string {
+func decodeOneOf(tag string) []string {
 	fields := strings.Split(tag, ",")
 	for _, field := range fields {
 		if strings.HasPrefix(field, "oneof=") {
@@ -40,7 +40,7 @@ func parseOneOf(tag string) []string {
 func lookupForEnum(field reflect.StructField, rv reflect.Value) *lookupEnum {
 	return &lookupEnum{
 		current: rv,
-		choices: parseOneOf(field.Tag.Get("validate")),
+		choices: decodeOneOf(field.Tag.Get("validate")),
 	}
 }
 
@@ -73,18 +73,31 @@ func (o *lookupEnum) Len() int {
 // ---------------------------------- Reference ----------------------------------
 
 type lookupUrn struct {
-	//current reflect.Value
-	object  folio.Object
-	storage folio.Storage
-	kind    folio.Type
+	object    folio.Object
+	storage   folio.Storage
+	kind      folio.Type
+	namespace []string
 }
 
 func lookupForUrn(_ reflect.StructField, _ reflect.Value) *lookupUrn {
 	return &lookupUrn{}
 }
 
+// decodeKind decodes the kind and namespace from the tag.
+func decodeKind(tag string) (string, string) {
+	fields := strings.Split(tag, ",")
+	switch len(fields) {
+	case 2:
+		return fields[0], fields[1] // kind,namespace
+	case 1:
+		return fields[0], "" // kind
+	default:
+		return "", "" // invalid
+	}
+}
+
 func (o *lookupUrn) Init(props *Props) bool {
-	kind := props.Field.Tag.Get("kind")
+	kind, namespace := decodeKind(props.Field.Tag.Get("kind"))
 	if props.Field.Type.Name() != "URN" || kind == "" {
 		return false
 	}
@@ -100,6 +113,16 @@ func (o *lookupUrn) Init(props *Props) bool {
 		if value, err := props.Store.Fetch(urn); err == nil {
 			o.object = value
 		}
+	}
+
+	// Set the namespace
+	switch namespace {
+	case "*": // no namespace
+		o.namespace = nil
+	case "": // parent namespace
+		o.namespace = []string{props.Parent.URN().Namespace}
+	default:
+		o.namespace = []string{namespace}
 	}
 
 	//o.current = props.Value
@@ -118,7 +141,9 @@ func (o *lookupUrn) Current() (string, string) {
 
 // Choices returns the choices for the given state.
 func (o *lookupUrn) Choices() iter.Seq2[string, string] {
-	seq, err := o.storage.Search(o.kind.Kind, folio.Query{})
+	seq, err := o.storage.Search(o.kind.Kind, folio.Query{
+		Namespaces: o.namespace,
+	})
 	if err != nil {
 		return func(yield func(string, string) bool) {}
 	}
@@ -132,8 +157,10 @@ func (o *lookupUrn) Choices() iter.Seq2[string, string] {
 
 // Len returns the number of choices.
 func (o *lookupUrn) Len() int {
-	count, _ := o.storage.Count(o.kind.Kind, folio.Query{})
-	return count // TODO: consider query
+	count, _ := o.storage.Count(o.kind.Kind, folio.Query{
+		Namespaces: o.namespace,
+	})
+	return count
 }
 
 // ---------------------------------- Lookup Functions ----------------------------------

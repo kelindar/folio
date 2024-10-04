@@ -61,7 +61,7 @@ func TestUrn(t *testing.T) {
 		assert.NotNil(t, phone)
 
 		test := &struct {
-			Product folio.URN `validate:"required" kind:"product"`
+			Product folio.URN `validate:"required" kind:"product,*"`
 		}{Product: phone.URN()}
 
 		// Find the product field
@@ -72,6 +72,7 @@ func TestUrn(t *testing.T) {
 		// Create a lookup for the urn & init
 		enum := lookupForUrn(field, fv)
 		assert.True(t, enum.Init(&Props{
+			Value:    rv,
 			Field:    field,
 			Registry: registry,
 			Store:    db,

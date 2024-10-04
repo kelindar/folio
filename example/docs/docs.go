@@ -22,7 +22,7 @@ type Person struct {
 	Employment render.Section `json:"-" name:"Employment" desc:"Employment information for this person"`
 	IsEmployed bool           `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
 	JobTitle   string         `json:"jobTitle" form:"rw"`
-	Workplace  folio.URN      `json:"workplace" form:"rw" kind:"company"`
+	Workplace  folio.URN      `json:"workplace" form:"rw" kind:"company,*"`
 }
 
 func NewPerson() *Person {
