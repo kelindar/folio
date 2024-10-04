@@ -77,11 +77,6 @@ templ hxFormActions(rctx *Context, value folio.Object) {
 		<div class="space-x-3 flex justify-end">
 			switch rctx.Mode {
 				case ModeView :
-					/*@hxButtonDropdown(ButtonDropdownProps{
-						ID:      "drawer-actions",
-						Primary: hxFormEditButton(value.URN()),
-						Options: hxFormExtraActions(value.URN()),
-					})*/
 					@hxButtonDropdown("drawer-actions", hxFormEditButton(value.URN()), hxFormExtraActions(value.URN()))
 				case ModeEdit:
 					<button
@@ -112,7 +107,7 @@ templ hxFormActions(rctx *Context, value folio.Object) {
 templ hxFormEditButton(urn folio.URN) {
 	<button
 		type="button"
-		class="uk-button uk-button-primary"
+		class="uk-button uk-button-default"
 		hx-target="#drawer"
 		hx-get={ "/edit/" + urn.String() }
 	>Edit</button>

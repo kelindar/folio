@@ -58,15 +58,17 @@ templ Bool(props Props) {
 						name={ props.Name }
 						aria-describedby="offers-description"
 						type="checkbox"
-						class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+						class="uk-checkbox mt-1"
 						value={ fmt.Sprintf("%v", props.Value.Bool()) }
 						if props.Value.Bool() {
 							checked
 						}
 					/>
 				</div>
-				<div class="ml-3 text-sm leading-6">
-					<label for={ props.Name } class="text-gray-500">{ props.Desc }</label>
+				<div class="space-y-1 ml-2 mt-1">
+					<label class="uk-form-label text-gray-500" for={ props.Name }>
+						{ props.Desc }
+					</label>
 				</div>
 			</div>
 	}
@@ -77,7 +79,7 @@ templ Select(props Props, lookup Lookup) {
 		case ModeView :
 			<p id={ props.Name }>{ lookup.Value() }</p>
 		case ModeEdit, ModeCreate:
-			<uk-select name={ props.Name } id={ props.Name } uk-cloak>
+			<uk-select name={ props.Name } id={ props.Name } searchable uk-cloak>
 				for key, label := range lookup.Choices(props.Parent, props.Store) {
 					if lookup.Key() == key {
 						<option value={ key } selected>{ label }</option>

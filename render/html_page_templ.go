@@ -178,7 +178,7 @@ func hxDrawer() templ.Component {
 			templ_7745c5c3_Var7 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"drawer-toggle\" uk-offcanvas=\"overlay: true\"><div class=\"uk-offcanvas-bar drawer-panel\"><button class=\"uk-offcanvas-close\" type=\"button\" uk-close></button><div id=\"drawer\"></div></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"drawer-toggle\" uk-offcanvas=\"flip: true; overlay: true\"><div class=\"uk-offcanvas-bar drawer-panel\"><button class=\"uk-offcanvas-close\" type=\"button\" uk-close></button><div id=\"drawer\"></div></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -247,6 +247,6 @@ templ hxCreateButton(rctx *Context) {
 		hx-target="#drawer"
 		hx-get={ "/make/" + rctx.Kind.String() }
 	>
-		Create { rctx.Type.Title }
+		<uk-icon icon="circle-plus"></uk-icon>&nbsp; Create { rctx.Type.Title }
 	</button>
 }
