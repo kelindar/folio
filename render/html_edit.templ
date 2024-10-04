@@ -77,67 +77,14 @@ templ Select(props Props, lookup Lookup) {
 		case ModeView :
 			<p id={ props.Name }>{ lookup.Value() }</p>
 		case ModeEdit, ModeCreate:
-			<div
-				class="relative combobox"
-				hx-trigger="load"
-				hx-on:load="onComboboxLoad(event)"
-			>
-				<!-- Hidden Checkbox to control dropdown visibility -->
-				<input type="checkbox" id={ props.Name + "_toggle" } class="combobox-toggle hidden"/>
-				<!-- Hidden Input to store the selected key -->
-				<input
-					type="hidden"
-					name={ props.Name }
-					value={ lookup.Key() }
-					class="combobox-value"
-				/>
-				<!-- Combobox Input Field -->
-				<input
-					id={ props.Name + "_input" }
-					type="text"
-					class="w-full rounded-md border-0 bg-white py-1.5 pl-3 pr-12 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 combobox-input"
-					role="combobox"
-					aria-controls={ props.Name }
-					value={ lookup.Value() }
-					aria-expanded="false"
-					autocomplete="off"
-					hx-on:input="onComboboxInput(event)"
-					hx-on:keydown="onComboboxKeyDown(event)"
-				/>
-				<label for={ props.Name + "_toggle" } class="absolute inset-y-0 right-0 flex items-center rounded-r-md px-2 cursor-pointer combobox-button">
-					<svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-						<path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd"></path>
-					</svg>
-				</label>
-				<ul
-					id={ props.Name }
-					class="absolute z-10 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg sm:text-sm combobox-options"
-					role="listbox"
-				>
-					for key, label := range lookup.Choices(props.Parent, props.Store) {
-						<li
-							if lookup.Key() == key {
-								class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 combobox-option hover:bg-gray-100 selected"
-							} else {
-								class="relative cursor-default select-none py-2 pl-3 pr-9 text-gray-900 combobox-option hover:bg-gray-100"
-							}
-							data-value={ key }
-							id={ props.Name + "_" + key }
-							role="option"
-							tabindex="-1"
-							hx-on:click="onComboboxOptionClick(event)"
-						>
-							<!-- Label -->
-							<span class="block truncate">{ label }</span>
-							<!-- Checkmark Icon (hidden by default) -->
-							<span class="checkmark absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
-								<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-									<path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd"></path>
-								</svg>
-							</span>
-						</li>
+			<uk-select name={ props.Name } id={ props.Name } uk-cloak>
+				for key, label := range lookup.Choices(props.Parent, props.Store) {
+					if lookup.Key() == key {
+						<option value={ key } selected>{ label }</option>
+					} else {
+						<option value={ key }>{ label }</option>
 					}
-				</ul>
-			</div>
+				}
+			</uk-select>
 	}
 }
