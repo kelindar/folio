@@ -11,19 +11,17 @@ import (
 )
 
 templ hxFormContent(rctx *Context, value folio.Object) {
-	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" hx-ext="obj-enc">
+	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" class="uk-form-stacked" hx-ext="obj-enc">
 		@hxFormHeader(rctx, value)
-		<div class="grid gap-6 mb-6 px-6 border-t border-gray-200">
-			<dl class="divide-y divide-gray-100">
-				for _, edit := range Object(rctx, value) {
-					@edit
-				}
-				if rctx.Mode != ModeCreate {
-					@hxFormSection("Governance", "This section contains information about the governance of the object.")
-					@hxFormRow("Created", timedAt(value.Created()))
-					@hxFormRow("Updated", timedAt(value.Updated()))
-				}
-			</dl>
+		<div class="grid gap-4 mb-6 px-6 border-t border-gray-200">
+			for _, edit := range Object(rctx, value) {
+				@edit
+			}
+			if rctx.Mode != ModeCreate {
+				@hxFormSection("Governance", "This section contains information about the governance of the object.")
+				@hxFormRow("Created", timedAt(value.Created()))
+				@hxFormRow("Updated", timedAt(value.Updated()))
+			}
 		</div>
 	</form>
 }
@@ -43,14 +41,12 @@ templ hxFormSection(title, subtitle string) {
 }
 
 templ hxFormRow(label string, editor templ.Component) {
-	<div class="px-4 py-4 sm:grid sm:grid-cols-4 sm:gap-2 sm:px-0">
-		<dt class="leading-6">
-			<p class="text-sm text-gray-900 font-semibold">{ label }</p>
-		</dt>
-		<dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-3 sm:mt-0">
+	<div>
+		<label class="uk-form-label font-semibold text-gray-900">{ label }</label>
+		<div class="uk-form-controls">
 			@editor
-			<p id={ label + "-error" }></p>
-		</dd>
+		</div>
+		<div id={ label + "-error" } class="uk-form-help text-destructive"></div>
 	</div>
 }
 
@@ -169,9 +165,6 @@ templ hxButtonDropdown(id string, primary templ.Component, options ...templ.Comp
 templ hxValidationErrors(v folio.Object, translator ut.Translator, errors validator.ValidationErrors) {
 	for _, err := range errors {
 		<p id={ err.StructField() + "-error" } hx-swap-oob="true" class="mt-2 text-xs text-red-600">
-			<svg class="h-4 w-4 mb-0.5 text-red-500 inline" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-				<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-			</svg>
 			{ err.Translate(translator) }
 		</p>
 	}
