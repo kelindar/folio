@@ -33,17 +33,23 @@ type Context struct {
 
 // Props represents the properties of the editor use to render the field.
 type Props struct {
-	Mode   Mode                // Mode of the editor
-	Name   string              // Name of the field (or the JSON tag)
-	Label  string              // Label of the field, Title Case
-	Desc   string              // Description of the field, used for placeholder & tooltip
-	Value  reflect.Value       // Value of the field
-	Parent folio.Object        // Object to which the field belongs
-	Store  folio.Storage       // Storage to use for lookups
-	Field  reflect.StructField // Field of the object
+	Mode     Mode                // Mode of the editor
+	Name     string              // Name of the field (or the JSON tag)
+	Label    string              // Label of the field, Title Case
+	Desc     string              // Description of the field, used for placeholder & tooltip
+	Value    reflect.Value       // Value of the field
+	Parent   folio.Object        // Object to which the field belongs
+	Store    folio.Storage       // Storage to use for lookups
+	Registry folio.Registry      // Registry to use
+	Field    reflect.StructField // Field of the object
 }
 
 // ---------------------------------- Inspect ----------------------------------
+
+// TitleOf returns the title of the object.
+func TitleOf(obj any) string {
+	return StringOf(obj, "Title")
+}
 
 // StringOf returns the string representation of the property.
 func StringOf(obj any, property string) string {
@@ -97,7 +103,7 @@ func ListOf(obj any, property string) []string {
 // ---------------------------------- Section ----------------------------------
 
 type Renderer interface {
-	Render(Props) templ.Component
+	Render(*Props) templ.Component
 }
 
 // Section represents a section of the form. It should contain the tags "name" and "desc"
@@ -105,7 +111,7 @@ type Renderer interface {
 type Section struct{}
 
 // Render renders the section.
-func (s Section) Render(props Props) templ.Component {
+func (s Section) Render(props *Props) templ.Component {
 	name := convert.TitleCase(props.Field.Name)
 	desc := ""
 
@@ -162,14 +168,15 @@ func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv reflect.Value) (string, templ.Component) {
 	name := nameOf(field)
 	label := convert.TitleCase(name)
-	props := Props{
-		Mode:   rctx.Mode,
-		Name:   name,
-		Value:  rv,
-		Desc:   descOf(name, field),
-		Parent: obj,
-		Store:  rctx.Store,
-		Field:  field,
+	props := &Props{
+		Mode:     rctx.Mode,
+		Name:     name,
+		Value:    rv,
+		Desc:     descOf(name, field),
+		Parent:   obj,
+		Store:    rctx.Store,
+		Registry: rctx.Registry,
+		Field:    field,
 	}
 
 	// If the field implements the Renderer interface, we can render it directly
@@ -186,13 +193,16 @@ func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv ref
 	}
 
 	// If the field implements the Lookup interface, we can render it directly
-	if lookup, ok := rv.Interface().(Lookup); ok {
+	if lookup, ok := rv.Interface().(Lookup); ok && lookup.Init(props) {
 		return label, Select(props, lookup)
 	}
 
 	// If the field has a oneof tag, we need to create a lookup wrapper
-	if strings.Contains(field.Tag.Get("validate"), "oneof=") {
-		return label, Select(props, newEnum(field, rv))
+	if lookup := lookupForEnum(field, rv); lookup.Init(props) {
+		return label, Select(props, lookup)
+	}
+	if lookup := lookupForUrn(field, rv); lookup.Init(props) {
+		return label, Select(props, lookup)
 	}
 
 	switch rv.Kind() {

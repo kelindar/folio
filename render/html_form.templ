@@ -55,7 +55,7 @@ templ hxFormHeader(rctx *Context, v folio.Object) {
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
 				<h2 class="text-lg font-medium text-gray-900" id="slide-over-title">
-					{ StringOf(v, "Title") }
+					{ TitleOf(v) }
 				</h2>
 				<p class="text-sm text-gray-500">
 					{ StringOf(v, "Subtitle") }

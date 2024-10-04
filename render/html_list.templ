@@ -217,7 +217,7 @@ templ hxListElementRow(v folio.Object) {
 			}
 			<div class="min-w-0 flex-auto ">
 				<p class="text-sm font-semibold leading-6 text-gray-900 whitespace-nowrap truncate">
-					{ StringOf(v, "Title") }
+					{ TitleOf(v) }
 					for _, tag := range ListOf(v, "Badges") {
 						<span class="bg-slate-100 text-slate-800 text-xxs font-medium me-1 px-2.5 py-0.5 rounded dark:bg-slate-700 dark:text-slate-300">
 							{ tag }

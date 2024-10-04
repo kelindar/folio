@@ -2,7 +2,6 @@ package docs
 
 import (
 	"fmt"
-	"iter"
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/kelindar/folio"
@@ -24,6 +23,7 @@ type Person struct {
 	IsEmployed bool           `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
 	Company    string         `json:"company" form:"rw"`
 	JobTitle   string         `json:"jobTitle" form:"rw"`
+	Workplace  folio.URN      `json:"workplace" form:"rw" kind:"company"`
 }
 
 func NewPerson() *Person {
@@ -92,23 +92,4 @@ func NewCompany() *Company {
 		panic(err)
 	}
 	return c
-}
-
-type CompanyLookup string
-
-var _ render.Lookup = CompanyLookup("")
-
-// Key returns the currently selected key.
-func (c CompanyLookup) Key() string {
-	return string(c)
-}
-
-// Value returns the currently selected value.
-func (c CompanyLookup) Value() string {
-	return string(c)
-}
-
-// Choices returns the choices for the given state.
-func (c CompanyLookup) Choices(_ folio.Object, db folio.Storage) iter.Seq2[string, string] {
-	return nil
 }

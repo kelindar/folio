@@ -2,7 +2,7 @@ package render
 
 import "fmt"
 
-templ String(props Props) {
+templ String(props *Props) {
 	switch props.Mode {
 		case ModeView :
 			<p id={ props.Name }>{ props.Value.String() }</p>
@@ -18,7 +18,7 @@ templ String(props Props) {
 	}
 }
 
-templ Number(props Props) {
+templ Number(props *Props) {
 	switch props.Mode {
 		case ModeView :
 			<p id={ props.Name }>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
@@ -34,7 +34,7 @@ templ Number(props Props) {
 	}
 }
 
-templ Bool(props Props) {
+templ Bool(props *Props) {
 	switch props.Mode {
 		case ModeView :
 			<div class="relative flex items-start">
@@ -74,14 +74,14 @@ templ Bool(props Props) {
 	}
 }
 
-templ Select(props Props, lookup Lookup) {
+templ Select(props *Props, lookup Lookup) {
 	switch props.Mode {
 		case ModeView :
-			<p id={ props.Name }>{ lookup.Value() }</p>
+			<p id={ props.Name }>{ currentValue(lookup) }</p>
 		case ModeEdit, ModeCreate:
-			<uk-select name={ props.Name } id={ props.Name } searchable uk-cloak>
-				for key, label := range lookup.Choices(props.Parent, props.Store) {
-					if lookup.Key() == key {
+			<uk-select name={ props.Name } id={ props.Name } searchable?={ lookup.Len() > 10 || lookup.Len() < 0 } uk-cloak>
+				for key, label := range lookup.Choices() {
+					if currentKey(lookup) == key {
 						<option value={ key } selected>{ label }</option>
 					} else {
 						<option value={ key }>{ label }</option>
