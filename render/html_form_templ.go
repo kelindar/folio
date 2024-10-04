@@ -60,7 +60,7 @@ func hxFormContent(rctx *Context, value folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"grid gap-4 mb-6 px-6 border-t border-gray-200\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"grid gap-4 px-6\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -239,7 +239,7 @@ func hxFormHeader(rctx *Context, v folio.Object) templ.Component {
 			templ_7745c5c3_Var9 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"px-4 py-6 bg-gray-50 sm:px-6\"><div class=\"flex items-start justify-between space-x-3\"><div class=\"space-y-1\"><h2 class=\"text-lg font-medium text-gray-900\" id=\"slide-over-title\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"px-4 py-6 mb-6 border-b bg-gray-50 sm:px-6\"><div class=\"flex items-start justify-between space-x-3\"><div class=\"space-y-1\"><h2 class=\"text-lg font-medium text-gray-900\" id=\"slide-over-title\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

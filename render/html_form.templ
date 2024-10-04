@@ -13,7 +13,7 @@ import (
 templ hxFormContent(rctx *Context, value folio.Object) {
 	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" class="uk-form-stacked" hx-ext="obj-enc">
 		@hxFormHeader(rctx, value)
-		<div class="grid gap-4 mb-6 px-6 border-t border-gray-200">
+		<div class="grid gap-4 px-6">
 			for _, edit := range Object(rctx, value) {
 				@edit
 			}
@@ -51,7 +51,7 @@ templ hxFormRow(label string, editor templ.Component) {
 }
 
 templ hxFormHeader(rctx *Context, v folio.Object) {
-	<div class="px-4 py-6 bg-gray-50 sm:px-6">
+	<div class="px-4 py-6 mb-6 border-b bg-gray-50 sm:px-6">
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
 				<h2 class="text-lg font-medium text-gray-900" id="slide-over-title">

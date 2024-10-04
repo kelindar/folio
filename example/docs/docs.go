@@ -13,14 +13,12 @@ import (
 
 type Person struct {
 	folio.Meta `kind:"person" json:",inline"`
-
-	Details render.Section `json:"-" name:"Personal Details" desc:"Personal details such as address and country"`
-	Name    string         `json:"name" form:"rw" validate:"required"`
-	Age     int            `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Gender  string         `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
-	Country string         `json:"country" form:"rw"`
-	Address string         `json:"address" form:"rw"`
-	Phone   string         `json:"phone" form:"rw"`
+	Name       string `json:"name" form:"rw" validate:"required"`
+	Age        int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Gender     string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	Country    string `json:"country" form:"rw"`
+	Address    string `json:"address" form:"rw"`
+	Phone      string `json:"phone" form:"rw"`
 
 	Employment render.Section `json:"-" name:"Employment" desc:"Employment information for this person"`
 	IsEmployed bool           `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
