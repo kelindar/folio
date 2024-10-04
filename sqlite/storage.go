@@ -57,7 +57,7 @@ func (s *rds) Close() error {
 // ---------------------------------- Query ----------------------------------
 
 // query creates a query for the specified resource kind
-func (s *rds) query(kind folio.Kind, q folio.Query) (*sql.Rows, error) {
+func (s *rds) query(projection string, kind folio.Kind, q folio.Query) (*sql.Rows, error) {
 	if err := defaults.Set(&q); err != nil {
 		return nil, err
 	}
@@ -102,9 +102,18 @@ func (s *rds) query(kind folio.Kind, q folio.Query) (*sql.Rows, error) {
 	}
 
 	// Build the SQL query string
-	querySQL := `SELECT data, created_by, updated_by, created_at, updated_at FROM ` + tableOf(kind)
+	querySQL := fmt.Sprintf("%s FROM %s", projection, tableOf(kind))
 	if len(where) > 0 {
 		querySQL += ` WHERE ` + strings.Join(where, " AND ")
+	}
+
+	// Add sorting
+	if len(q.SortBy) > 0 {
+		sortFields := make([]string, 0, len(q.SortBy))
+		for _, field := range q.SortBy {
+			sortFields = append(sortFields, queryOrder(field))
+		}
+		querySQL += fmt.Sprintf(" ORDER BY %s", strings.Join(sortFields, ", "))
 	}
 
 	if q.Limit > 0 {
@@ -114,7 +123,6 @@ func (s *rds) query(kind folio.Kind, q folio.Query) (*sql.Rows, error) {
 	if q.Offset > 0 {
 		querySQL += fmt.Sprintf(" OFFSET %d", q.Offset)
 	}
-
 	return s.db.Query(querySQL, args...)
 }
 

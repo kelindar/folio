@@ -42,6 +42,7 @@ type Storage interface {
 	Delete(urn URN, deletedBy string) (Object, error)
 	Fetch(urn URN) (Object, error)
 	Search(kind Kind, query Query) (iter.Seq[Object], error)
+	Count(kind Kind, query Query) (int, error)
 }
 
 // Query represents a query to filter records.

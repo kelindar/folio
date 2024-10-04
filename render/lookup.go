@@ -132,7 +132,8 @@ func (o *lookupUrn) Choices() iter.Seq2[string, string] {
 
 // Len returns the number of choices.
 func (o *lookupUrn) Len() int {
-	return -1 // TODO: Implement
+	count, _ := o.storage.Count(o.kind.Kind, folio.Query{})
+	return count // TODO: consider query
 }
 
 // ---------------------------------- Lookup Functions ----------------------------------

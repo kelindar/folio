@@ -75,6 +75,16 @@ func Search[T Object](db Storage, q Query) (iter.Seq[T], error) {
 	}, nil
 }
 
+// Count returns the number of records that match the specified query.
+func Count[T Object](db Storage, q Query) (int, error) {
+	kind, err := KindOfT[T]()
+	if err != nil {
+		return 0, err
+	}
+
+	return db.Count(kind, q)
+}
+
 // defaultOf returns the default value for the specified type
 func defaultOf[T any]() T {
 	var v T

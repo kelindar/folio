@@ -42,7 +42,7 @@ func TestRegistryRange(t *testing.T) {
 	// Get the reflect.Type of the specified resource kind
 	typ, err := registry.Resolve("kind1")
 	assert.NoError(t, err)
-	assert.Equal(t, reflect.TypeOf(Kind1{}), typ)
+	assert.Equal(t, reflect.TypeOf(Kind1{}), typ.Type)
 }
 
 // ---------------------------------- Test Types ----------------------------------

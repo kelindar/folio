@@ -116,7 +116,7 @@ func (s *rds) Delete(urn folio.URN, deletedBy string) (Record, error) {
 // Search performs a query against the storage layer and calls the specified
 // function for each retrieved object.
 func (s *rds) Search(kind folio.Kind, q folio.Query) (iter.Seq[Record], error) {
-	rows, err := s.query(kind, q)
+	rows, err := s.query("SELECT data, created_by, updated_by, created_at, updated_at", kind, q)
 	if err != nil {
 		return nil, err
 	}
@@ -137,4 +137,33 @@ func (s *rds) Search(kind folio.Kind, q folio.Query) (iter.Seq[Record], error) {
 		}
 
 	}, innerErr
+}
+
+// Count returns the number of records that match the specified query.
+func (s *rds) Count(kind folio.Kind, q folio.Query) (int, error) {
+	switch {
+	case q.Limit != 0:
+		return 0, fmt.Errorf("storage: count does not support limit")
+	case q.Offset != 0:
+		return 0, fmt.Errorf("storage: count does not support offset")
+	case q.SortBy != nil:
+		return 0, fmt.Errorf("storage: count does not support sorting")
+	}
+
+	rows, err := s.query("SELECT COUNT(*)", kind, q)
+	if err != nil {
+		return 0, err
+	}
+
+	defer rows.Close()
+	if !rows.Next() {
+		return 0, nil
+	}
+
+	var count int
+	if err := rows.Scan(&count); err != nil {
+		return 0, fmt.Errorf("storage: unable to read count, %w", err)
+	}
+
+	return count, nil
 }

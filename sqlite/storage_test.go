@@ -125,6 +125,24 @@ func TestSearch_FullText(t *testing.T) {
 	})
 }
 
+func TestCount(t *testing.T) {
+	testStorage(func(db folio.Storage, _ folio.Registry) {
+		for i := 0; i < 10; i++ {
+			v, err := folio.New[*App]("my_project")
+			assert.NoError(t, err)
+
+			_, err = db.Insert(v, "test")
+			assert.NoError(t, err)
+		}
+
+		ct, err := db.Count("App", folio.Query{
+			Namespaces: []string{"my_project"},
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 10, ct)
+	})
+}
+
 // ---------------------------------- Storage Test ----------------------------------
 
 func testStorage(fn func(db folio.Storage, registry folio.Registry)) {

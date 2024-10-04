@@ -96,6 +96,24 @@ func TestSearch(t *testing.T) {
 	})
 }
 
+func TestCount(t *testing.T) {
+	testStorage(func(db folio.Storage, _ folio.Registry) {
+		for i := 0; i < 10; i++ {
+			app, err := folio.New[*App]("my_project")
+			assert.NoError(t, err)
+
+			_, err = folio.Insert(db, app, "test")
+			assert.NoError(t, err)
+		}
+
+		count, err := folio.Count[*App](db, folio.Query{
+			Namespaces: []string{"my_project"},
+		})
+		assert.NoError(t, err)
+		assert.Equal(t, 10, count)
+	})
+}
+
 // ---------------------------------- Storage Test ----------------------------------
 
 func testStorage(fn func(db folio.Storage, registry folio.Registry)) {

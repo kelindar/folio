@@ -21,7 +21,6 @@ type Person struct {
 
 	Employment render.Section `json:"-" name:"Employment" desc:"Employment information for this person"`
 	IsEmployed bool           `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
-	Company    string         `json:"company" form:"rw"`
 	JobTitle   string         `json:"jobTitle" form:"rw"`
 	Workplace  folio.URN      `json:"workplace" form:"rw" kind:"company"`
 }
@@ -32,7 +31,6 @@ func NewPerson() *Person {
 		p.Address = gofakeit.Address().Address
 		p.Age = gofakeit.Number(18, 65)
 		p.Phone = gofakeit.Phone()
-		p.Company = gofakeit.Company()
 		p.JobTitle = gofakeit.JobTitle()
 		p.Country = gofakeit.Country()
 		return nil
@@ -48,7 +46,7 @@ func (p *Person) Title() string {
 }
 
 func (p *Person) Subtitle() string {
-	return fmt.Sprintf("%v years old, working as %s at %s", p.Age, p.JobTitle, p.Company)
+	return fmt.Sprintf("%v years old, working as %s", p.Age, p.JobTitle)
 }
 
 func (p *Person) Badges() []string {
