@@ -61,7 +61,8 @@ func TestUrn(t *testing.T) {
 		assert.NotNil(t, phone)
 
 		test := &struct {
-			Product folio.URN `validate:"required" kind:"product,*"`
+			folio.Meta `kind:"mock" json:",inline"`
+			Product    folio.URN `validate:"required" kind:"product"`
 		}{Product: phone.URN()}
 
 		// Find the product field
@@ -76,6 +77,7 @@ func TestUrn(t *testing.T) {
 			Field:    field,
 			Registry: registry,
 			Store:    db,
+			Parent:   test,
 		}))
 		assert.NotNil(t, enum)
 	})

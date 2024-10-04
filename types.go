@@ -7,6 +7,8 @@ import (
 	"io"
 	"iter"
 	"reflect"
+	"regexp"
+	"strings"
 
 	"github.com/kelindar/folio/convert"
 )
@@ -43,18 +45,6 @@ type Storage interface {
 	Fetch(urn URN) (Object, error)
 	Search(kind Kind, query Query) (iter.Seq[Object], error)
 	Count(kind Kind, query Query) (int, error)
-}
-
-// Query represents a query to filter records.
-type Query struct {
-	Namespaces []string            // Namespaces is a list of namespaces to filter by
-	States     []string            // States is a list of states to filter by
-	Indexes    []string            // Indexes is a list of indexes to filter by
-	Filters    map[string][]string // Filters is a map of filters to apply
-	Match      string              // Match is the full-text search query
-	SortBy     []string            `default:"[\"+id\"]"` // Sort is the set of fields to order by
-	Offset     int                 `default:"0"`         // Offset is the number of records to skip
-	Limit      int                 `default:"1000"`      // Limit is the maximum number of records to return
 }
 
 // ---------------------------------- Indexer ----------------------------------
@@ -152,5 +142,243 @@ func defaultOptions(kind Kind) Options {
 		Title:  convert.TitleCase(string(kind)),
 		Plural: convert.TitleCase(string(kind)),
 		Sort:   string(kind),
+	}
+}
+
+// ---------------------------------- Query Parsing ----------------------------------
+
+// Query represents a query to filter records.
+type Query struct {
+	Namespaces []string            // Namespaces is a list of namespaces to filter by
+	States     []string            // States is a list of states to filter by
+	Indexes    []string            // Indexes is a list of indexes to filter by
+	Filters    map[string][]string // Filters is a map of filters to apply
+	Match      string              // Match is the full-text search query
+	SortBy     []string            `default:"[\"+id\"]"` // Sort is the set of fields to order by
+	Offset     int                 `default:"0"`         // Offset is the number of records to skip
+	Limit      int                 `default:"1000"`      // Limit is the maximum number of records to return
+}
+
+/*
+ParseQuery parses a string query into a Query struct. The query format is structured as a semicolon-separated list of key-value pairs.
+
+ 1. **namespace**: Specifies the namespaces to filter by. Multiple namespaces can be separated by commas.
+    Example: `namespace=company,person`
+
+ 2. **state**: Indicates the states to filter by. Multiple states can be separated by commas.
+    Example: `state=active,inactive`
+
+ 3. **filter**: Defines filters to apply. Each filter is specified as `field:value`, and multiple filters can be separated by commas.
+    Example: `filter=age:30,income:1000`
+
+ 4. **match**: A full-text search query. This can include any search terms.
+    Example: `match=software engineer`
+
+Example query: "namespace=company;state=active;filter=age:30;match={Name}"
+In this example:
+- The query is limited to `company` namespace.
+- Only records with an `active` state will be considered.
+- A filter is applied to only include records where `age` is `30`.
+- It matches records containing the person's name from the placeholder `{Name}`.
+
+The placeholders in the `match` parameter can reference fields in the object being queried, such as `{Name}` or `{Age}`
+*/
+func ParseQuery(queryString string, object any, out Query) (Query, error) {
+	if strings.TrimSpace(queryString) == "" {
+		return out, nil
+	}
+
+	// Initialize the query with the default values
+	if out.Filters == nil {
+		out.Filters = make(map[string][]string)
+	}
+
+	// Split the query string by semicolon to handle each component
+	parts := strings.Split(queryString, ";")
+	for _, sub := range parts {
+		if err := parseQueryToken(strings.TrimSpace(sub), &out, object); err != nil {
+			return Query{}, err // Return the error for better debugging
+		}
+	}
+
+	return out, nil
+}
+
+var (
+	namespaceRegex = regexp.MustCompile(`^namespace=([^;]+)$`)
+	stateRegex     = regexp.MustCompile(`^state=([^;]+)$`)
+	filterRegex    = regexp.MustCompile(`^filter=([^;]+)$`)
+	matchRegex     = regexp.MustCompile(`^match=([^;]+)$`)
+)
+
+// parseQueryToken parses each component of the query string.
+func parseQueryToken(component string, query *Query, object any) error {
+	switch {
+	case component == "":
+		return nil // Skip empty components
+	case namespaceRegex.MatchString(component):
+		return parseNamespace(component, query)
+	case stateRegex.MatchString(component):
+		return parseState(component, query)
+	case filterRegex.MatchString(component):
+		return parseFilter(component, query)
+	case matchRegex.MatchString(component):
+		return parseMatch(component, query, object)
+	default:
+		return fmt.Errorf("query: invalid component '%s'", component)
+	}
+}
+
+// parseNamespace parses the namespace from the component.
+func parseNamespace(text string, query *Query) error {
+	matches := namespaceRegex.FindStringSubmatch(text)
+	if matches == nil || len(matches) != 2 {
+		return fmt.Errorf("query: invalid namespace format '%s'", text)
+	}
+
+	for _, ns := range strings.Split(matches[1], ",") {
+		namespace := strings.TrimSpace(ns)
+		switch namespace {
+		case "*", "": // skip
+		default:
+			query.Namespaces = append(query.Namespaces, namespace)
+		}
+	}
+
+	return nil
+}
+
+// parseState parses the state from the component.
+func parseState(text string, query *Query) error {
+	matches := stateRegex.FindStringSubmatch(text)
+	if matches == nil || len(matches) != 2 {
+		return fmt.Errorf("query: invalid state format '%s'", text)
+	}
+
+	states := strings.Split(matches[1], ",")
+	for i, state := range states {
+		states[i] = strings.TrimSpace(state)
+		if states[i] == "" {
+			return fmt.Errorf("query: empty state in '%s'", text)
+		}
+	}
+	query.States = states
+	return nil
+}
+
+// parseFilter parses the filter from the component.
+func parseFilter(text string, query *Query) error {
+	matches := filterRegex.FindStringSubmatch(text)
+	if matches == nil || len(matches) != 2 {
+		return fmt.Errorf("query: invalid filter format '%s'", text)
+	}
+
+	filterStr := matches[1]
+	return populateFilters(query, filterStr)
+}
+
+// parseMatch parses the match from the component.
+func parseMatch(text string, query *Query, object any) error {
+	matches := matchRegex.FindStringSubmatch(text)
+	if matches == nil || len(matches) != 2 {
+		return fmt.Errorf("query: invalid match format '%s'", text)
+	}
+
+	matchValue, err := replacePlaceholders(matches[1], object)
+	if err != nil {
+		return fmt.Errorf("query: error replacing placeholders in match: %v", err)
+	}
+	query.Match = matchValue
+	return nil
+}
+
+// populateFilters processes the filters and adds them to the Query struct.
+func populateFilters(query *Query, filterStr string) error {
+	filters := strings.Split(filterStr, ",")
+	for _, filter := range filters {
+		filter = strings.TrimSpace(filter)
+		if filter == "" {
+			continue // Skip empty filters
+		}
+
+		kv := strings.SplitN(filter, ":", 2)
+		if len(kv) != 2 {
+			return fmt.Errorf("query: invalid filter format '%s'", filter)
+		}
+
+		key := strings.TrimSpace(kv[0])
+		value := strings.TrimSpace(kv[1])
+		if key == "" || value == "" {
+			return fmt.Errorf("query: empty key or value in filter '%s'", filter)
+		}
+		query.Filters[key] = append(query.Filters[key], value)
+	}
+	return nil
+}
+
+// replacePlaceholders replaces placeholders in the string with actual field values from the object.
+func replacePlaceholders(value string, object any) (string, error) {
+	var result strings.Builder
+	var lastIndex int
+	placeholderRegex := regexp.MustCompile(`{(\w+)}`)
+	matches := placeholderRegex.FindAllStringSubmatchIndex(value, -1)
+
+	for _, match := range matches {
+		if len(match) != 4 {
+			continue // Safety check for malformed match
+		}
+		start, end, fieldNameStart, fieldNameEnd := match[0], match[1], match[2], match[3]
+
+		// Append the text before the placeholder
+		result.WriteString(value[lastIndex:start])
+
+		fieldName := value[fieldNameStart:fieldNameEnd]
+		fieldValue, err := loadField(object, fieldName)
+		if err != nil {
+			result.WriteString(fmt.Sprintf("[Error: %s]", err.Error())) // Append error as a placeholder
+		} else {
+			result.WriteString(fieldValue) // Append field value
+		}
+
+		lastIndex = end
+	}
+
+	// Append the rest of the string
+	result.WriteString(value[lastIndex:])
+	return result.String(), nil
+}
+
+// loadField retrieves the value of a specified field from the object.
+func loadField(object any, fieldName string) (string, error) {
+	rv := reflect.Indirect(reflect.ValueOf(object))
+	switch {
+	case rv.Kind() == reflect.Ptr && rv.IsNil():
+		return "", errors.New("object is nil")
+	case rv.Kind() == reflect.Ptr:
+		rv = rv.Elem()
+	case rv.Kind() != reflect.Struct:
+		return "", errors.New("object is not a struct or pointer to struct")
+	}
+
+	fv := rv.FieldByName(fieldName)
+	switch {
+	case !fv.IsValid():
+		return "", fmt.Errorf("field '%s' does not exist", fieldName)
+	case !fv.CanInterface():
+		return "", fmt.Errorf("field '%s' cannot be accessed", fieldName)
+	}
+
+	// Handle different types with formatting
+	switch fv.Kind() {
+	case reflect.String:
+		return fv.String(), nil
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return fmt.Sprintf("%d", fv.Int()), nil
+	case reflect.Float32, reflect.Float64:
+		return fmt.Sprintf("%.2f", fv.Float()), nil
+	case reflect.Bool:
+		return fmt.Sprintf("%t", fv.Bool()), nil
+	default:
+		return "", fmt.Errorf("unsupported field type: %s", fv.Kind())
 	}
 }

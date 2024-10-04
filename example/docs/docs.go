@@ -12,17 +12,17 @@ import (
 
 type Person struct {
 	folio.Meta `kind:"person" json:",inline"`
-	Name       string `json:"name" form:"rw" validate:"required"`
-	Age        int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Gender     string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
-	Country    string `json:"country" form:"rw"`
-	Address    string `json:"address" form:"rw"`
-	Phone      string `json:"phone" form:"rw"`
-
+	Name       string         `json:"name" form:"rw" validate:"required"`
+	Age        int            `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Gender     string         `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	Country    string         `json:"country" form:"rw"`
+	Address    string         `json:"address" form:"rw"`
+	Phone      string         `json:"phone" form:"rw"`
+	Boss       folio.URN      `json:"boss" form:"rw" kind:"person"`
 	Employment render.Section `json:"-" name:"Employment" desc:"Employment information for this person"`
 	IsEmployed bool           `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
 	JobTitle   string         `json:"jobTitle" form:"rw"`
-	Workplace  folio.URN      `json:"workplace" form:"rw" kind:"company,*"`
+	Workplace  folio.URN      `json:"workplace" form:"rw" kind:"company" query:"namespace=*;match=Inc"`
 }
 
 func NewPerson() *Person {

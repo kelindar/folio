@@ -38,3 +38,89 @@ func TestEmbed(t *testing.T) {
 	assert.Equal(t, dep.ID, decoded.ID)
 
 }
+
+// MockObject is a sample struct for testing purposes.
+type MockObject struct {
+	Meta   `kind:"mock" json:",inline"`
+	Name   string
+	Age    int
+	Income float64
+}
+
+func TestParseQuery(t *testing.T) {
+	tests := map[string]struct {
+		query   string
+		object  Object
+		expect  Query
+		invalid bool
+	}{
+		"invalid namespace format": {query: "namespace=;state=active", invalid: true},
+		"invalid filter format":    {query: "namespace=company;filter=age;state=active", invalid: true},
+		"invalid match format":     {query: "namespace=company;match=;", invalid: true},
+		"empty query string": {
+			query:  "",
+			expect: Query{},
+		},
+		"valid query with all components": {
+			query: "namespace=company;state=active;filter=age:30,income:1000;match={Name}",
+			object: &MockObject{
+				Name:   "Alice",
+				Age:    30,
+				Income: 50000.00,
+			},
+			expect: Query{
+				Namespaces: []string{"company"},
+				States:     []string{"active"},
+				Filters: map[string][]string{
+					"age":    {"30"},
+					"income": {"1000"},
+				},
+				Match: "Alice",
+			},
+		},
+		"single valid filter": {
+			query: "namespace=company;state=active;filter=age:30;match={Name}",
+			object: &MockObject{
+				Name: "Alice",
+			},
+			expect: Query{
+				Namespaces: []string{"company"},
+				States:     []string{"active"},
+				Filters: map[string][]string{
+					"age": {"30"},
+				},
+				Match: "Alice",
+			},
+		},
+		"multiple namespaces": {
+			query: "namespace=company,person;state=active;filter=age:30;match={Name}",
+			object: &MockObject{
+				Name: "Alice",
+			},
+			expect: Query{
+				Namespaces: []string{"company", "person"},
+				States:     []string{"active"},
+				Filters: map[string][]string{
+					"age": {"30"},
+				},
+				Match: "Alice",
+			},
+		},
+	}
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			if tt.object == nil {
+				tt.object = &MockObject{}
+			}
+
+			result, err := ParseQuery(tt.query, tt.object, Query{})
+			if tt.invalid {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expect, result)
+			}
+		})
+	}
+}
