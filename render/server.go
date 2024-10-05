@@ -29,13 +29,13 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	http.Handle("GET /view/{urn}", editObject(ModeView, registry, db))
 	http.Handle("GET /edit/{urn}", editObject(ModeEdit, registry, db))
 	http.Handle("GET /make/{kind}", makeObject(registry, db))
-	http.Handle("GET /list/{kind}", list(registry, db))
 
 	// Object CRUD endpoints
 	http.Handle("PUT /obj/{urn}", saveObject(registry, db))
 	http.Handle("DELETE /obj/{urn}", deleteObject(db))
 
 	// Search and listing endpoints
+	http.Handle("GET /search/{kind}", search(registry, db))
 	http.Handle("POST /search/{kind}", search(registry, db))
 
 	// Create a new server instance with options from environment variables.
