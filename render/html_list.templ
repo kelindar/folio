@@ -11,7 +11,7 @@ import (
 
 templ hxList(rctx *Context, content templ.Component) {
 	<div class="mx-auto max-w-screen-xl px-4 lg:px-12">
-		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
+		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden pb-6">
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
 				<div class="w-full md:w-1/2">
 					@hxSearchBar(rctx.Kind)
@@ -198,7 +198,7 @@ templ hxPagination(rctx *Context, page, size, count, last int) {
 				<li class="uk-disabled"><span uk-pagination-next></span> </li>
 			}
 		</ul>
-		<span class="flex justify-center text-xs pt-2 pb-6 text-slate-400">
+		<span class="flex justify-center text-xs pt-2 text-slate-400">
 			Showing { strconv.Itoa(page*size+1) } to { strconv.Itoa(min((page+1)*size, count)) } of { strconv.Itoa(count) }
 		</span>
 	</nav>

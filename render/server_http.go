@@ -43,6 +43,8 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 	})
 }
 
+// ---------------------------------- Search and Listing ----------------------------------
+
 func search(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		search := ""
@@ -75,6 +77,50 @@ func pageOf(kind folio.Kind, query folio.Query, page, size int) string {
 	}
 	return fmt.Sprintf("/search/%s?page=%d&size=%d", kind, page, size)
 }
+
+func renderList(registry folio.Registry, db folio.Storage, r *http.Request, defaultQuery folio.Query) (templ.Component, error) {
+	typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+	if err != nil {
+		return nil, errors.BadRequest("invalid kind, %v", err)
+	}
+
+	page := convert.Int(r.URL.Query().Get("page"), 0)
+	size := convert.Int(r.URL.Query().Get("size"), 20)
+	text, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("filter"))
+	if err != nil {
+		return nil, errors.BadRequest("unable to decode query, %v", err)
+	}
+
+	query, err := folio.ParseQuery(string(text), nil, defaultQuery)
+	if err != nil {
+		return nil, errors.BadRequest("unable to parse query, %v", err)
+	}
+
+	// Count the number of objects
+	count, err := db.Count(typ.Kind, query)
+	if err != nil {
+		return nil, errors.Internal("unable to count, %v", err)
+	}
+
+	// Search for the objects
+	query.Limit = size
+	query.Offset = page * size
+	found, err := db.Search(typ.Kind, query)
+	if err != nil {
+		return nil, errors.Internal("unable to search, %v", err)
+	}
+
+	return hxListContent(&Context{
+		Mode:     ModeView,
+		Kind:     typ.Kind,
+		Type:     typ,
+		Store:    db,
+		Registry: registry,
+		Query:    query,
+	}, found, page, size, count), nil
+}
+
+// ---------------------------------- Object CRUD ----------------------------------
 
 func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
@@ -211,48 +257,6 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 			}, updated))
 		}
 	})
-}
-
-func renderList(registry folio.Registry, db folio.Storage, r *http.Request, defaultQuery folio.Query) (templ.Component, error) {
-	typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
-	if err != nil {
-		return nil, errors.BadRequest("invalid kind, %v", err)
-	}
-
-	page := convert.Int(r.URL.Query().Get("page"), 0)
-	size := convert.Int(r.URL.Query().Get("size"), 20)
-	text, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("filter"))
-	if err != nil {
-		return nil, errors.BadRequest("unable to decode query, %v", err)
-	}
-
-	query, err := folio.ParseQuery(string(text), nil, defaultQuery)
-	if err != nil {
-		return nil, errors.BadRequest("unable to parse query, %v", err)
-	}
-
-	// Count the number of objects
-	count, err := db.Count(typ.Kind, query)
-	if err != nil {
-		return nil, errors.Internal("unable to count, %v", err)
-	}
-
-	// Search for the objects
-	query.Limit = size
-	query.Offset = page * size
-	found, err := db.Search(typ.Kind, query)
-	if err != nil {
-		return nil, errors.Internal("unable to search, %v", err)
-	}
-
-	return hxListContent(&Context{
-		Mode:     ModeView,
-		Kind:     typ.Kind,
-		Type:     typ,
-		Store:    db,
-		Registry: registry,
-		Query:    query,
-	}, found, page, size, count), nil
 }
 
 // fetchOrCreate fetches or creates an object from the database.
