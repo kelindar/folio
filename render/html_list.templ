@@ -94,53 +94,10 @@ templ hxListContent(rctx *Context, elements iter.Seq[folio.Object], page, size, 
 				@hxListElementRow(v)
 			</li>
 		}
-		@hxPagination(rctx, page, size, count)
+		if count > size {
+			@hxPagination(rctx, page, size, count)
+		}
 	</ul>
-}
-
-templ hxPagination(rctx *Context, page, size, count int) {
-	<nav aria-label="Pagination">
-		<ul class="uk-pagination justify-center pt-6" uk-margin>
-			if page > 1 {
-				<li>
-					<a hx-get={ pageOf(rctx.Kind, rctx.Query, page-1, size) } hx-target="#list-content">
-						<span uk-pagination-previous></span>
-					</a>
-				</li>
-			} else {
-				<li class="uk-disabled">
-					<span uk-pagination-previous></span>
-				</li>
-			}
-			for i := max(page-3, 0); i < min(i+3, int(math.Ceil(float64(count)/float64(size)))); i++ {
-				if i == page {
-					<li class="uk-active">
-						<span aria-current="page">{ strconv.Itoa(i+1) }</span>
-					</li>
-				} else {
-					<li>
-						<a hx-get={ pageOf(rctx.Kind, rctx.Query, i, size) } hx-target="#list-content">
-							{ strconv.Itoa(i+1) }
-						</a>
-					</li>
-				}
-			}
-			if page < int(math.Floor(float64(count)/float64(size))) {
-				<li>
-					<a hx-get={ pageOf(rctx.Kind, rctx.Query, page+1, size) } hx-target="#list-content">
-						<span uk-pagination-next></span>
-					</a>
-				</li>
-			} else {
-				<li class="uk-disabled">
-					<span uk-pagination-next></span>
-				</li>
-			}
-		</ul>
-		<span class="flex justify-center text-xs pt-2 pb-6 text-slate-400">
-			Showing { strconv.Itoa(page*size+1) } to { strconv.Itoa(min((page+1)*size, count)) } of { strconv.Itoa(count) }
-		</span>
-	</nav>
 }
 
 templ hxListElementUpdate(rctx *Context, v folio.Object) {
@@ -211,4 +168,49 @@ templ hxCreateButton(rctx *Context) {
 	>
 		<uk-icon icon="circle-plus"></uk-icon>&nbsp; Create { rctx.Type.Title }
 	</button>
+}
+
+const pageGap = 1
+
+templ hxPagination(rctx *Context, page, size, count int) {
+	<nav aria-label="Pagination">
+		<ul class="uk-pagination justify-center pt-6" uk-margin>
+			if page > 0 {
+				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, page-1, size) } hx-target="#list-content"><span uk-pagination-previous></span></a> </li>
+			} else {
+				<li class="uk-disabled"><span uk-pagination-previous></span></li>
+			}
+			if page == 0 {
+				<li class="uk-active"><span aria-current="page">1</span> </li>
+			} else {
+				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, 0, size) } hx-target="#list-content">1</a> </li>
+			}
+			if max(page-pageGap, 1) >= 2 {
+				<li class="uk-disabled"><span>…</span></li>
+			}
+			for i := max(page-pageGap, 1); i < min(page+pageGap, int(math.Ceil(float64(count)/float64(size)))); i++ {
+				if i == page {
+					<li class="uk-active"><span aria-current="page">{ strconv.Itoa(i+1) }</span> </li>
+				} else {
+					<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, i, size) } hx-target="#list-content">{ strconv.Itoa(i+1) }</a> </li>
+				}
+			}
+			if min(page+pageGap, int(math.Ceil(float64(count)/float64(size))) - 1) < int(math.Ceil(float64(count)/float64(size))) - 2 {
+				<li class="uk-disabled"><span>…</span></li>
+			}
+			if page == int(math.Floor(float64(count)/float64(size))) {
+				<li class="uk-active"><span aria-current="page">{ strconv.Itoa(page+1) }</span></li>
+			} else {
+				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, int(math.Floor(float64(count)/float64(size))), size) } hx-target="#list-content">{ strconv.Itoa(int(math.Floor(float64(count)/float64(size)))+1) }</a></li>
+			}
+			if page < int(math.Floor(float64(count)/float64(size))) {
+				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, page+1, size) } hx-target="#list-content"><span uk-pagination-next></span> </a> </li>
+			} else {
+				<li class="uk-disabled"><span uk-pagination-next></span> </li>
+			}
+		</ul>
+		<span class="flex justify-center text-xs pt-2 pb-6 text-slate-400">
+			Showing { strconv.Itoa(page*size+1) } to { strconv.Itoa(min((page+1)*size, count)) } of { strconv.Itoa(count) }
+		</span>
+	</nav>
 }
