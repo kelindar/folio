@@ -13,21 +13,21 @@ import (
 func main() {
 	reg := folio.NewRegistry()
 	folio.Register[*docs.Person](reg, folio.Options{
-		Icon:   "person",
+		Icon:   "user-round",
 		Title:  "Person",
 		Plural: "People",
 		Sort:   "1",
 	})
 
 	folio.Register[*docs.Company](reg, folio.Options{
-		Icon:   "storefront",
+		Icon:   "store",
 		Title:  "Company",
 		Plural: "Companies",
 		Sort:   "2",
 	})
 
 	folio.Register[*docs.Vehicle](reg, folio.Options{
-		Icon:   "directions_car",
+		Icon:   "car",
 		Title:  "Vehicle",
 		Plural: "Vehicles",
 		Sort:   "3",

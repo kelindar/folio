@@ -50,7 +50,7 @@ func hxLayout(title string, bodyContent templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@2.0.2\" crossorigin=\"anonymous\"></script><script type=\"module\" src=\"https://unpkg.com/franken-ui/dist/js/core.iife.js\" async></script><script type=\"module\" src=\"https://unpkg.com/franken-ui/dist/js/icon.iife.js\" async></script><script src=\"/assets/scripts.js\"></script></head><body class=\"bg-gray-100 dark:bg-gray-900\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@2.0.2\" crossorigin=\"anonymous\"></script><script type=\"module\" src=\"https://unpkg.com/franken-ui/dist/js/core.iife.js\"></script><script type=\"module\" src=\"https://unpkg.com/franken-ui/dist/js/icon.iife.js\"></script><script src=\"/assets/scripts.js\"></script></head><body class=\"bg-gray-100 dark:bg-gray-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

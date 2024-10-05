@@ -129,7 +129,7 @@ func walkEmbeds(r Registry, value any, fn func(reflect.Value)) error {
 
 // Options represents the options for a document
 type Options struct {
-	Icon   string `json:"icon,omitempty"`   // Icon name from https://fonts.google.com/icons
+	Icon   string `json:"icon,omitempty"`   // Icon name from https://lucide.dev/icons
 	Title  string `json:"title,omitempty"`  // Title of the document (e.g. Person)
 	Plural string `json:"plural,omitempty"` // Plural name of the document (e.g. People)
 	Sort   string `json:"sort,omitempty"`   // Sort field
@@ -212,6 +212,11 @@ func (q *Query) String() string {
 
 /*
 ParseQuery parses a string query into a Query struct. The query format is structured as a semicolon-separated list of key-value pairs.
+Example query: "namespace=company;state=active;filter=age:30;match={Name}"
+- The query is limited to `company` namespace.
+- Only records with an `active` state will be considered.
+- A filter is applied to only include records where `age` is `30`.
+- It matches records containing the person's name from the placeholder `{Name}`.
 
  1. **namespace**: Specifies the namespaces to filter by. Multiple namespaces can be separated by commas.
     Example: `namespace=company,person`
@@ -224,15 +229,6 @@ ParseQuery parses a string query into a Query struct. The query format is struct
 
  4. **match**: A full-text search query. This can include any search terms.
     Example: `match=software engineer`
-
-Example query: "namespace=company;state=active;filter=age:30;match={Name}"
-In this example:
-- The query is limited to `company` namespace.
-- Only records with an `active` state will be considered.
-- A filter is applied to only include records where `age` is `30`.
-- It matches records containing the person's name from the placeholder `{Name}`.
-
-The placeholders in the `match` parameter can reference fields in the object being queried, such as `{Name}` or `{Age}`
 */
 func ParseQuery(queryString string, object any, out Query) (Query, error) {
 	if strings.TrimSpace(queryString) == "" {

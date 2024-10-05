@@ -47,17 +47,10 @@ templ hxLink(icon, name string, url templ.SafeURL) {
 			class="block w-16 place-content-center py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
 			aria-current="page"
 		>
-			<div>
-				@hxIcon(icon)
+			<div class="inline-block">
+				<uk-icon icon={ icon }></uk-icon>
 			</div>
 			<div class="text-xxs font-bold">{ name }</div>
 		</a>
 	</li>
-}
-
-// hxIcon renders a material icon
-templ hxIcon(icon string) {
-	<span class="material-symbols-outlined">
-		{ icon }
-	</span>
 }

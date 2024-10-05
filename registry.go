@@ -38,9 +38,12 @@ type registry struct {
 
 // NewRegistry creates a new registry.
 func NewRegistry() Registry {
-	return &registry{
+	r := &registry{
 		data: make(map[Kind]Type),
 	}
+
+	registerBuiltins(r)
+	return r
 }
 
 // Register registers a resource kind into the specified registry.
