@@ -159,6 +159,54 @@ type Query struct {
 	Limit      int                 `default:"1000"`      // Limit is the maximum number of records to return
 }
 
+// String returns the string representation of the query.
+func (q *Query) String() string {
+	var out strings.Builder
+
+	if len(q.Namespaces) == 0 && len(q.States) == 0 && len(q.Indexes) == 0 && len(q.Filters) == 0 && q.Match == "" {
+		return "" // Skip empty queries
+	}
+
+	if len(q.Namespaces) > 0 {
+		out.WriteString("namespace=")
+		out.WriteString(strings.Join(q.Namespaces, ","))
+		out.WriteString(";")
+	}
+
+	if len(q.States) > 0 {
+		out.WriteString("state=")
+		out.WriteString(strings.Join(q.States, ","))
+		out.WriteString(";")
+	}
+
+	if len(q.Indexes) > 0 {
+		out.WriteString("index=")
+		out.WriteString(strings.Join(q.Indexes, ","))
+		out.WriteString(";")
+	}
+
+	if len(q.Filters) > 0 {
+		out.WriteString("filter=")
+		for key, values := range q.Filters {
+			for _, value := range values {
+				out.WriteString(key)
+				out.WriteString(":")
+				out.WriteString(value)
+				out.WriteString(",")
+			}
+		}
+		out.WriteString(";")
+	}
+
+	if q.Match != "" {
+		out.WriteString("match=")
+		out.WriteString(q.Match)
+		out.WriteString(";")
+	}
+
+	return out.String()
+}
+
 /*
 ParseQuery parses a string query into a Query struct. The query format is structured as a semicolon-separated list of key-value pairs.
 

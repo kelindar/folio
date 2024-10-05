@@ -107,7 +107,7 @@ func (o *lookupUrn) Init(props *Props) bool {
 		Namespaces: []string{props.Parent.URN().Namespace},
 	})
 	if err != nil {
-		panic(err) // Compiler error
+		return false // Invalid query
 	}
 
 	//o.current = props.Value

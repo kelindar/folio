@@ -103,7 +103,7 @@ templ hxFormActions(rctx *Context, value folio.Object) {
 templ hxFormEditButton(urn folio.URN) {
 	<button
 		type="button"
-		class="uk-button uk-button-default"
+		class="uk-button uk-button-ghost"
 		hx-target="#drawer"
 		hx-get={ "/edit/" + urn.String() }
 	>Edit</button>
@@ -130,16 +130,16 @@ type ButtonDropdownProps struct {
 templ hxButtonDropdown(id string, primary templ.Component, options ...templ.Component) {
 	<div class="flex-none">
 		<div
-			class="flex items-center space-x-1 rounded-md bg-secondary text-secondary-foreground"
+			class="flex items-center px-0 uk-button border border-slate-200 bg-white text-secondary-foreground"
 		>
 			@primary
 			<div
 				data-orientation="vertical"
 				role="none"
-				class="h-[20px] w-[1px] shrink-0 bg-border"
+				class="h-[20px] w-[1px] shrink-0 bg-slate-200 mx-1"
 			></div>
 			<button
-				class="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-secondary px-2 py-2 text-sm font-medium text-secondary-foreground shadow-none transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+				class="inline-flex h-9 items-center justify-center whitespace-nowrap px-3"
 				type="button"
 			>
 				<span class="size-4">

@@ -52,12 +52,12 @@ templ hxDrawer() {
 }
 
 // contentList renders the content list
-templ contentList(rctx *Context, items iter.Seq[folio.Object]) {
+templ contentList(rctx *Context, items iter.Seq[folio.Object], page, size, count int) {
 	@hxDrawer()
 	<div id="page-content">
 		@hxNavigation(rctx.Registry)
 		<div class="container mx-auto">
-			@hxList(rctx, items)
+			@hxList(rctx, items, page, size, count)
 		</div>
 	</div>
 	<div id="notification"></div>

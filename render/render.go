@@ -29,6 +29,7 @@ type Context struct {
 	URN      folio.URN
 	Store    folio.Storage
 	Registry folio.Registry
+	Query    folio.Query
 }
 
 // Props represents the properties of the editor use to render the field.

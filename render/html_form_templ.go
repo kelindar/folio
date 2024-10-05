@@ -365,7 +365,7 @@ func hxFormEditButton(urn folio.URN) templ.Component {
 			templ_7745c5c3_Var14 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button type=\"button\" class=\"uk-button uk-button-default\" hx-target=\"#drawer\" hx-get=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button type=\"button\" class=\"uk-button uk-button-ghost\" hx-target=\"#drawer\" hx-get=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -468,7 +468,7 @@ func hxButtonDropdown(id string, primary templ.Component, options ...templ.Compo
 			templ_7745c5c3_Var19 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex-none\"><div class=\"flex items-center space-x-1 rounded-md bg-secondary text-secondary-foreground\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"flex-none\"><div class=\"flex items-center px-0 uk-button border border-slate-200 bg-white text-secondary-foreground\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -476,7 +476,7 @@ func hxButtonDropdown(id string, primary templ.Component, options ...templ.Compo
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div data-orientation=\"vertical\" role=\"none\" class=\"h-[20px] w-[1px] shrink-0 bg-border\"></div><button class=\"inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-secondary px-2 py-2 text-sm font-medium text-secondary-foreground shadow-none transition-colors hover:bg-secondary/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50\" type=\"button\"><span class=\"size-4\"><uk-icon icon=\"chevron-down\"></uk-icon></span></button><div class=\"uk-drop uk-dropdown\" uk-drop=\"mode: click; pos: bottom-right\"><ul class=\"uk-dropdown-nav\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div data-orientation=\"vertical\" role=\"none\" class=\"h-[20px] w-[1px] shrink-0 bg-slate-200 mx-1\"></div><button class=\"inline-flex h-9 items-center justify-center whitespace-nowrap px-3\" type=\"button\"><span class=\"size-4\"><uk-icon icon=\"chevron-down\"></uk-icon></span></button><div class=\"uk-drop uk-dropdown\" uk-drop=\"mode: click; pos: bottom-right\"><ul class=\"uk-dropdown-nav\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

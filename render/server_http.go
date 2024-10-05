@@ -1,6 +1,7 @@
 package render
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -11,8 +12,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/convert"
 	"github.com/kelindar/folio/errors"
 )
+
+const pageSize = 10
 
 // page handles a page request for a given kind, inferred from path.
 func page(registry folio.Registry, db folio.Storage) http.Handler {
@@ -24,6 +28,7 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 
 		found, err := db.Search(typ.Kind, folio.Query{
 			Namespaces: []string{"default"},
+			Limit:      pageSize,
 		})
 		if err != nil {
 			return errors.Internal("Unable to fetch, %v", err)
@@ -36,7 +41,7 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 			Type:     typ,
 			Store:    db,
 			Registry: registry,
-		}, found)
+		}, found, 0, pageSize, 2)
 
 		return w.Render(hxLayout(
 			fmt.Sprintf("Folio - %s", typ.Plural),
@@ -101,7 +106,7 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		var req struct {
 			Kind  string `json:"search_kind"`
-			Query string `json:"search_query"`
+			Match string `json:"search_match"`
 		}
 
 		defer r.Body.Close()
@@ -118,7 +123,7 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 		// Search for the objects
 		found, err := db.Search(folio.Kind(req.Kind), folio.Query{
 			Namespaces: []string{"default"},
-			Match:      req.Query,
+			Match:      req.Match,
 		})
 		if err != nil {
 			return errors.Internal("Unable to search, %v", err)
@@ -130,7 +135,56 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 			Type:     typ,
 			Store:    db,
 			Registry: registry,
-		}, found))
+		}, found, 0, pageSize, 2))
+	})
+}
+
+// pageOf returns the URL for the given page.
+func pageOf(kind folio.Kind, query folio.Query, page, size int) string {
+	return fmt.Sprintf("/list/%s?page=%d&size=%d&filter=%s", kind, page, size, convert.Base64(query.String()))
+}
+
+func list(registry folio.Registry, db folio.Storage) http.Handler {
+	return handle(func(r *http.Request, w *Response) error {
+		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		if err != nil {
+			return errors.BadRequest("invalid kind, %v", err)
+		}
+
+		page := convert.Int(r.URL.Query().Get("page"), 0)
+		size := convert.Int(r.URL.Query().Get("size"), pageSize)
+		text, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("filter"))
+		if err != nil {
+			return errors.BadRequest("unable to decode query, %v", err)
+		}
+
+		query, err := folio.ParseQuery(string(text), nil, folio.Query{})
+		if err != nil {
+			return errors.BadRequest("unable to parse query, %v", err)
+		}
+
+		// Count the number of objects
+		count, err := db.Count(typ.Kind, query)
+		if err != nil {
+			return errors.Internal("unable to count, %v", err)
+		}
+
+		// Search for the objects
+		query.Limit = size
+		query.Offset = page * size
+		found, err := db.Search(typ.Kind, query)
+		if err != nil {
+			return errors.Internal("unable to search, %v", err)
+		}
+
+		return w.Render(hxListContent(&Context{
+			Mode:     ModeView,
+			Kind:     typ.Kind,
+			Type:     typ,
+			Store:    db,
+			Registry: registry,
+			Query:    query,
+		}, found, page, size, count/size))
 	})
 }
 

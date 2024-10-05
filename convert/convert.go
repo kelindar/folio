@@ -1,8 +1,10 @@
 package convert
 
 import (
+	"encoding/base64"
 	"fmt"
 	"hash/crc32"
+	"strconv"
 	"strings"
 	"time"
 	"unicode"
@@ -81,6 +83,19 @@ func splitCase(src string) (entries []string) {
 		}
 	}
 	return
+}
+
+// Base64 returns a base64 encoded string
+func Base64(input string) string {
+	return base64.URLEncoding.EncodeToString([]byte(input))
+}
+
+// Int returns an integer value or a default value
+func Int(v string, defaultValue int) int {
+	if i, err := strconv.Atoi(v); err == nil {
+		return i
+	}
+	return defaultValue
 }
 
 // ---------------------------------- Date/Time ----------------------------------
