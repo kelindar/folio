@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/a-h/templ"
 	"github.com/angelofallars/htmx-go"
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
@@ -16,7 +17,7 @@ import (
 	"github.com/kelindar/folio/errors"
 )
 
-const pageSize = 10
+const pageSize = 25
 
 // page handles a page request for a given kind, inferred from path.
 func page(registry folio.Registry, db folio.Storage) http.Handler {
@@ -26,26 +27,20 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.BadRequest("invalid kind, %v", err)
 		}
 
-		found, err := db.Search(typ.Kind, folio.Query{
-			Namespaces: []string{"default"},
-			Limit:      pageSize,
-		})
+		list, err := renderList(registry, db, r)
 		if err != nil {
-			return errors.Internal("Unable to fetch, %v", err)
+			return err
 		}
-
-		// Define template body content.
-		bodyContent := contentList(&Context{
-			Mode:     ModeView,
-			Kind:     typ.Kind,
-			Type:     typ,
-			Store:    db,
-			Registry: registry,
-		}, found, 0, pageSize, 30)
 
 		return w.Render(hxLayout(
 			fmt.Sprintf("Folio - %s", typ.Plural),
-			bodyContent,
+			contentList(&Context{
+				Mode:     ModeView,
+				Kind:     typ.Kind,
+				Type:     typ,
+				Store:    db,
+				Registry: registry,
+			}, list),
 		))
 	})
 }
@@ -149,45 +144,12 @@ func pageOf(kind folio.Kind, query folio.Query, page, size int) string {
 
 func list(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		list, err := renderList(registry, db, r)
 		if err != nil {
-			return errors.BadRequest("invalid kind, %v", err)
+			return err
 		}
 
-		page := convert.Int(r.URL.Query().Get("page"), 0)
-		size := convert.Int(r.URL.Query().Get("size"), pageSize)
-		text, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("filter"))
-		if err != nil {
-			return errors.BadRequest("unable to decode query, %v", err)
-		}
-
-		query, err := folio.ParseQuery(string(text), nil, folio.Query{})
-		if err != nil {
-			return errors.BadRequest("unable to parse query, %v", err)
-		}
-
-		// Count the number of objects
-		count, err := db.Count(typ.Kind, query)
-		if err != nil {
-			return errors.Internal("unable to count, %v", err)
-		}
-
-		// Search for the objects
-		query.Limit = size
-		query.Offset = page * size
-		found, err := db.Search(typ.Kind, query)
-		if err != nil {
-			return errors.Internal("unable to search, %v", err)
-		}
-
-		return w.Render(hxListContent(&Context{
-			Mode:     ModeView,
-			Kind:     typ.Kind,
-			Type:     typ,
-			Store:    db,
-			Registry: registry,
-			Query:    query,
-		}, found, page, size, count))
+		return w.Render(list)
 	})
 }
 
@@ -274,6 +236,48 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 			}, updated))
 		}
 	})
+}
+
+func renderList(registry folio.Registry, db folio.Storage, r *http.Request) (templ.Component, error) {
+	typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+	if err != nil {
+		return nil, errors.BadRequest("invalid kind, %v", err)
+	}
+
+	page := convert.Int(r.URL.Query().Get("page"), 0)
+	size := convert.Int(r.URL.Query().Get("size"), pageSize)
+	text, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("filter"))
+	if err != nil {
+		return nil, errors.BadRequest("unable to decode query, %v", err)
+	}
+
+	query, err := folio.ParseQuery(string(text), nil, folio.Query{})
+	if err != nil {
+		return nil, errors.BadRequest("unable to parse query, %v", err)
+	}
+
+	// Count the number of objects
+	count, err := db.Count(typ.Kind, query)
+	if err != nil {
+		return nil, errors.Internal("unable to count, %v", err)
+	}
+
+	// Search for the objects
+	query.Limit = size
+	query.Offset = page * size
+	found, err := db.Search(typ.Kind, query)
+	if err != nil {
+		return nil, errors.Internal("unable to search, %v", err)
+	}
+
+	return hxListContent(&Context{
+		Mode:     ModeView,
+		Kind:     typ.Kind,
+		Type:     typ,
+		Store:    db,
+		Registry: registry,
+		Query:    query,
+	}, found, page, size, count), nil
 }
 
 // fetchOrCreate fetches or creates an object from the database.

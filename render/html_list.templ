@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-templ hxList(rctx *Context, items iter.Seq[folio.Object], page, size, count int) {
+templ hxList(rctx *Context, content templ.Component) {
 	<div class="mx-auto max-w-screen-xl px-4 lg:px-12">
 		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -24,7 +24,7 @@ templ hxList(rctx *Context, items iter.Seq[folio.Object], page, size, count int)
 				<h2 class="text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white p-4">
 					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage { rctx.Type.Plural }</span>
 				</h2>
-				@hxListContent(rctx, items, page, size, count)
+				@content
 			</div>
 		</div>
 	</div>

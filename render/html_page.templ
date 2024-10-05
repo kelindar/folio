@@ -1,10 +1,5 @@
 package render
 
-import (
-	"github.com/kelindar/folio"
-	"iter"
-)
-
 templ hxLayout(title string, bodyContent templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -52,12 +47,12 @@ templ hxDrawer() {
 }
 
 // contentList renders the content list
-templ contentList(rctx *Context, items iter.Seq[folio.Object], page, size, count int) {
+templ contentList(rctx *Context, content templ.Component) {
 	@hxDrawer()
 	<div id="page-content">
 		@hxNavigation(rctx.Registry)
 		<div class="container mx-auto">
-			@hxList(rctx, items, page, size, count)
+			@hxList(rctx, content)
 		</div>
 	</div>
 	<div id="notification"></div>
