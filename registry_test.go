@@ -3,6 +3,7 @@ package folio
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -45,6 +46,20 @@ func TestRegistryRange(t *testing.T) {
 	assert.Equal(t, reflect.TypeOf(Kind1{}), typ.Type)
 }
 
+func TestRegisterInvalid(t *testing.T) {
+	r := NewRegistry()
+	assert.NotNil(t, r)
+	assert.Error(t, r.Register(Type{
+		Kind: "kind1",
+		Type: reflect.TypeOf(time.Time{}),
+	}))
+
+	assert.Error(t, r.Register(Type{
+		Kind: "kind1",
+		Type: reflect.TypeOf(Kind5{}),
+	}))
+}
+
 // ---------------------------------- Test Types ----------------------------------
 
 type Kind1 struct {
@@ -57,7 +72,7 @@ type Kind2 struct {
 	Meta `kind:"kind2" json:",inline"`
 	Name string
 	Env  string `json:"env"`
-	App  URN    `json:"app"`
+	App  URN    `json:"app" kind:"kind1" query:"namespace=*;match=Inc"`
 }
 
 type Kind3 struct {
@@ -69,6 +84,13 @@ type Kind4 struct {
 	Name   string
 	Before Embed `json:"before,omitempty"`
 	After  Embed `json:"after,omitempty"`
+}
+
+type Kind5 struct {
+	Meta `kind:"kind2" json:",inline"`
+	Name string
+	Env  string `json:"env"`
+	App  URN    `json:"app" kind:"kind1" query:"xxx"`
 }
 
 func newRegistry() Registry {

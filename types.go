@@ -209,6 +209,7 @@ var (
 	stateRegex     = regexp.MustCompile(`^state=([^;]+)$`)
 	filterRegex    = regexp.MustCompile(`^filter=([^;]+)$`)
 	matchRegex     = regexp.MustCompile(`^match=([^;]+)$`)
+	variableRegex  = regexp.MustCompile(`{(\w+)}`)
 )
 
 // parseQueryToken parses each component of the query string.
@@ -284,7 +285,7 @@ func parseMatch(text string, query *Query, object any) error {
 		return fmt.Errorf("query: invalid match format '%s'", text)
 	}
 
-	matchValue, err := replacePlaceholders(matches[1], object)
+	matchValue, err := replaceVariables(matches[1], object)
 	if err != nil {
 		return fmt.Errorf("query: error replacing placeholders in match: %v", err)
 	}
@@ -316,36 +317,34 @@ func populateFilters(query *Query, filterStr string) error {
 	return nil
 }
 
-// replacePlaceholders replaces placeholders in the string with actual field values from the object.
-func replacePlaceholders(value string, object any) (string, error) {
-	var result strings.Builder
-	var lastIndex int
-	placeholderRegex := regexp.MustCompile(`{(\w+)}`)
-	matches := placeholderRegex.FindAllStringSubmatchIndex(value, -1)
+// replaceVariables replaces placeholders in the string with actual field values from the object.
+func replaceVariables(value string, object any) (string, error) {
+	var out strings.Builder
+	var idx int
 
-	for _, match := range matches {
+	for _, match := range variableRegex.FindAllStringSubmatchIndex(value, -1) {
 		if len(match) != 4 {
 			continue // Safety check for malformed match
 		}
-		start, end, fieldNameStart, fieldNameEnd := match[0], match[1], match[2], match[3]
+
+		i0, i1, f0, f1 := match[0], match[1], match[2], match[3]
 
 		// Append the text before the placeholder
-		result.WriteString(value[lastIndex:start])
+		out.WriteString(value[idx:i0])
 
-		fieldName := value[fieldNameStart:fieldNameEnd]
+		fieldName := value[f0:f1]
 		fieldValue, err := loadField(object, fieldName)
 		if err != nil {
-			result.WriteString(fmt.Sprintf("[Error: %s]", err.Error())) // Append error as a placeholder
-		} else {
-			result.WriteString(fieldValue) // Append field value
+			return "", err
 		}
 
-		lastIndex = end
+		out.WriteString(fieldValue) // Append field value
+		idx = i1
 	}
 
 	// Append the rest of the string
-	result.WriteString(value[lastIndex:])
-	return result.String(), nil
+	out.WriteString(value[idx:])
+	return out.String(), nil
 }
 
 // loadField retrieves the value of a specified field from the object.

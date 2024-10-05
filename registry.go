@@ -18,7 +18,7 @@ var (
 // Registry represents a registry of various object kinds.
 type Registry interface {
 	Types() iter.Seq[Type]
-	Register(Type)
+	Register(Type) error
 	Resolve(Kind) (Type, error)
 }
 
@@ -44,10 +44,27 @@ func NewRegistry() Registry {
 }
 
 // Register registers a resource kind into the specified registry.
-func (c *registry) Register(typ Type) {
+func (c *registry) Register(typ Type) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
+	// Make sure the resource kind is an Object
+	instance := reflect.New(typ.Type).Interface()
+	if _, ok := instance.(Object); !ok {
+		return fmt.Errorf("resource: unable to register '%s', not an Object", typ.Kind)
+	}
+
+	// Iterate over all the fields of the type and make sure any "query" tags can be parsed
+	for i := 0; i < typ.Type.NumField(); i++ {
+		field := typ.Type.Field(i)
+		if field.Tag.Get("query") != "" {
+			if _, err := ParseQuery(field.Tag.Get("query"), instance, Query{}); err != nil {
+				return fmt.Errorf("resource: unable to register '%s', invalid query tag on '%s' field", typ.Kind, field.Name)
+			}
+		}
+	}
+
+	//Register the resource kind and sort the data
 	c.data[typ.Kind] = typ
 	c.sort = slices.SortedFunc(maps.Values(c.data), func(a Type, b Type) int {
 		return strings.Compare(
@@ -55,6 +72,7 @@ func (c *registry) Register(typ Type) {
 			fmt.Sprintf("%s/%s", a.Sort, a.Kind),
 		)
 	})
+	return nil
 }
 
 // Types iterates over all the registered resource kinds.
@@ -90,11 +108,13 @@ func Register[T Object](c Registry, opts ...Options) {
 		options = opts[0]
 	}
 
-	c.Register(Type{
+	if err := c.Register(Type{
 		Kind:    kind,
 		Type:    typ,
 		Options: options,
-	})
+	}); err != nil {
+		panic(err)
+	}
 }
 
 // ---------------------------------- Reflection ----------------------------------
