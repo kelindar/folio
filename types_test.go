@@ -124,3 +124,35 @@ func TestParseQuery(t *testing.T) {
 		})
 	}
 }
+
+func TestEncodeQuery(t *testing.T) {
+	tests := map[string]Query{
+		"": {},
+		"namespace=company;state=active;filter=age:30;match=Alice;": {
+			Namespaces: []string{"company"},
+			States:     []string{"active"},
+			Filters: map[string][]string{
+				"age": {"30"},
+			},
+			Match: "Alice",
+		},
+		"namespace=company,person;state=active;filter=age:30;match=Alice;": {
+			Namespaces: []string{"company", "person"},
+			States:     []string{"active"},
+			Filters: map[string][]string{
+				"age": {"30"},
+			},
+			Match: "Alice",
+		},
+		"namespace=default;index=field1,field2;": {
+			Namespaces: []string{"default"},
+			Indexes:    []string{"field1", "field2"},
+		},
+	}
+
+	for expect, query := range tests {
+		t.Run(expect, func(t *testing.T) {
+			assert.Equal(t, expect, query.String())
+		})
+	}
+}

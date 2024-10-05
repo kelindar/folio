@@ -16,8 +16,8 @@ templ hxLayout(title string, bodyContent templ.Component) {
 			@hxPreconnect("//fonts.googleapis.com", "//cdn.tailwindcss.com", "//unpkg.com", "https://rsms.me/", "https://rsms.me/inter/inter.css")
 			<script src="https://cdn.tailwindcss.com"></script>
 			<script src="https://unpkg.com/htmx.org@2.0.2" crossorigin="anonymous"></script>
-			<script type="module" src="https://unpkg.com/franken-ui/dist/js/core.iife.js"></script>
-			<script type="module" src="https://unpkg.com/franken-ui/dist/js/icon.iife.js"></script>
+			<script type="module" src="https://unpkg.com/franken-ui/dist/js/core.iife.js" async></script>
+			<script type="module" src="https://unpkg.com/franken-ui/dist/js/icon.iife.js" async></script>
 			<script src="/assets/scripts.js"></script>
 		</head>
 		<body class="bg-gray-100 dark:bg-gray-900">

@@ -188,11 +188,14 @@ func (q *Query) String() string {
 	if len(q.Filters) > 0 {
 		out.WriteString("filter=")
 		for key, values := range q.Filters {
-			for _, value := range values {
+			for i, value := range values {
+				if i > 0 {
+					out.WriteString(",") // Add comma separator
+				}
+
 				out.WriteString(key)
 				out.WriteString(":")
 				out.WriteString(value)
-				out.WriteString(",")
 			}
 		}
 		out.WriteString(";")
