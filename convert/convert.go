@@ -98,6 +98,14 @@ func Int(v string, defaultValue int) int {
 	return defaultValue
 }
 
+// Float returns a float value or a default value
+func Float(v string, defaultValue float64) float64 {
+	if f, err := strconv.ParseFloat(v, 64); err == nil {
+		return f
+	}
+	return defaultValue
+}
+
 // ---------------------------------- Date/Time ----------------------------------
 
 // Since returns a human readable time format

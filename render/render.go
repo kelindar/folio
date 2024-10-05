@@ -159,7 +159,7 @@ func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 		case label == "" && component != nil:
 			out = append(out, component)
 		case component != nil:
-			out = append(out, hxFormRow(label, component))
+			out = append(out, hxFormRow(label, component, isRequired(field)))
 		}
 	}
 
@@ -199,10 +199,10 @@ func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv ref
 	}
 
 	// If the field has a oneof tag, we need to create a lookup wrapper
-	if lookup := lookupForEnum(field, rv); lookup.Init(props) {
+	if lookup := lookupForEnum(rv); lookup.Init(props) {
 		return label, Select(props, lookup)
 	}
-	if lookup := lookupForUrn(field, rv); lookup.Init(props) {
+	if lookup := lookupForUrn(); lookup.Init(props) {
 		return label, Select(props, lookup)
 	}
 

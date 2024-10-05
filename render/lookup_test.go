@@ -25,7 +25,7 @@ func TestEnum(t *testing.T) {
 	field, _ := rv.Type().FieldByName("Field")
 	fv := rv.FieldByName("Field")
 
-	enum := lookupForEnum(field, fv)
+	enum := lookupForEnum(fv)
 	assert.True(t, enum.Init(&Props{
 		Field: field,
 	}))
@@ -68,10 +68,9 @@ func TestUrn(t *testing.T) {
 		// Find the product field
 		rv := reflect.Indirect(reflect.ValueOf(test))
 		field, _ := rv.Type().FieldByName("Product")
-		fv := rv.FieldByName("Product")
 
 		// Create a lookup for the urn & init
-		enum := lookupForUrn(field, fv)
+		enum := lookupForUrn()
 		assert.True(t, enum.Init(&Props{
 			Value:    rv,
 			Field:    field,

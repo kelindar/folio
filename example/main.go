@@ -26,6 +26,13 @@ func main() {
 		Sort:   "2",
 	})
 
+	folio.Register[*docs.Vehicle](reg, folio.Options{
+		Icon:   "directions_car",
+		Title:  "Vehicle",
+		Plural: "Vehicles",
+		Sort:   "3",
+	})
+
 	db, err := sqlite.Open("file:data.db?_journal_mode=WAL", reg)
 	if err != nil {
 		panic(err)

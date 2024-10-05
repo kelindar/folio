@@ -65,7 +65,7 @@ templ Bool(props *Props) {
 						}
 					/>
 				</div>
-				<div class="space-y-1 ml-2 mt-1">
+				<div class="space-y-1 ml-2">
 					<label class="uk-form-label text-gray-500" for={ props.Name }>
 						{ props.Desc }
 					</label>
@@ -88,5 +88,24 @@ templ Select(props *Props, lookup Lookup) {
 					}
 				}
 			</uk-select>
+	}
+}
+
+templ Range(props *Props, min, max, step float64) {
+	switch props.Mode {
+		case ModeView :
+			<p id={ props.Name }>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
+		case ModeEdit, ModeCreate:
+			<input
+				type="range"
+				id={ props.Name }
+				name={ props.Name }
+				class="uk-range"
+				placeholder={ props.Desc }
+				value={ fmt.Sprintf("%v", props.Value.Interface()) }
+				min={ fmt.Sprintf("%v", min) }
+				max={ fmt.Sprintf("%v", max) }
+				step={ fmt.Sprintf("%v", step) }
+			/>
 	}
 }

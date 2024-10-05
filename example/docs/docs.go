@@ -91,3 +91,22 @@ func NewCompany() *Company {
 	}
 	return c
 }
+
+// ---------------------------------- Vehicle ----------------------------------
+
+type Vehicle struct {
+	folio.Meta  `kind:"vehicle" json:",inline"`
+	Type        string    `json:"type" form:"rw" validate:"required,oneof=car bike truck"`
+	Year        int       `json:"year" form:"rw" validate:"gte=1800,lte=2021"`
+	Model       string    `json:"model" form:"rw" validate:"required"`
+	Description string    `json:"description" form:"rw"`
+	Company     folio.URN `json:"company" form:"rw" kind:"company"`
+}
+
+func (c *Vehicle) Title() string {
+	return fmt.Sprintf("%s %s", c.Model, c.Type)
+}
+
+func (c *Vehicle) Subtitle() string {
+	return fmt.Sprintf("Manufactured in %v", c.Year)
+}

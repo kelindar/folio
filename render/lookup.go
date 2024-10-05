@@ -3,7 +3,6 @@ package render
 import (
 	"iter"
 	"reflect"
-	"strings"
 
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/convert"
@@ -25,28 +24,20 @@ type lookupEnum struct {
 	choices []string
 }
 
-// Parses oneof tag from validator e.g.: "required,oneof=male female prefer_not_to"
-func decodeOneOf(tag string) []string {
-	fields := strings.Split(tag, ",")
-	for _, field := range fields {
-		if strings.HasPrefix(field, "oneof=") {
-			return strings.Split(field[6:], " ")
-		}
-	}
-	return nil
-}
-
 // lookupForEnum creates a new lookup for an enum field.
-func lookupForEnum(field reflect.StructField, rv reflect.Value) *lookupEnum {
+func lookupForEnum(rv reflect.Value) *lookupEnum {
 	return &lookupEnum{
 		current: rv,
-		choices: decodeOneOf(field.Tag.Get("validate")),
 	}
 }
 
 // Init initializes the lookup it returns false if the field is not valid.
 func (o *lookupEnum) Init(props *Props) bool {
-	return strings.Contains(props.Field.Tag.Get("validate"), "oneof=")
+	if choices, ok := decodeOneOf(props.Field); ok {
+		o.choices = choices
+		return true
+	}
+	return false
 }
 
 // Value returns the currently selected value.
@@ -79,7 +70,7 @@ type lookupUrn struct {
 	query   folio.Query
 }
 
-func lookupForUrn(_ reflect.StructField, _ reflect.Value) *lookupUrn {
+func lookupForUrn() *lookupUrn {
 	return &lookupUrn{}
 }
 

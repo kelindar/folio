@@ -74,3 +74,10 @@ func TestColorOf(t *testing.T) {
 		})
 	}
 }
+
+func TestParse(t *testing.T) {
+	assert.Equal(t, 1, Int("1", 0))
+	assert.Equal(t, 0, Int("a", 0))
+	assert.Equal(t, 1.0, Float("1", 0))
+	assert.Equal(t, 0.0, Float("a", 0))
+}
