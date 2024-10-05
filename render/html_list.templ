@@ -5,6 +5,7 @@ import (
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/convert"
 	"iter"
+	"math"
 	"strconv"
 )
 
@@ -99,15 +100,19 @@ templ hxListContent(rctx *Context, elements iter.Seq[folio.Object], page, size, 
 
 templ hxPagination(rctx *Context, page, size, count int) {
 	<nav aria-label="Pagination">
-		<ul class="uk-pagination justify-center py-6" uk-margin>
+		<ul class="uk-pagination justify-center pt-6" uk-margin>
 			if page > 1 {
 				<li>
 					<a hx-get={ pageOf(rctx.Kind, rctx.Query, page-1, size) } hx-target="#list-content">
 						<span uk-pagination-previous></span>
 					</a>
 				</li>
+			} else {
+				<li class="uk-disabled">
+					<span uk-pagination-previous></span>
+				</li>
 			}
-			for i := max(page-3, 0); i < min(i+3, count); i++ {
+			for i := max(page-3, 0); i < min(i+3, int(math.Ceil(float64(count)/float64(size)))); i++ {
 				if i == page {
 					<li class="uk-active">
 						<span aria-current="page">{ strconv.Itoa(i+1) }</span>
@@ -120,14 +125,21 @@ templ hxPagination(rctx *Context, page, size, count int) {
 					</li>
 				}
 			}
-			if page < count - 1 {
+			if page < int(math.Floor(float64(count)/float64(size))) {
 				<li>
 					<a hx-get={ pageOf(rctx.Kind, rctx.Query, page+1, size) } hx-target="#list-content">
 						<span uk-pagination-next></span>
 					</a>
 				</li>
+			} else {
+				<li class="uk-disabled">
+					<span uk-pagination-next></span>
+				</li>
 			}
 		</ul>
+		<span class="flex justify-center text-xs pt-2 pb-6 text-slate-400">
+			Showing { strconv.Itoa(page*size+1) } to { strconv.Itoa(min((page+1)*size, count)) } of { strconv.Itoa(count) }
+		</span>
 	</nav>
 }
 

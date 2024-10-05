@@ -41,7 +41,7 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 			Type:     typ,
 			Store:    db,
 			Registry: registry,
-		}, found, 0, pageSize, 2)
+		}, found, 0, pageSize, 30)
 
 		return w.Render(hxLayout(
 			fmt.Sprintf("Folio - %s", typ.Plural),
@@ -135,13 +135,16 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 			Type:     typ,
 			Store:    db,
 			Registry: registry,
-		}, found, 0, pageSize, 2))
+		}, found, 0, pageSize, 30))
 	})
 }
 
 // pageOf returns the URL for the given page.
 func pageOf(kind folio.Kind, query folio.Query, page, size int) string {
-	return fmt.Sprintf("/list/%s?page=%d&size=%d&filter=%s", kind, page, size, convert.Base64(query.String()))
+	if filter := convert.Base64(query.String()); filter != "" {
+		return fmt.Sprintf("/list/%s?page=%d&size=%d&filter=%s", kind, page, size, filter)
+	}
+	return fmt.Sprintf("/list/%s?page=%d&size=%d", kind, page, size)
 }
 
 func list(registry folio.Registry, db folio.Storage) http.Handler {
@@ -184,7 +187,7 @@ func list(registry folio.Registry, db folio.Storage) http.Handler {
 			Store:    db,
 			Registry: registry,
 			Query:    query,
-		}, found, page, size, count/size))
+		}, found, page, size, count))
 	})
 }
 
