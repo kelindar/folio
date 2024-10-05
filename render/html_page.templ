@@ -52,9 +52,9 @@ templ hxDrawer() {
 templ contentList(rctx *Context, content templ.Component, namespaces []folio.Object) {
 	@hxDrawer()
 	<div id="page-content">
-		@hxNavigation(rctx.Registry)
+		@hxNavigation(rctx, namespaces)
 		<div class="container mx-auto">
-			@hxList(rctx, content, namespaces)
+			@hxList(rctx, content)
 		</div>
 	</div>
 	<div id="notification"></div>

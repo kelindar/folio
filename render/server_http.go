@@ -48,26 +48,32 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 
 func search(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		search := ""
-		if r.Method == http.MethodPost {
+		var query folio.Query
+		switch r.Method {
+		case http.MethodPost:
 			var req struct {
-				Match string `json:"search_match"`
+				Match     string `json:"search_match"`
+				Namespace string `json:"search_namespace"`
 			}
 
 			defer r.Body.Close()
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.BadRequest("unable to decode request, %v", err)
 			}
-			search = req.Match
-		}
 
-		list, err := renderList(registry, db, r, folio.Query{
-			Match: search,
-		})
-		if err != nil {
-			return err
+			query.Match = req.Match
+			if req.Namespace != "" && req.Namespace != "*" {
+				query.Namespaces = []string{req.Namespace}
+			}
+
+			fallthrough
+		default:
+			list, err := renderList(registry, db, r, query)
+			if err != nil {
+				return err
+			}
+			return w.Render(list)
 		}
-		return w.Render(list)
 	})
 }
 

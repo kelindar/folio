@@ -213,7 +213,7 @@ func contentList(rctx *Context, content templ.Component, namespaces []folio.Obje
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = hxNavigation(rctx.Registry).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxNavigation(rctx, namespaces).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -221,7 +221,7 @@ func contentList(rctx *Context, content templ.Component, namespaces []folio.Obje
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = hxList(rctx, content, namespaces).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxList(rctx, content).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
