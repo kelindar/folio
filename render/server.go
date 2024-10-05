@@ -36,7 +36,7 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	http.Handle("DELETE /obj/{urn}", deleteObject(db))
 
 	// Search and listing endpoints
-	http.Handle("POST /search", search(registry, db))
+	http.Handle("POST /search/{kind}", search(registry, db))
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/

@@ -151,9 +151,9 @@ func hxSearchBar(kind folio.Kind) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var6 string
-		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("/search")
+		templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs("/search/" + kind.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_list.templ`, Line: 66, Col: 26}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_list.templ`, Line: 66, Col: 43}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 		if templ_7745c5c3_Err != nil {

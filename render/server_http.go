@@ -109,6 +109,15 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.BadRequest("Unable to decode request, %v", err)
 		}
 
+		// If no match is provided, return the list
+		if req.Match == "" {
+			list, err := renderList(registry, db, r)
+			if err != nil {
+				return err
+			}
+			return w.Render(list)
+		}
+
 		// Make sure this kind exists
 		typ, err := registry.Resolve(folio.Kind(req.Kind))
 		if err != nil {
@@ -130,7 +139,7 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 			Type:     typ,
 			Store:    db,
 			Registry: registry,
-		}, found, 0, pageSize, 30))
+		}, found, 0, pageSize, 0))
 	})
 }
 
