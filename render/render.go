@@ -237,3 +237,16 @@ func nameOf(field reflect.StructField) string {
 	}
 	return name
 }
+
+func namespaces(store folio.Storage) []folio.Object {
+	it, err := store.Search("namespace", folio.Query{})
+	if err != nil {
+		return nil
+	}
+
+	out := make([]folio.Object, 0, 8)
+	for obj := range it {
+		out = append(out, obj)
+	}
+	return out
+}

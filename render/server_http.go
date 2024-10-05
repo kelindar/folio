@@ -25,6 +25,7 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.BadRequest("invalid kind, %v", err)
 		}
 
+		ns := namespaces(db)
 		list, err := renderList(registry, db, r, folio.Query{})
 		if err != nil {
 			return err
@@ -38,7 +39,7 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 				Type:     typ,
 				Store:    db,
 				Registry: registry,
-			}, list),
+			}, list, ns),
 		))
 	})
 }

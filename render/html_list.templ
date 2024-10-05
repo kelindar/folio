@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-templ hxList(rctx *Context, content templ.Component) {
+templ hxList(rctx *Context, content templ.Component, namespaces []folio.Object) {
 	<div class="mx-auto max-w-screen-xl px-4 lg:px-12">
 		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden pb-6">
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 p-4">
@@ -17,7 +17,7 @@ templ hxList(rctx *Context, content templ.Component) {
 				<uk-icon icon="filter" class="px-3"></uk-icon>
 				<div class="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-4 w-full md:w-auto flex-1">
 					<div class="w-full md:w-64">
-						@hxNamespace()
+						@hxNamespace(namespaces)
 					</div>
 					<div class="w-full md:w-auto">
 						@hxSearchBar(rctx.Kind)
@@ -89,14 +89,12 @@ templ hxSearchBar(kind folio.Kind) {
 	</form>
 }
 
-templ hxNamespace() {
+templ hxNamespace(namespaces []folio.Object) {
 	<uk-select name="namespace" id="namespace" searchable uk-cloak>
-		<option value="" selected>All</option>
-		<option value="global">Global</option>
-		<optgroup label="Specific">
-			<option value="kube-system">Kube System</option>
-			<option value="kube-public">Kube Public</option>
-		</optgroup>
+		<option value="*" selected>All</option>
+		for _, ns := range namespaces {
+			<option value={ StringOf(ns, "Name") }>{ TitleOf(ns) }</option>
+		}
 	</uk-select>
 }
 
