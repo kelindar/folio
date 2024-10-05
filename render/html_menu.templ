@@ -41,6 +41,7 @@ templ hxNamespace(rctx *Context, namespaces []folio.Object) {
 	<div class="w-56">
 		<form
 			id="namespace-select"
+			hx-trigger="uk-select:input delay:100ms"
 			hx-post={ "/search/" + rctx.Kind.String() }
 			hx-target="#list-content"
 			hx-swap="outerHTML"
@@ -59,7 +60,6 @@ templ hxNamespace(rctx *Context, namespaces []folio.Object) {
 					>{ TitleOf(ns) }</option>
 				}
 			</uk-select>
-			<button type="submit">submit</button>
 		</form>
 	</div>
 }

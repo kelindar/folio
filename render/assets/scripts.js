@@ -8,6 +8,11 @@ htmx.defineExtension("obj-enc", {
   encodeParameters: function (xhr, parameters, elt) {
     xhr.overrideMimeType("text/json");
 
+    // If elt is not a form, find closest form
+    if (elt.tagName !== "FORM") {
+      elt = htmx.closest(elt, "form");
+    }
+
     const formData = new FormData(elt);
     const obj = {};
 
