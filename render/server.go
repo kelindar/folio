@@ -24,7 +24,8 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 
 	// Handle page view
 	http.Handle("GET /{kind}", page(registry, db))
-	http.Handle("POST /namespace/{kind}", namespace(registry, db))
+	http.Handle("POST /content/{kind}", content(registry, db))
+	http.Handle("GET /content/{kind}", content(registry, db))
 
 	// Handle API endpoints
 	http.Handle("GET /view/{urn}", editObject(ModeView, registry, db))

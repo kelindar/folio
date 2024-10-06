@@ -42,30 +42,35 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 
 // ---------------------------------- Search and Listing ----------------------------------
 
-func namespace(registry folio.Registry, db folio.Storage) http.Handler {
+func content(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		var req struct {
-			Namespace string `json:"search_namespace"`
-		}
-
-		defer r.Body.Close()
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			return errors.BadRequest("unable to decode request, %v", err)
-		}
-
 		rx, err := newContext(ModeView, r, registry, db)
 		if err != nil {
 			return err
 		}
 
-		rx.Namespace = req.Namespace
+		if r.Method == http.MethodPost {
+			var req struct {
+				Namespace string `json:"search_namespace"`
+			}
+
+			defer r.Body.Close()
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				return errors.BadRequest("unable to decode request, %v", err)
+			}
+			rx.Namespace = req.Namespace
+		}
+
+		ns := namespaces(db)
 		list, err := renderList(rx, r, folio.Query{
-			Namespace: req.Namespace,
+			Namespace: rx.Namespace,
 		})
 		if err != nil {
 			return err
 		}
-		return w.Render(hxList(rx, list))
+		//return w.Render(hxList(rx, list))
+
+		return w.Render(hxNavigate(rx, ns, list))
 	})
 }
 

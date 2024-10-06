@@ -1,9 +1,19 @@
 package render
 
-import "github.com/kelindar/folio"
+import (
+	"fmt"
+	"github.com/kelindar/folio"
+)
+
+templ hxNavigate(rx *Context, namespaces []folio.Object, content templ.Component) {
+	<div id="navbar" hx-swap-oob="true">
+		@hxNavigation(rx, namespaces)
+	</div>
+	@hxList(rx, content)
+}
 
 templ hxNavigation(rx *Context, namespaces []folio.Object) {
-	<nav class="bg-white border-gray-200 dark:bg-gray-900 mb-8 shadow-sm">
+	<nav id="navbar" class="bg-white border-gray-200 dark:bg-gray-900 mb-8 shadow-sm">
 		<div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
 			@hxNamespace(rx, namespaces)
 			<button
@@ -34,7 +44,7 @@ templ hxNamespace(rx *Context, namespaces []folio.Object) {
 		<form
 			id="namespace-select"
 			hx-trigger="uk-select:input delay:100ms"
-			hx-post={ "/namespace/" + rx.Kind.String() }
+			hx-post={ "/content/" + rx.Kind.String() }
 			hx-target="#page-content"
 			hx-swap="innerHTML"
 			hx-ext="obj-enc"
@@ -45,11 +55,9 @@ templ hxNamespace(rx *Context, namespaces []folio.Object) {
 				searchable?={ len(namespaces) > 5 }
 				uk-cloak
 			>
-				<option value="" selected>All Namespaces</option>
+				<option value="" selected?={ rx.Namespace == "" }>All Namespaces</option>
 				for _, ns := range namespaces {
-					<option
-						value={ StringOf(ns, "Name") }
-					>{ TitleOf(ns) }</option>
+					<option value={ StringOf(ns, "Name") } selected?={ rx.Namespace == StringOf(ns, "Name") }>{ TitleOf(ns) }</option>
 				}
 			</uk-select>
 		</form>
@@ -57,29 +65,30 @@ templ hxNamespace(rx *Context, namespaces []folio.Object) {
 }
 
 templ hxNavbar(rx *Context) {
-	<div id="navbar" class="hidden w-full md:block md:w-auto">
+	<div class="hidden w-full md:block md:w-auto">
 		<ul
 			class="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700"
 		>
 			for typ := range rx.Registry.Types() {
-				@hxLink(typ.Icon, typ.Plural, templ.SafeURL("/"+typ.Kind.String()))
+				@hxLink(rx, typ)
 			}
 		</ul>
 	</div>
 }
 
 // hxLink renders a link with an icon
-templ hxLink(icon, name string, url templ.SafeURL) {
+templ hxLink(rx *Context, typ folio.Type) {
 	<li class="text-center">
 		<a
-			href={ url }
+			hx-get={ fmt.Sprintf("/content/%s?ns=%s", typ.Kind, rx.Namespace) }
+			hx-target="#page-content"
 			class="block w-16 place-content-center py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0 dark:text-white md:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent"
 			aria-current="page"
 		>
 			<div class="inline-block">
-				<uk-icon icon={ icon }></uk-icon>
+				<uk-icon icon={ typ.Icon }></uk-icon>
 			</div>
-			<div class="text-xxs font-bold">{ name }</div>
+			<div class="text-xxs font-bold">{ typ.Plural }</div>
 		</a>
 	</li>
 }
