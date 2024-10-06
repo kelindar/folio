@@ -83,8 +83,8 @@ func TestSearch(t *testing.T) {
 		}
 
 		results, err := folio.Search[*App](db, folio.Query{
-			Namespaces: []string{"my_project"},
-			Limit:      5,
+			Namespace: "my_project",
+			Limit:     5,
 		})
 		assert.NoError(t, err)
 
@@ -107,7 +107,7 @@ func TestCount(t *testing.T) {
 		}
 
 		count, err := folio.Count[*App](db, folio.Query{
-			Namespaces: []string{"my_project"},
+			Namespace: "my_project",
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, 10, count)

@@ -9,25 +9,25 @@ import (
 	"strconv"
 )
 
-templ hxList(rctx *Context, content templ.Component) {
+templ hxList(rx *Context, content templ.Component) {
 	<div class="mx-auto max-w-screen-xl px-4 lg:px-12">
 		<div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden pb-6">
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 p-4">
 				<!-- Grouped Namespace and Search Components -->
 				<div class="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-4 w-full md:w-auto flex-1">
 					<div class="w-full md:w-auto">
-						@hxSearchBar(rctx.Kind)
+						@hxSearchBar(rx)
 					</div>
 				</div>
 				<!-- Create Button Aligned to the Right -->
 				<div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-					@hxCreateButton(rctx)
+					@hxCreateButton(rx)
 				</div>
 			</div>
 			<!-- Content Section -->
 			<div class="overflow-x-auto">
 				<h2 class="text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white p-4">
-					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage { rctx.Type.Plural }</span>
+					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage { rx.Type.Plural }</span>
 				</h2>
 				@content
 			</div>
@@ -35,8 +35,8 @@ templ hxList(rctx *Context, content templ.Component) {
 	</div>
 }
 
-templ hxSearchBar(kind folio.Kind) {
-	<form hx-post={ "/search/" + kind.String() } hx-target="#list-content" hx-swap="outerHTML" hx-ext="obj-enc" class="uk-search uk-search-default">
+templ hxSearchBar(rx *Context) {
+	<form hx-post={ "/search/" + rx.Kind.String() } hx-target="#list-content" hx-swap="outerHTML" hx-ext="obj-enc" class="uk-search uk-search-default">
 		<label for="simple-search" class="sr-only">Search</label>
 		<div class="relative w-full border rounded-md">
 			<span uk-search-icon></span>
@@ -45,15 +45,15 @@ templ hxSearchBar(kind folio.Kind) {
 				name="search_match"
 				class="uk-search-input"
 				type="search"
-				placeholder="Search"
+				placeholder={ "Search " + convert.TitleCase(rx.Query.Namespace) }
 				aria-label="Search"
 			/>
-			<input type="hidden" name="search_kind" id="search_kind" value={ kind.String() }/>
+			<input type="hidden" name="search_kind" id="search_kind" value={ rx.Kind.String() }/>
 		</div>
 	</form>
 }
 
-templ hxListContent(rctx *Context, elements iter.Seq[folio.Object], page, size, count int) {
+templ hxListContent(rx *Context, elements iter.Seq[folio.Object], page, size, count int) {
 	<ul id="list-content" role="list" class="divide-y divide-gray-100">
 		for v := range elements {
 			<li id={ v.URN().ID }>
@@ -61,16 +61,16 @@ templ hxListContent(rctx *Context, elements iter.Seq[folio.Object], page, size, 
 			</li>
 		}
 		if count > size {
-			@hxPagination(rctx, page, size, count, int(math.Floor(float64(count)/float64(size))))
+			@hxPagination(rx, page, size, count, int(math.Floor(float64(count)/float64(size))))
 		}
 	</ul>
 }
 
-templ hxListElementUpdate(rctx *Context, v folio.Object) {
+templ hxListElementUpdate(rx *Context, v folio.Object) {
 	<li id={ v.URN().ID } hx-swap-oob="true">
 		@hxListElementRow(v)
 	</li>
-	@hxFormContent(rctx, v)
+	@hxFormContent(rx, v)
 }
 
 templ hxListElementDelete(urn folio.URN) {
@@ -80,13 +80,13 @@ templ hxListElementDelete(urn folio.URN) {
 	)
 }
 
-templ hxListElementCreate(rctx *Context, v folio.Object) {
+templ hxListElementCreate(rx *Context, v folio.Object) {
 	<ul id="list-content" hx-swap-oob="beforeend" role="list" class="divide-y divide-gray-100">
 		<li id={ v.URN().ID }>
 			@hxListElementRow(v)
 		</li>
 	</ul>
-	@hxFormContent(rctx, v)
+	@hxFormContent(rx, v)
 }
 
 templ hxListElementRow(v folio.Object) {
@@ -125,29 +125,31 @@ templ hxState(value string) {
 	<span class={ "bg-" + convert.Color(value) + "-100 text-" + convert.Color(value) + "-800 text-sm font-medium me-2 px-2 py-0.5 rounded" }>{ value }</span>
 }
 
-templ hxCreateButton(rctx *Context) {
-	<button
-		class="uk-button uk-button-primary"
-		uk-toggle="target: #drawer-toggle"
-		hx-target="#drawer"
-		hx-get={ "/make/" + rctx.Kind.String() }
-	>
-		<uk-icon icon="circle-plus"></uk-icon>&nbsp; Create { rctx.Type.Title }
-	</button>
+templ hxCreateButton(rx *Context) {
+	if len(rx.Query.Namespace) > 1 {
+		<button
+			class="uk-button uk-button-primary"
+			uk-toggle="target: #drawer-toggle"
+			hx-target="#drawer"
+			hx-get={ fmt.Sprintf("/make/%s/%s", rx.Kind, rx.Query.Namespace) }
+		>
+			<uk-icon icon="circle-plus"></uk-icon>&nbsp; Create { rx.Type.Title }
+		</button>
+	}
 }
 
 const pageGap = 2
 
-templ hxPagination(rctx *Context, page, size, count, last int) {
+templ hxPagination(rx *Context, page, size, count, last int) {
 	<nav aria-label="Pagination">
 		<ul class="uk-pagination justify-center pt-6" uk-margin>
 			if page > 0 {
-				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, page-1, size) } hx-target="#list-content"><span uk-pagination-previous></span></a></li>
+				<li><a hx-get={ pageOf(rx.Kind, rx.Query, page-1, size) } hx-target="#list-content"><span uk-pagination-previous></span></a></li>
 			} else {
 				<li class="uk-disabled"><span uk-pagination-previous></span></li>
 			}
 			if max(page-pageGap, 0) > 0 {
-				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, 0, size) } hx-target="#list-content">1</a> </li>
+				<li><a hx-get={ pageOf(rx.Kind, rx.Query, 0, size) } hx-target="#list-content">1</a> </li>
 			}
 			if max(page-pageGap, 0) > 1 {
 				<li class="uk-disabled"><span>…</span></li>
@@ -156,17 +158,17 @@ templ hxPagination(rctx *Context, page, size, count, last int) {
 				if i == page {
 					<li class="uk-active"><span aria-current="page">{ strconv.Itoa(i+1) }</span> </li>
 				} else {
-					<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, i, size) } hx-target="#list-content">{ strconv.Itoa(i+1) }</a></li>
+					<li><a hx-get={ pageOf(rx.Kind, rx.Query, i, size) } hx-target="#list-content">{ strconv.Itoa(i+1) }</a></li>
 				}
 			}
 			if min(page+pageGap, last) < last-1 {
 				<li class="uk-disabled"><span>…</span></li>
 			}
 			if min(page+pageGap, last) < last {
-				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, last, size) } hx-target="#list-content">{ strconv.Itoa(last+1) }</a></li>
+				<li><a hx-get={ pageOf(rx.Kind, rx.Query, last, size) } hx-target="#list-content">{ strconv.Itoa(last+1) }</a></li>
 			}
 			if page < last {
-				<li><a hx-get={ pageOf(rctx.Kind, rctx.Query, page+1, size) } hx-target="#list-content"><span uk-pagination-next></span></a></li>
+				<li><a hx-get={ pageOf(rx.Kind, rx.Query, page+1, size) } hx-target="#list-content"><span uk-pagination-next></span></a></li>
 			} else {
 				<li class="uk-disabled"><span uk-pagination-next></span> </li>
 			}

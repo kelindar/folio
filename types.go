@@ -149,27 +149,27 @@ func defaultOptions(kind Kind) Options {
 
 // Query represents a query to filter records.
 type Query struct {
-	Namespaces []string            // Namespaces is a list of namespaces to filter by
-	States     []string            // States is a list of states to filter by
-	Indexes    []string            // Indexes is a list of indexes to filter by
-	Filters    map[string][]string // Filters is a map of filters to apply
-	Match      string              // Match is the full-text search query
-	SortBy     []string            `default:"[\"+id\"]"` // Sort is the set of fields to order by
-	Offset     int                 `default:"0"`         // Offset is the number of records to skip
-	Limit      int                 `default:"1000"`      // Limit is the maximum number of records to return
+	Namespace string              // Namespaces is a list of namespaces to filter by
+	States    []string            // States is a list of states to filter by
+	Indexes   []string            // Indexes is a list of indexes to filter by
+	Filters   map[string][]string // Filters is a map of filters to apply
+	Match     string              // Match is the full-text search query
+	SortBy    []string            `default:"[\"+id\"]"` // Sort is the set of fields to order by
+	Offset    int                 `default:"0"`         // Offset is the number of records to skip
+	Limit     int                 `default:"1000"`      // Limit is the maximum number of records to return
 }
 
 // String returns the string representation of the query.
 func (q *Query) String() string {
 	var out strings.Builder
 
-	if len(q.Namespaces) == 0 && len(q.States) == 0 && len(q.Indexes) == 0 && len(q.Filters) == 0 && q.Match == "" {
+	if len(q.Namespace) == 0 && len(q.States) == 0 && len(q.Indexes) == 0 && len(q.Filters) == 0 && q.Match == "" {
 		return "" // Skip empty queries
 	}
 
-	if len(q.Namespaces) > 0 {
+	if len(q.Namespace) > 0 {
 		out.WriteString("namespace=")
-		out.WriteString(strings.Join(q.Namespaces, ","))
+		out.WriteString(q.Namespace)
 		out.WriteString(";")
 	}
 
@@ -284,15 +284,13 @@ func parseNamespace(text string, query *Query) error {
 		return fmt.Errorf("query: invalid namespace format '%s'", text)
 	}
 
-	for _, ns := range strings.Split(matches[1], ",") {
-		namespace := strings.TrimSpace(ns)
-		switch namespace {
-		case "*", "": // skip
-		default:
-			query.Namespaces = append(query.Namespaces, namespace)
-		}
+	ns := strings.TrimSpace(matches[1])
+	switch ns {
+	case "*", "":
+		query.Namespace = "" // Reset to empty string
+	default:
+		query.Namespace = ns
 	}
-
 	return nil
 }
 

@@ -85,9 +85,9 @@ func TestSearch(t *testing.T) {
 		}
 
 		results, err := db.Search("App", folio.Query{
-			Namespaces: []string{"my_project"},
-			Offset:     1,
-			Limit:      5,
+			Namespace: "my_project",
+			Offset:    1,
+			Limit:     5,
 		})
 		assert.NoError(t, err)
 
@@ -109,9 +109,9 @@ func TestSearch_FullText(t *testing.T) {
 		}
 
 		results, err := db.Search("App", folio.Query{
-			Namespaces: []string{"my_project"},
-			Match:      "appli 47",
-			Limit:      1,
+			Namespace: "my_project",
+			Match:     "appli 47",
+			Limit:     1,
 		})
 		assert.NoError(t, err)
 
@@ -136,7 +136,7 @@ func TestCount(t *testing.T) {
 		}
 
 		ct, err := db.Count("App", folio.Query{
-			Namespaces: []string{"my_project"},
+			Namespace: "my_project",
 		})
 		assert.NoError(t, err)
 		assert.Equal(t, 10, ct)

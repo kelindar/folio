@@ -69,8 +69,8 @@ func TestParseQuery(t *testing.T) {
 				Income: 50000.00,
 			},
 			expect: Query{
-				Namespaces: []string{"company"},
-				States:     []string{"active"},
+				Namespace: "company",
+				States:    []string{"active"},
 				Filters: map[string][]string{
 					"age":    {"30"},
 					"income": {"1000"},
@@ -84,22 +84,8 @@ func TestParseQuery(t *testing.T) {
 				Name: "Alice",
 			},
 			expect: Query{
-				Namespaces: []string{"company"},
-				States:     []string{"active"},
-				Filters: map[string][]string{
-					"age": {"30"},
-				},
-				Match: "Alice",
-			},
-		},
-		"multiple namespaces": {
-			query: "namespace=company,person;state=active;filter=age:30;match={Name}",
-			object: &MockObject{
-				Name: "Alice",
-			},
-			expect: Query{
-				Namespaces: []string{"company", "person"},
-				States:     []string{"active"},
+				Namespace: "company",
+				States:    []string{"active"},
 				Filters: map[string][]string{
 					"age": {"30"},
 				},
@@ -129,24 +115,24 @@ func TestEncodeQuery(t *testing.T) {
 	tests := map[string]Query{
 		"": {},
 		"namespace=company;state=active;filter=age:30;match=Alice;": {
-			Namespaces: []string{"company"},
-			States:     []string{"active"},
+			Namespace: "company",
+			States:    []string{"active"},
 			Filters: map[string][]string{
 				"age": {"30"},
 			},
 			Match: "Alice",
 		},
-		"namespace=company,person;state=active;filter=age:30;match=Alice;": {
-			Namespaces: []string{"company", "person"},
-			States:     []string{"active"},
+		"namespace=company;state=active,inactive;filter=age:30;match=Alice;": {
+			Namespace: "company",
+			States:    []string{"active", "inactive"},
 			Filters: map[string][]string{
 				"age": {"30"},
 			},
 			Match: "Alice",
 		},
 		"namespace=default;index=field1,field2;": {
-			Namespaces: []string{"default"},
-			Indexes:    []string{"field1", "field2"},
+			Namespace: "default",
+			Indexes:   []string{"field1", "field2"},
 		},
 	}
 

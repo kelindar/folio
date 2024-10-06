@@ -24,11 +24,12 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 
 	// Handle page view
 	http.Handle("GET /{kind}", page(registry, db))
+	http.Handle("POST /namespace/{kind}", namespace(registry, db))
 
 	// Handle API endpoints
 	http.Handle("GET /view/{urn}", editObject(ModeView, registry, db))
 	http.Handle("GET /edit/{urn}", editObject(ModeEdit, registry, db))
-	http.Handle("GET /make/{kind}", makeObject(registry, db))
+	http.Handle("GET /make/{kind}/{ns}", makeObject(registry, db))
 
 	// Object CRUD endpoints
 	http.Handle("PUT /obj/{urn}", saveObject(registry, db))

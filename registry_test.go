@@ -38,7 +38,7 @@ func TestRegistryRange(t *testing.T) {
 		assert.NotNil(t, typ)
 		count++
 	}
-	assert.Equal(t, 1, count)
+	assert.Equal(t, 2, count)
 
 	// Get the reflect.Type of the specified resource kind
 	typ, err := registry.Resolve("kind1")

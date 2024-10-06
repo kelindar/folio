@@ -49,12 +49,12 @@ templ hxDrawer() {
 }
 
 // contentList renders the content list
-templ contentList(rctx *Context, content templ.Component, namespaces []folio.Object) {
+templ contentList(rx *Context, content templ.Component, namespaces []folio.Object) {
 	@hxDrawer()
-	<div id="page-content">
-		@hxNavigation(rctx, namespaces)
-		<div class="container mx-auto">
-			@hxList(rctx, content)
+	<div>
+		@hxNavigation(rx, namespaces)
+		<div id="page-content" class="container mx-auto">
+			@hxList(rx, content)
 		</div>
 	</div>
 	<div id="notification"></div>

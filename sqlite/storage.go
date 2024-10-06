@@ -77,9 +77,9 @@ func (s *rds) query(projection string, kind folio.Kind, q folio.Query) (*sql.Row
 	args := make([]any, 0, 4)
 
 	// Filter by namespaces
-	if len(q.Namespaces) > 0 {
+	if len(q.Namespace) > 0 {
 		where = append(where, "namespace IN (?)")
-		args = append(args, strings.Join(q.Namespaces, ","))
+		args = append(args, q.Namespace)
 	}
 
 	// Filter by states

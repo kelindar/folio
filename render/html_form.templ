@@ -10,14 +10,14 @@ import (
 	"github.com/kelindar/folio/convert"
 )
 
-templ hxFormContent(rctx *Context, value folio.Object) {
+templ hxFormContent(rx *Context, value folio.Object) {
 	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" class="uk-form-horizontal" hx-ext="obj-enc">
-		@hxFormHeader(rctx, value)
+		@hxFormHeader(rx, value)
 		<div class="grid gap-4 px-6">
-			for _, edit := range Object(rctx, value) {
+			for _, edit := range Object(rx, value) {
 				@edit
 			}
-			if rctx.Mode != ModeCreate {
+			if rx.Mode != ModeCreate {
 				@hxFormSection("Governance", "This section contains information about the governance of the object.")
 				@hxFormRow("Created", timedAt(value.Created()), false)
 				@hxFormRow("Updated", timedAt(value.Updated()), false)
@@ -55,7 +55,7 @@ templ hxFormRow(label string, editor templ.Component, required bool) {
 	</div>
 }
 
-templ hxFormHeader(rctx *Context, v folio.Object) {
+templ hxFormHeader(rx *Context, v folio.Object) {
 	<div class="px-4 py-6 mb-6 border-b bg-gray-50 sm:px-6">
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
@@ -67,16 +67,16 @@ templ hxFormHeader(rctx *Context, v folio.Object) {
 				</p>
 			</div>
 			<div class="mt-5 flex items-center">
-				@hxFormActions(rctx, v)
+				@hxFormActions(rx, v)
 			</div>
 		</div>
 	</div>
 }
 
-templ hxFormActions(rctx *Context, value folio.Object) {
+templ hxFormActions(rx *Context, value folio.Object) {
 	<div class="flex-shrink-0 px-4 sm:px-6">
 		<div class="space-x-3 flex justify-end">
-			switch rctx.Mode {
+			switch rx.Mode {
 				case ModeView :
 					@hxButtonDropdown("drawer-actions", hxFormEditButton(value.URN()), hxFormExtraActions(value.URN()))
 				case ModeEdit:

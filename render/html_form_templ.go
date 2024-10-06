@@ -18,7 +18,7 @@ import (
 	"github.com/kelindar/folio/convert"
 )
 
-func hxFormContent(rctx *Context, value folio.Object) templ.Component {
+func hxFormContent(rx *Context, value folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -56,7 +56,7 @@ func hxFormContent(rctx *Context, value folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = hxFormHeader(rctx, value).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxFormHeader(rx, value).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -64,13 +64,13 @@ func hxFormContent(rctx *Context, value folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for _, edit := range Object(rctx, value) {
+		for _, edit := range Object(rx, value) {
 			templ_7745c5c3_Err = edit.Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		if rctx.Mode != ModeCreate {
+		if rx.Mode != ModeCreate {
 			templ_7745c5c3_Err = hxFormSection("Governance", "This section contains information about the governance of the object.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -228,7 +228,7 @@ func hxFormRow(label string, editor templ.Component, required bool) templ.Compon
 	})
 }
 
-func hxFormHeader(rctx *Context, v folio.Object) templ.Component {
+func hxFormHeader(rx *Context, v folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -279,7 +279,7 @@ func hxFormHeader(rctx *Context, v folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = hxFormActions(rctx, v).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxFormActions(rx, v).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -291,7 +291,7 @@ func hxFormHeader(rctx *Context, v folio.Object) templ.Component {
 	})
 }
 
-func hxFormActions(rctx *Context, value folio.Object) templ.Component {
+func hxFormActions(rx *Context, value folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -316,7 +316,7 @@ func hxFormActions(rctx *Context, value folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		switch rctx.Mode {
+		switch rx.Mode {
 		case ModeView:
 			templ_7745c5c3_Err = hxButtonDropdown("drawer-actions", hxFormEditButton(value.URN()), hxFormExtraActions(value.URN())).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {

@@ -95,7 +95,7 @@ func (o *lookupUrn) Init(props *Props) bool {
 
 	// Parse the query
 	query, err := folio.ParseQuery(props.Field.Tag.Get("query"), props.Parent, folio.Query{
-		Namespaces: []string{props.Parent.URN().Namespace},
+		Namespace: props.Parent.URN().Namespace,
 	})
 	if err != nil {
 		return false // Invalid query

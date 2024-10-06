@@ -20,34 +20,59 @@ import (
 // page handles a page request for a given kind, inferred from path.
 func page(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		ctx, err := newContext(r, registry, db)
 		if err != nil {
-			return errors.BadRequest("invalid kind, %v", err)
+			return err
 		}
 
 		ns := namespaces(db)
-		list, err := renderList(registry, db, r, folio.Query{})
+		list, err := renderList(ctx, r, folio.Query{})
 		if err != nil {
 			return err
 		}
 
 		return w.Render(hxLayout(
-			fmt.Sprintf("Folio - %s", typ.Plural),
-			contentList(&Context{
-				Mode:     ModeView,
-				Kind:     typ.Kind,
-				Type:     typ,
-				Store:    db,
-				Registry: registry,
-			}, list, ns),
+			fmt.Sprintf("Folio - %s", ctx.Type.Plural),
+			contentList(ctx, list, ns),
 		))
 	})
 }
 
 // ---------------------------------- Search and Listing ----------------------------------
 
+func namespace(registry folio.Registry, db folio.Storage) http.Handler {
+	return handle(func(r *http.Request, w *Response) error {
+		var req struct {
+			Namespace string `json:"search_namespace"`
+		}
+
+		defer r.Body.Close()
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			return errors.BadRequest("unable to decode request, %v", err)
+		}
+
+		ctx, err := newContext(r, registry, db)
+		if err != nil {
+			return err
+		}
+
+		list, err := renderList(ctx, r, folio.Query{
+			Namespace: req.Namespace,
+		})
+		if err != nil {
+			return err
+		}
+		return w.Render(hxList(ctx, list))
+	})
+}
+
 func search(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
+		ctx, err := newContext(r, registry, db)
+		if err != nil {
+			return err
+		}
+
 		var query folio.Query
 		switch r.Method {
 		case http.MethodPost:
@@ -63,12 +88,12 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 
 			query.Match = req.Match
 			if req.Namespace != "" && req.Namespace != "*" {
-				query.Namespaces = []string{req.Namespace}
+				query.Namespace = req.Namespace
 			}
 
 			fallthrough
 		default:
-			list, err := renderList(registry, db, r, query)
+			list, err := renderList(ctx, r, query)
 			if err != nil {
 				return err
 			}
@@ -85,8 +110,8 @@ func pageOf(kind folio.Kind, query folio.Query, page, size int) string {
 	return fmt.Sprintf("/search/%s?page=%d&size=%d", kind, page, size)
 }
 
-func renderList(registry folio.Registry, db folio.Storage, r *http.Request, defaultQuery folio.Query) (templ.Component, error) {
-	typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+func renderList(rx *Context, r *http.Request, defaultQuery folio.Query) (templ.Component, error) {
+	typ, err := rx.Registry.Resolve(folio.Kind(r.PathValue("kind")))
 	if err != nil {
 		return nil, errors.BadRequest("invalid kind, %v", err)
 	}
@@ -104,27 +129,23 @@ func renderList(registry folio.Registry, db folio.Storage, r *http.Request, defa
 	}
 
 	// Count the number of objects
-	count, err := db.Count(typ.Kind, query)
+	count, err := rx.Store.Count(typ.Kind, query)
 	if err != nil {
 		return nil, errors.Internal("unable to count, %v", err)
 	}
 
-	// Search for the objects
+	// Update the context query
 	query.Limit = size
 	query.Offset = page * size
-	found, err := db.Search(typ.Kind, query)
+	rx.Query = query
+
+	// Search for the objects
+	found, err := rx.Store.Search(typ.Kind, query)
 	if err != nil {
 		return nil, errors.Internal("unable to search, %v", err)
 	}
 
-	return hxListContent(&Context{
-		Mode:     ModeView,
-		Kind:     typ.Kind,
-		Type:     typ,
-		Store:    db,
-		Registry: registry,
-		Query:    query,
-	}, found, page, size, count), nil
+	return hxListContent(rx, found, page, size, count), nil
 }
 
 // ---------------------------------- Object CRUD ----------------------------------
@@ -161,12 +182,15 @@ func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handl
 func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
-		if err != nil {
+		switch {
+		case err != nil:
 			return errors.BadRequest("invalid kind, %v", err)
+		case len(r.PathValue("ns")) <= 1:
+			return errors.BadRequest("invalid namespace")
 		}
 
 		// Create a new instance
-		instance, err := folio.NewByType(typ.Type, "default")
+		instance, err := folio.NewByType(typ.Type, r.PathValue("ns"))
 		if err != nil {
 			return errors.Internal("Unable to create object, %v", err)
 		}
@@ -280,4 +304,19 @@ func isCreated(obj folio.Object) bool {
 	_, createdAt := obj.Created()
 	_, updatedAt := obj.Updated()
 	return createdAt == updatedAt
+}
+
+func newContext(r *http.Request, reg folio.Registry, db folio.Storage) (*Context, error) {
+	typ, err := reg.Resolve(folio.Kind(r.PathValue("kind")))
+	if err != nil {
+		return nil, errors.BadRequest("invalid kind, %v", err)
+	}
+
+	return &Context{
+		Mode:     ModeView,
+		Kind:     typ.Kind,
+		Type:     typ,
+		Store:    db,
+		Registry: reg,
+	}, nil
 }

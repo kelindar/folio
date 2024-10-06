@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import "github.com/kelindar/folio"
 
-func hxNavigation(rctx *Context, namespaces []folio.Object) templ.Component {
+func hxNavigation(rx *Context, namespaces []folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -35,7 +35,7 @@ func hxNavigation(rctx *Context, namespaces []folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = hxNamespace(rctx, namespaces).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = hxNamespace(rx, namespaces).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -43,7 +43,7 @@ func hxNavigation(rctx *Context, namespaces []folio.Object) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		for typ := range rctx.Registry.Types() {
+		for typ := range rx.Registry.Types() {
 			templ_7745c5c3_Err = hxLink(typ.Icon, typ.Plural, templ.SafeURL("/"+typ.Kind.String())).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
@@ -57,7 +57,7 @@ func hxNavigation(rctx *Context, namespaces []folio.Object) templ.Component {
 	})
 }
 
-func hxNamespace(rctx *Context, namespaces []folio.Object) templ.Component {
+func hxNamespace(rx *Context, namespaces []folio.Object) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -83,15 +83,15 @@ func hxNamespace(rctx *Context, namespaces []folio.Object) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs("/search/" + rctx.Kind.String())
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs("/namespace/" + rx.Kind.String())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_menu.templ`, Line: 45, Col: 44}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_menu.templ`, Line: 45, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#list-content\" hx-swap=\"outerHTML\" hx-ext=\"obj-enc\"><uk-select name=\"search_namespace\" id=\"search_namespace\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-target=\"#page-content\" hx-swap=\"innerHTML\" hx-ext=\"obj-enc\"><uk-select name=\"search_namespace\" id=\"search_namespace\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -101,7 +101,7 @@ func hxNamespace(rctx *Context, namespaces []folio.Object) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" uk-cloak><option value=\"*\" selected>All</option> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" uk-cloak><option value=\"\" selected>All Namespaces</option> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
