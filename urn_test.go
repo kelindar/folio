@@ -128,3 +128,12 @@ func TestNewURN_Errors(t *testing.T) {
 		})
 	}
 }
+
+func TestEmptyURN(t *testing.T) {
+	urn := URN{}
+	assert.False(t, urn.IsValid())
+	assert.Empty(t, urn.String())
+	assert.Empty(t, urn.Namespace)
+	assert.Empty(t, string(urn.Kind))
+	assert.Empty(t, urn.ID)
+}

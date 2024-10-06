@@ -36,7 +36,13 @@ templ hxList(rx *Context, content templ.Component) {
 }
 
 templ hxSearchBar(rx *Context) {
-	<form hx-post={ "/search/" + rx.Kind.String() } hx-target="#list-content" hx-swap="outerHTML" hx-ext="obj-enc" class="uk-search uk-search-default">
+	<form
+		hx-post={ pageOf(rx.Kind, rx.Query, 0, 20) }
+		hx-target="#list-content"
+		hx-swap="outerHTML"
+		hx-ext="obj-enc"
+		class="uk-search uk-search-default"
+	>
 		<label for="simple-search" class="sr-only">Search</label>
 		<div class="relative w-full border rounded-md">
 			<span uk-search-icon></span>
@@ -45,7 +51,7 @@ templ hxSearchBar(rx *Context) {
 				name="search_match"
 				class="uk-search-input"
 				type="search"
-				placeholder={ "Search " + convert.TitleCase(rx.Query.Namespace) }
+				placeholder="Search ..."
 				aria-label="Search"
 			/>
 			<input type="hidden" name="search_kind" id="search_kind" value={ rx.Kind.String() }/>

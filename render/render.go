@@ -23,13 +23,14 @@ const (
 
 // Context represents the rendering context.
 type Context struct {
-	Mode     Mode
-	Kind     folio.Kind
-	Type     folio.Type
-	URN      folio.URN
-	Store    folio.Storage
-	Registry folio.Registry
-	Query    folio.Query
+	Mode      Mode
+	Kind      folio.Kind
+	Type      folio.Type
+	URN       folio.URN
+	Store     folio.Storage
+	Registry  folio.Registry
+	Query     folio.Query
+	Namespace string
 }
 
 // Props represents the properties of the editor use to render the field.

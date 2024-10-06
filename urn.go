@@ -46,6 +46,8 @@ func ParseURN(s string) (URN, error) {
 	switch {
 	case !strings.HasPrefix(s, "urn:"):
 		return URN{}, fmt.Errorf("urn: invalid scheme %s", s)
+	case s == "urn:::":
+		return URN{}, nil
 	case len(s) < 11:
 		return URN{}, fmt.Errorf("urn: invalid length %s", s)
 	}
@@ -89,6 +91,10 @@ func ParseURN(s string) (URN, error) {
 
 // String returns the string representation of the URN.
 func (u URN) String() string {
+	if u.Namespace == "" || u.Kind == "" || u.ID == "" {
+		return ""
+	}
+
 	var sb strings.Builder
 	sb.WriteString("urn:")
 	sb.WriteString(u.Namespace)

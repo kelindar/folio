@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/angelofallars/htmx-go"
@@ -20,7 +22,7 @@ import (
 // page handles a page request for a given kind, inferred from path.
 func page(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		ctx, err := newContext(r, registry, db)
+		ctx, err := newContext(ModeView, r, registry, db)
 		if err != nil {
 			return err
 		}
@@ -51,24 +53,25 @@ func namespace(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.BadRequest("unable to decode request, %v", err)
 		}
 
-		ctx, err := newContext(r, registry, db)
+		rx, err := newContext(ModeView, r, registry, db)
 		if err != nil {
 			return err
 		}
 
-		list, err := renderList(ctx, r, folio.Query{
+		rx.Namespace = req.Namespace
+		list, err := renderList(rx, r, folio.Query{
 			Namespace: req.Namespace,
 		})
 		if err != nil {
 			return err
 		}
-		return w.Render(hxList(ctx, list))
+		return w.Render(hxList(rx, list))
 	})
 }
 
 func search(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		ctx, err := newContext(r, registry, db)
+		ctx, err := newContext(ModeView, r, registry, db)
 		if err != nil {
 			return err
 		}
@@ -104,10 +107,22 @@ func search(registry folio.Registry, db folio.Storage) http.Handler {
 
 // pageOf returns the URL for the given page.
 func pageOf(kind folio.Kind, query folio.Query, page, size int) string {
-	if filter := convert.Base64(query.String()); filter != "" {
-		return fmt.Sprintf("/search/%s?page=%d&size=%d&filter=%s", kind, page, size, filter)
+	var sb strings.Builder
+	sb.WriteString("/search/")
+	sb.WriteString(string(kind))
+	sb.WriteString("?page=")
+	sb.WriteString(strconv.Itoa(page))
+	sb.WriteString("&size=")
+	sb.WriteString(strconv.Itoa(size))
+	if query.Namespace != "" {
+		sb.WriteString("&ns=")
+		sb.WriteString(query.Namespace)
 	}
-	return fmt.Sprintf("/search/%s?page=%d&size=%d", kind, page, size)
+	if filter := convert.Base64(query.String()); filter != "" {
+		sb.WriteString("&filter=")
+		sb.WriteString(filter)
+	}
+	return sb.String()
 }
 
 func renderList(rx *Context, r *http.Request, defaultQuery folio.Query) (templ.Component, error) {
@@ -181,27 +196,21 @@ func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handl
 
 func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		typ, err := registry.Resolve(folio.Kind(r.PathValue("kind")))
+		rx, err := newContext(ModeCreate, r, registry, db)
 		switch {
 		case err != nil:
-			return errors.BadRequest("invalid kind, %v", err)
-		case len(r.PathValue("ns")) <= 1:
+			return errors.BadRequest("invalid request, %v", err)
+		case len(rx.Namespace) <= 1:
 			return errors.BadRequest("invalid namespace")
 		}
 
 		// Create a new instance
-		instance, err := folio.NewByType(typ.Type, r.PathValue("ns"))
+		instance, err := folio.NewByType(rx.Type.Type, rx.Namespace)
 		if err != nil {
 			return errors.Internal("Unable to create object, %v", err)
 		}
 
-		return w.Render(hxFormContent(&Context{
-			Mode:     ModeCreate,
-			Kind:     typ.Kind,
-			Type:     typ,
-			Store:    db,
-			Registry: registry,
-		}, instance))
+		return w.Render(hxFormContent(rx, instance))
 	})
 }
 
@@ -306,17 +315,18 @@ func isCreated(obj folio.Object) bool {
 	return createdAt == updatedAt
 }
 
-func newContext(r *http.Request, reg folio.Registry, db folio.Storage) (*Context, error) {
+func newContext(mode Mode, r *http.Request, reg folio.Registry, db folio.Storage) (*Context, error) {
 	typ, err := reg.Resolve(folio.Kind(r.PathValue("kind")))
 	if err != nil {
 		return nil, errors.BadRequest("invalid kind, %v", err)
 	}
 
 	return &Context{
-		Mode:     ModeView,
-		Kind:     typ.Kind,
-		Type:     typ,
-		Store:    db,
-		Registry: reg,
+		Mode:      mode,
+		Kind:      typ.Kind,
+		Type:      typ,
+		Store:     db,
+		Registry:  reg,
+		Namespace: r.URL.Query().Get("ns"),
 	}, nil
 }

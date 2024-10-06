@@ -123,6 +123,7 @@ func (s *rds) query(projection string, kind folio.Kind, q folio.Query) (*sql.Row
 	if q.Offset > 0 {
 		querySQL += fmt.Sprintf(" OFFSET %d", q.Offset)
 	}
+
 	return s.db.Query(querySQL, args...)
 }
 
