@@ -1,10 +1,12 @@
 package render
 
 import (
+	"compress/gzip"
 	"embed"
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/a-h/templ"
@@ -92,12 +94,14 @@ func (r *Response) RenderWith(template templ.Component, fn func(htmx.Response) h
 }
 
 func handle(fn func(r *http.Request, w *Response) error) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return withGzip(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hx := &Response{
 			hx: htmx.NewResponse(),
 			r:  r,
 			w:  w,
 		}
+
+		w.Header().Set("Content-Type", "text/html")
 
 		if err := fn(r, hx); err != nil {
 			if httpErr := err.(interface {
@@ -111,5 +115,31 @@ func handle(fn func(r *http.Request, w *Response) error) http.Handler {
 			http.Error(w, fmt.Sprintf("Internal server error has occured, due to %v", err),
 				http.StatusInternalServerError)
 		}
+	}))
+}
+
+func withGzip(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case strings.Contains(r.Header.Get("Accept-Encoding"), "gzip"):
+			w.Header().Set("Content-Encoding", "gzip")
+			w.Header().Add("Vary", "Accept-Encoding")
+			w.Header().Del("Content-Length")
+
+			gz := gzip.NewWriter(w)
+			defer gz.Close()
+			next.ServeHTTP(&gzipWriter{Writer: gz, ResponseWriter: w}, r)
+		default:
+			next.ServeHTTP(w, r)
+		}
 	})
+}
+
+type gzipWriter struct {
+	http.ResponseWriter
+	Writer *gzip.Writer
+}
+
+func (w gzipWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
 }
