@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -239,6 +240,12 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 	uni := ut.New(en, en)
 	trans, _ := uni.GetTranslator("en")
 	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
+		if name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]; name != "-" {
+			return name
+		}
+		return ""
+	})
 	en_translations.RegisterDefaultTranslations(validate, trans)
 
 	return handle(func(r *http.Request, w *Response) error {

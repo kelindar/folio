@@ -166,7 +166,7 @@ func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 
 func editorOf(props *Props) (string, templ.Component) {
 	rv := props.Value
-	label := convert.TitleCase(props.Name)
+	label := convert.Label(props.Name)
 
 	// If the field implements the Renderer interface, we can render it directly
 	if render, ok := rv.Interface().(Renderer); ok {
@@ -213,16 +213,17 @@ func editorOf(props *Props) (string, templ.Component) {
 	return "", nil
 }
 
-func renderStruct(props *Props, rv reflect.Value) (out []templ.Component) {
+func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 	for _, field := range reflect.VisibleFields(rv.Type()) {
-		label, editor := editorOf(propsOf(props, field, rv.FieldByName(field.Name)))
+		props := propsOf(parent, field, rv.FieldByName(field.Name))
+		label, editor := editorOf(props)
 		switch {
 		case editor == nil:
 			continue // skip hidden fields
 		case label == "":
 			out = append(out, editor)
 		default:
-			out = append(out, hxFormRow(label, editor, isRequired(field)))
+			out = append(out, hxFormRow(label, validationPath(props.Name), editor, isRequired(field)))
 		}
 	}
 

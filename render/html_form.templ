@@ -19,8 +19,8 @@ templ hxFormContent(rx *Context, value folio.Object) {
 			}
 			if rx.Mode != ModeCreate {
 				@hxDivider("Governance")
-				@hxFormRow("Created", timedAt(value.Created()), false)
-				@hxFormRow("Updated", timedAt(value.Updated()), false)
+				@hxFormRow("Created", "createdAt", timedAt(value.Created()), false)
+				@hxFormRow("Updated", "updatedAt", timedAt(value.Updated()), false)
 			}
 		</div>
 	</form>
@@ -44,7 +44,7 @@ templ hxFormSection(title, subtitle string) {
 	</div>
 }
 
-templ hxFormRow(label string, editor templ.Component, required bool) {
+templ hxFormRow(label, path string, editor templ.Component, required bool) {
 	<div>
 		<label class="uk-form-label font-semibold text-gray-900">
 			{ label }
@@ -55,7 +55,7 @@ templ hxFormRow(label string, editor templ.Component, required bool) {
 		<div class="uk-form-controls">
 			@editor
 		</div>
-		<div id={ label + "-error" } class="uk-form-help text-destructive"></div>
+		<div id={ path + "-error" } class="uk-form-help text-destructive"></div>
 	</div>
 }
 
@@ -173,7 +173,7 @@ templ hxButtonDropdown(id string, primary templ.Component, options ...templ.Comp
 
 templ hxValidationErrors(v folio.Object, translator ut.Translator, errors validator.ValidationErrors) {
 	for _, err := range errors {
-		<p id={ err.StructField() + "-error" } hx-swap-oob="true" class="mt-2 text-xs text-red-600">
+		<p id={ validationPath(err.Namespace()) + "-error" } hx-swap-oob="true" class="mt-2 text-xs text-red-600">
 			{ err.Translate(translator) }
 		</p>
 	}

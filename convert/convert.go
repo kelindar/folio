@@ -14,6 +14,14 @@ import (
 
 // ---------------------------------- Title Case ----------------------------------
 
+func Label(input string) string {
+	if i := strings.LastIndex(input, "."); i >= 0 {
+		input = input[i+1:]
+	}
+
+	return TitleCase(input)
+}
+
 func TitleCase(input string) string {
 	words := splitCase(input)
 	smallwords := " a an on the to "

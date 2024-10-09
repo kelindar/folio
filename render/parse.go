@@ -71,3 +71,12 @@ func decodeForm(reader io.Reader, dst any) (err error) {
 
 	return json.Unmarshal(nested, dst)
 }
+
+func validationPath(path string) string {
+	// If the first letter is capitalized, it's a nested field
+	if len(path) > 0 && path[0] >= 'A' && path[0] <= 'Z' {
+		path = path[strings.Index(path, ".")+1:]
+	}
+
+	return strings.ReplaceAll(path, ".", "-")
+}

@@ -142,7 +142,7 @@ templ hxCreateButton(rx *Context) {
 			class="uk-button uk-button-primary"
 			uk-toggle="target: #drawer-toggle"
 			hx-target="#drawer"
-			hx-get={ fmt.Sprintf("/make/%s/%s", rx.Kind, rx.Query.Namespace) }
+			hx-get={ fmt.Sprintf("/make/%s?ns=%s", rx.Kind, rx.Query.Namespace) }
 		>
 			<uk-icon icon="circle-plus"></uk-icon>&nbsp; Create { rx.Type.Title }
 		</button>
