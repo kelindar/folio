@@ -35,14 +35,12 @@ type Context struct {
 
 // Props represents the properties of the editor use to render the field.
 type Props struct {
-	Mode     Mode                // Mode of the editor
+	*Context                     // Context of the editor
 	Name     string              // Name of the field (or the JSON tag)
 	Label    string              // Label of the field, Title Case
 	Desc     string              // Description of the field, used for placeholder & tooltip
 	Value    reflect.Value       // Value of the field
 	Parent   folio.Object        // Object to which the field belongs
-	Store    folio.Storage       // Storage to use for lookups
-	Registry folio.Registry      // Registry to use
 	Field    reflect.StructField // Field of the object
 }
 
@@ -152,16 +150,31 @@ func levelOf(tag string) string {
 }
 
 // Object renders the object into a list of components for each field.
-func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
+func Object(rx *Context, obj folio.Object) (out []templ.Component) {
 	rv := reflect.Indirect(reflect.ValueOf(obj))
 	op := &Props{
-		Mode:     rctx.Mode,
-		Parent:   obj,
-		Store:    rctx.Store,
-		Registry: rctx.Registry,
+		Context: rx,
+		Parent:  obj,
 	}
 
 	return renderStruct(op, rv)
+}
+
+// Component renders the object into a list of components for each field.
+func Component(rx *Context, obj folio.Object, path string) (out []templ.Component) {
+	rv := reflect.Indirect(reflect.ValueOf(obj))
+	op := &Props{
+		Context: rx,
+		Parent:  obj,
+		Name:    path,
+	}
+
+	ct, err := jsonPath(rv.Type(), path)
+	if err != nil {
+		return nil
+	}
+
+	return renderStruct(op, reflect.Indirect(reflect.New(ct)))
 }
 
 func editorOf(props *Props) (string, templ.Component) {
@@ -205,6 +218,16 @@ func editorOf(props *Props) (string, templ.Component) {
 		return label, Bool(props)
 	case reflect.Struct:
 		return "", Struct(props, renderStruct(props, rv))
+	case reflect.Pointer:
+		ptrKind := rv.Type().Elem().Kind()
+		switch {
+		case ptrKind == reflect.Struct && rv.IsNil():
+			return "", StructPtr(props)
+		case ptrKind == reflect.Struct:
+			return "", Struct(props, renderStruct(props, rv.Elem()))
+		default:
+			slog.Warn("Unsupported pointer type", "type", rv.Elem().Kind())
+		}
 
 	default:
 		slog.Warn("Unsupported editor type", "type", rv.Kind())
@@ -233,19 +256,17 @@ func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 func propsOf(parent *Props, field reflect.StructField, rv reflect.Value) *Props {
 	name := nameOf(field, parent.Name)
 	return &Props{
-		Mode:     parent.Mode,
-		Store:    parent.Store,
-		Registry: parent.Registry,
-		Parent:   parent.Parent,
-		Name:     name,
-		Value:    rv,
-		Desc:     descOf(name, field),
-		Field:    field,
+		Context: parent.Context,
+		Parent:  parent.Parent,
+		Name:    name,
+		Value:   rv,
+		Desc:    descOf(name, field),
+		Field:   field,
 	}
 }
 
 func descOf(name string, field reflect.StructField) string {
-	desc := fmt.Sprintf("Enter %s...", convert.TitleCase(name))
+	desc := fmt.Sprintf("Enter %s", convert.Label(name))
 	if d := field.Tag.Get("desc"); d != "" {
 		desc = d
 	}

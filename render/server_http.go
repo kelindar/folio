@@ -215,7 +215,12 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.Internal("Unable to create object, %v", err)
 		}
 
-		return w.Render(hxFormContent(rx, instance))
+		switch path := r.URL.Query().Get("path"); path {
+		case "":
+			return w.Render(hxFormContent(rx, instance))
+		default:
+			return w.Render(hxFormComponent(rx, instance, path))
+		}
 	})
 }
 

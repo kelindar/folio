@@ -72,11 +72,13 @@ func TestUrn(t *testing.T) {
 		// Create a lookup for the urn & init
 		enum := lookupForUrn()
 		assert.True(t, enum.Init(&Props{
-			Value:    rv,
-			Field:    field,
-			Registry: registry,
-			Store:    db,
-			Parent:   test,
+			Context: &Context{
+				Registry: registry,
+				Store:    db,
+			},
+			Value:  rv,
+			Field:  field,
+			Parent: test,
 		}))
 		assert.NotNil(t, enum)
 	})

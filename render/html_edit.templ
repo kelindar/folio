@@ -1,6 +1,9 @@
 package render
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/kelindar/folio/convert"
+)
 
 templ String(props *Props) {
 	switch props.Mode {
@@ -114,5 +117,21 @@ templ Struct(props *Props, children []templ.Component) {
 	@hxDivider(props.Name)
 	for _, child := range children {
 		@child
+	}
+}
+
+templ StructPtr(props *Props) {
+	switch props.Mode {
+		case ModeEdit, ModeCreate :
+			@hxDivider(convert.Label(props.Name))
+			<button
+				id={ props.Name + "-placeholder" }
+				class="uk-button uk-button-ghost w-full text-xs p-0"
+				hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
+				hx-target={ "#" + props.Name + "-placeholder" }
+				hx-swap="outerHTML"
+			>
+				<uk-icon icon="circle-plus" class="mr-1"></uk-icon> <span>Add { convert.Label(props.Name) }</span>
+			</button>
 	}
 }

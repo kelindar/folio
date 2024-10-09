@@ -48,7 +48,7 @@ func decodeKind(field reflect.StructField, registry folio.Registry) (folio.Type,
 	return typ, true
 }
 
-// ---------------------------------- FORM ----------------------------------
+// ---------------------------------- Form ----------------------------------
 
 // decodeForm parses the input flat JSON form.
 func decodeForm(reader io.Reader, dst any) (err error) {
@@ -79,4 +79,60 @@ func validationPath(path string) string {
 	}
 
 	return strings.ReplaceAll(path, ".", "-")
+}
+
+// ---------------------------------- Path Scan ----------------------------------
+
+// jsonPath finds a JSON path in the given type.
+func jsonPath(parent reflect.Type, path string) (reflect.Type, error) {
+	parts := strings.Split(path, ".")
+	rtype := parent
+
+	for _, component := range parts {
+		switch {
+		case rtype.Kind() == reflect.Struct:
+			// continue
+		case rtype.Kind() == reflect.Slice:
+			rtype = rtype.Elem()
+		case rtype.Kind() == reflect.Map:
+			rtype = rtype.Elem()
+		case rtype.Kind() == reflect.Ptr:
+			rtype = rtype.Elem()
+		default:
+			return nil, fmt.Errorf("type %s is not supported", rtype)
+		}
+
+		found := false
+		count := rtype.NumField()
+
+		for i := 0; i < count; i++ {
+			if field := rtype.Field(i); jsonName(field) == component {
+				found = true
+				rtype = field.Type
+				if rtype.Kind() == reflect.Ptr {
+					rtype = rtype.Elem()
+				}
+				break
+			}
+		}
+
+		if !found {
+			return nil, fmt.Errorf("field %q not found in type %s", component, rtype)
+		}
+	}
+
+	return rtype, nil
+}
+
+// jsonName returns the JSON name of the field.
+func jsonName(field reflect.StructField) string {
+	tag := field.Tag.Get("json")
+	if tag == "-" {
+		return ""
+	}
+
+	if v := strings.Split(tag, ","); len(v) > 0 && v[0] != "" {
+		return v[0]
+	}
+	return field.Name
 }
