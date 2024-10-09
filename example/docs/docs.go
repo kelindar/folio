@@ -5,24 +5,22 @@ import (
 
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/render"
 )
 
 // ---------------------------------- Person ----------------------------------
 
 type Person struct {
 	folio.Meta `kind:"person" json:",inline"`
-	Name       string         `json:"name" form:"rw" validate:"required"`
-	Age        int            `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Gender     string         `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
-	Country    string         `json:"country" form:"rw"`
-	Address    string         `json:"address" form:"rw"`
-	Phone      string         `json:"phone" form:"rw"`
-	Boss       folio.URN      `json:"boss" form:"rw" kind:"person"`
-	Employment render.Section `json:"-" name:"Employment" desc:"Employment information for this person"`
-	IsEmployed bool           `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
-	JobTitle   string         `json:"jobTitle" form:"rw"`
-	Workplace  folio.URN      `json:"workplace" form:"rw" kind:"company" query:"namespace=*;match=Inc"`
+	Name       string    `json:"name" form:"rw" validate:"required"`
+	Age        int       `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Gender     string    `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	Country    string    `json:"country" form:"rw"`
+	Address    string    `json:"address" form:"rw"`
+	Phone      string    `json:"phone" form:"rw"`
+	Boss       folio.URN `json:"boss" form:"rw" kind:"person"`
+	IsEmployed bool      `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
+	JobTitle   string    `json:"jobTitle" form:"rw"`
+	Workplace  folio.URN `json:"workplace" form:"rw" kind:"company" query:"namespace=*;match=Inc"`
 }
 
 func NewPerson() *Person {
@@ -101,6 +99,14 @@ type Vehicle struct {
 	Model       string    `json:"model" form:"rw" validate:"required"`
 	Description string    `json:"description" form:"rw"`
 	Company     folio.URN `json:"company" form:"rw" kind:"company"`
+	Engine      struct {
+		Type  string `json:"type" form:"rw" validate:"oneof=electric petrol diesel"`
+		Power int    `json:"power" form:"rw" validate:"gte=0"`
+	} `json:"engine" form:"rw"`
+	Upholstery *struct {
+		Type  string `json:"type" form:"rw" validate:"required,oneof=leather fabric"`
+		Color string `json:"color" form:"rw" validate:"required"`
+	} `json:"upholstery" form:"rw"`
 }
 
 func (c *Vehicle) Title() string {

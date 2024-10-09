@@ -2,6 +2,7 @@ package convert
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"hash/crc32"
 	"strconv"
@@ -92,18 +93,84 @@ func Base64(input string) string {
 
 // Int returns an integer value or a default value
 func Int(v string, defaultValue int) int {
-	if i, err := strconv.Atoi(v); err == nil {
-		return i
+	if i, err := Int64(v); err == nil {
+		return int(i)
 	}
 	return defaultValue
 }
 
 // Float returns a float value or a default value
 func Float(v string, defaultValue float64) float64 {
-	if f, err := strconv.ParseFloat(v, 64); err == nil {
+	if f, err := Float64(v); err == nil {
 		return f
 	}
 	return defaultValue
+}
+
+func Int64(value any) (int64, error) {
+	switch v := value.(type) {
+	case float64:
+		return int64(v), nil
+	case float32:
+		return int64(v), nil
+	case int:
+		return int64(v), nil
+	case int64:
+		return v, nil
+	case json.Number:
+		return v.Int64()
+	case string:
+		return strconv.ParseInt(v, 10, 64)
+	case nil:
+		return 0, nil
+	default:
+		return 0, fmt.Errorf("cannot convert %T to int64", value)
+	}
+}
+
+func Uint64(value any) (uint64, error) {
+	switch v := value.(type) {
+	case float64:
+		return uint64(v), nil
+	case float32:
+		return uint64(v), nil
+	case int:
+		return uint64(v), nil
+	case int64:
+		return uint64(v), nil
+	case uint64:
+		return v, nil
+	case json.Number:
+		i, err := v.Int64()
+		return uint64(i), err
+	case string:
+		return strconv.ParseUint(v, 10, 64)
+	case nil:
+		return 0, nil
+	default:
+		return 0, fmt.Errorf("cannot convert %T to uint64", value)
+	}
+}
+
+func Float64(value any) (float64, error) {
+	switch v := value.(type) {
+	case float64:
+		return v, nil
+	case float32:
+		return float64(v), nil
+	case int:
+		return float64(v), nil
+	case int64:
+		return float64(v), nil
+	case json.Number:
+		return v.Float64()
+	case string:
+		return strconv.ParseFloat(v, 64)
+	case nil:
+		return 0, nil
+	default:
+		return 0, fmt.Errorf("cannot convert %T to float64", value)
+	}
 }
 
 // ---------------------------------- Date/Time ----------------------------------

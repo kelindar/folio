@@ -18,12 +18,16 @@ templ hxFormContent(rx *Context, value folio.Object) {
 				@edit
 			}
 			if rx.Mode != ModeCreate {
-				@hxFormSection("Governance", "This section contains information about the governance of the object.")
+				@hxDivider("Governance")
 				@hxFormRow("Created", timedAt(value.Created()), false)
 				@hxFormRow("Updated", timedAt(value.Updated()), false)
 			}
 		</div>
 	</form>
+}
+
+templ hxDivider(title string) {
+	<div class="divider">{ title }</div>
 }
 
 templ hxFormSection(title, subtitle string) {
@@ -48,7 +52,7 @@ templ hxFormRow(label string, editor templ.Component, required bool) {
 				<p class="text-slate-300 font-thin text-xs">required</p>
 			}
 		</label>
-		<div class="uk-form-controls uk-form-controls-text">
+		<div class="uk-form-controls">
 			@editor
 		</div>
 		<div id={ label + "-error" } class="uk-form-help text-destructive"></div>

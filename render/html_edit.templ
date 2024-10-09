@@ -109,3 +109,10 @@ templ Range(props *Props, min, max, step float64) {
 			/>
 	}
 }
+
+templ Struct(props *Props, children []templ.Component) {
+	@hxDivider(props.Name)
+	for _, child := range children {
+		@child
+	}
+}

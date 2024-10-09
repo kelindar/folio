@@ -6,7 +6,7 @@ htmx.defineExtension("obj-enc", {
   },
 
   encodeParameters: function (xhr, parameters, elt) {
-    xhr.overrideMimeType("text/json");
+    xhr.overrideMimeType("application/json");
 
     // If elt is not a form, find closest form
     if (elt.tagName !== "FORM") {

@@ -68,7 +68,6 @@ func content(registry folio.Registry, db folio.Storage) http.Handler {
 		if err != nil {
 			return err
 		}
-		//return w.Render(hxList(rx, list))
 
 		return w.Render(hxNavigate(rx, ns, list))
 	})
@@ -245,7 +244,7 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
-			return errors.BadRequest("Unable to decode URN, %v", err)
+			return errors.BadRequest("unable to decode URN, %v", err)
 		}
 
 		// Make sure this kind exists
@@ -257,13 +256,13 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		// Get the latest instance from the database
 		instance, err := fetchOrCreate(registry, db, urn)
 		if err != nil {
-			return errors.Internal("Unable to fetch or create object, %v", err)
+			return errors.Internal("unable to fetch or create object, %v", err)
 		}
 
 		// Hydrate the instance with the new data we've received
 		defer r.Body.Close()
-		if err := json.NewDecoder(r.Body).Decode(instance); err != nil {
-			return errors.BadRequest("Unable to decode request, %v", err)
+		if err := decodeForm(r.Body, instance); err != nil {
+			return errors.BadRequest("unable to decode request, %v", err)
 		}
 
 		// Validate the input data, and if it's invalid, return the validation errors. We also
@@ -280,7 +279,7 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 		// Save the instance back to the database
 		updated, err := folio.Upsert(db, instance, "sys")
 		if err != nil {
-			return errors.Internal("Unable to save %T, %v", instance, err)
+			return errors.Internal("unable to save %T, %v", instance, err)
 		}
 
 		switch {

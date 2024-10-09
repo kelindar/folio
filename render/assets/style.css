@@ -125,3 +125,21 @@ html {
 .notification-animation {
   animation: anim-notify 3s ease-in-out forwards;
 }
+
+/* ---------------- Notification ---------------- */
+
+.divider {
+  font-size: 0.75rem;
+  color: #848484;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+}
+
+.divider::before,
+.divider::after {
+  flex: 1;
+  content: "";
+  border-bottom: dotted 1px #b2b2b2b3;
+  margin: 10px;
+}

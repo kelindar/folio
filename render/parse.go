@@ -1,10 +1,14 @@
 package render
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"reflect"
 	"strings"
 
 	"github.com/kelindar/folio"
+	"github.com/tidwall/sjson"
 )
 
 func isEnum(field reflect.StructField) bool {
@@ -42,4 +46,28 @@ func decodeKind(field reflect.StructField, registry folio.Registry) (folio.Type,
 	}
 
 	return typ, true
+}
+
+// ---------------------------------- FORM ----------------------------------
+
+// decodeForm parses the input flat JSON form.
+func decodeForm(reader io.Reader, dst any) (err error) {
+	input, err := io.ReadAll(reader)
+	if err != nil {
+		return err
+	}
+
+	var data map[string]any
+	if err := json.Unmarshal(input, &data); err != nil {
+		return err
+	}
+
+	nested := make([]byte, 0, len(input)*2)
+	for key, value := range data {
+		if nested, err = sjson.SetBytes(nested, key, value); err != nil {
+			return fmt.Errorf("unable to decode %s: %w", key, err)
+		}
+	}
+
+	return json.Unmarshal(nested, dst)
 }

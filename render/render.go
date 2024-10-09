@@ -154,32 +154,19 @@ func levelOf(tag string) string {
 // Object renders the object into a list of components for each field.
 func Object(rctx *Context, obj folio.Object) (out []templ.Component) {
 	rv := reflect.Indirect(reflect.ValueOf(obj))
-	for _, field := range reflect.VisibleFields(rv.Type()) {
-		label, component := editorOf(rctx, obj, field, rv.FieldByName(field.Name))
-		switch {
-		case label == "" && component != nil:
-			out = append(out, component)
-		case component != nil:
-			out = append(out, hxFormRow(label, component, isRequired(field)))
-		}
-	}
-
-	return out
-}
-
-func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv reflect.Value) (string, templ.Component) {
-	name := nameOf(field)
-	label := convert.TitleCase(name)
-	props := &Props{
+	op := &Props{
 		Mode:     rctx.Mode,
-		Name:     name,
-		Value:    rv,
-		Desc:     descOf(name, field),
 		Parent:   obj,
 		Store:    rctx.Store,
 		Registry: rctx.Registry,
-		Field:    field,
 	}
+
+	return renderStruct(op, rv)
+}
+
+func editorOf(props *Props) (string, templ.Component) {
+	rv := props.Value
+	label := convert.TitleCase(props.Name)
 
 	// If the field implements the Renderer interface, we can render it directly
 	if render, ok := rv.Interface().(Renderer); ok {
@@ -187,7 +174,7 @@ func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv ref
 	}
 
 	// Check the level of the field
-	switch levelOf(field.Tag.Get("form")) {
+	switch levelOf(props.Field.Tag.Get("form")) {
 	case levelHidden:
 		return "", nil
 	case levelReadOnly:
@@ -216,11 +203,44 @@ func editorOf(rctx *Context, obj folio.Object, field reflect.StructField, rv ref
 		return label, Number(props)
 	case reflect.Bool:
 		return label, Bool(props)
+	case reflect.Struct:
+		return "", Struct(props, renderStruct(props, rv))
+
 	default:
 		slog.Warn("Unsupported editor type", "type", rv.Kind())
 	}
 
 	return "", nil
+}
+
+func renderStruct(props *Props, rv reflect.Value) (out []templ.Component) {
+	for _, field := range reflect.VisibleFields(rv.Type()) {
+		label, editor := editorOf(propsOf(props, field, rv.FieldByName(field.Name)))
+		switch {
+		case editor == nil:
+			continue // skip hidden fields
+		case label == "":
+			out = append(out, editor)
+		default:
+			out = append(out, hxFormRow(label, editor, isRequired(field)))
+		}
+	}
+
+	return out
+}
+
+func propsOf(parent *Props, field reflect.StructField, rv reflect.Value) *Props {
+	name := nameOf(field, parent.Name)
+	return &Props{
+		Mode:     parent.Mode,
+		Store:    parent.Store,
+		Registry: parent.Registry,
+		Parent:   parent.Parent,
+		Name:     name,
+		Value:    rv,
+		Desc:     descOf(name, field),
+		Field:    field,
+	}
 }
 
 func descOf(name string, field reflect.StructField) string {
@@ -231,12 +251,16 @@ func descOf(name string, field reflect.StructField) string {
 	return desc
 }
 
-func nameOf(field reflect.StructField) string {
+func nameOf(field reflect.StructField, parent string) string {
 	name := field.Name
 	if n := field.Tag.Get("json"); n != "" && n != "-" {
 		name = strings.Split(n, ",")[0]
 	}
-	return name
+
+	if parent == "" {
+		return name
+	}
+	return fmt.Sprintf("%s.%s", parent, name)
 }
 
 func namespaces(store folio.Storage) []folio.Object {
