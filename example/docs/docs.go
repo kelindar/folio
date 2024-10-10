@@ -107,6 +107,7 @@ type Vehicle struct {
 		Type  string `json:"type" form:"rw" validate:"required,oneof=leather fabric"`
 		Color string `json:"color" form:"rw" validate:"required"`
 	} `json:"upholstery" form:"rw"`
+	Owners []folio.URN `json:"owners" form:"rw" kind:"person"`
 }
 
 func (c *Vehicle) Title() string {

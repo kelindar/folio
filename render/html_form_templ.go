@@ -253,7 +253,7 @@ func hxFormRow(label, path string, editor templ.Component, required bool) templ.
 			templ_7745c5c3_Var9 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><label class=\"uk-form-label font-semibold text-gray-900\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"min-h-8\"><label class=\"uk-form-label font-semibold text-gray-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -271,7 +271,7 @@ func hxFormRow(label, path string, editor templ.Component, required bool) templ.
 			return templ_7745c5c3_Err
 		}
 		if required {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"text-slate-300 font-thin text-xs\">required</p>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"text-slate-300 font-thin text-xxs\">required</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -413,12 +413,12 @@ func hxFormActions(rx *Context, value folio.Object) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Cancel</button> <button class=\"uk-button uk-button-primary\">Save</button>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\">Cancel</button> <button class=\"uk-button uk-button-primary\"><uk-icon icon=\"save\" class=\"pr-2\"></uk-icon>Save</button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		case ModeCreate:
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button class=\"uk-button uk-button-ghost\" uk-toggle=\"target: #drawer-toggle\">Cancel</button> <button class=\"uk-button uk-button-primary\">Save</button>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<button class=\"uk-button uk-button-ghost\" uk-toggle=\"target: #drawer-toggle\">Cancel</button> <button class=\"uk-button uk-button-primary\"><uk-icon icon=\"save\" class=\"pr-2\"></uk-icon>Save</button>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

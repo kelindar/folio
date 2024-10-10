@@ -43,19 +43,15 @@ templ Bool(props *Props) {
 			<div class="relative flex items-start">
 				<div class="flex h-6 items-center">
 					if props.Value.Bool() {
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-							<path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"></path>
-						</svg>
+						<uk-icon icon="check"></uk-icon>
 					} else {
-						<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
-						</svg>
+						<uk-icon icon="x"></uk-icon>
 					}
 				</div>
 			</div>
 		case ModeEdit, ModeCreate:
 			<div class="relative flex items-start">
-				<div class="flex h-6 items-center">
+				<div class="flex h-5 items-center">
 					<input
 						id={ props.Name }
 						name={ props.Name }
@@ -68,8 +64,8 @@ templ Bool(props *Props) {
 						}
 					/>
 				</div>
-				<div class="space-y-1 ml-2">
-					<label class="uk-form-label text-gray-500" for={ props.Name }>
+				<div class="ml-2">
+					<label class="text-sm text-gray-500" for={ props.Name }>
 						{ props.Desc }
 					</label>
 				</div>
@@ -134,4 +130,34 @@ templ StructPtr(props *Props) {
 				<uk-icon icon="circle-plus" class="mr-1"></uk-icon> <span>Add { convert.Label(props.Name) }</span>
 			</button>
 	}
+}
+
+templ Slice(props *Props) {
+	@hxDivider(convert.Label(props.Name))
+	<div>
+		<button
+			id={ props.Name + "-section" }
+			uk-toggle={ "target: #" + props.Name + "-section" }
+			class="uk-button uk-button-ghost w-full text-xs p-0"
+		>
+			<uk-icon icon="list-plus" class="mr-1"></uk-icon> <span>New</span>
+		</button>
+	</div>
+	<div id={ props.Name + "-section" } hidden>
+		Hello
+		<div class="w-full flex justify-end gap-2">
+			<button
+				uk-toggle={ "target: #" + props.Name + "-section" }
+				class="uk-button uk-button-ghost text-xs"
+			>
+				Cancel
+			</button>
+			<button
+				uk-toggle={ "target: #" + props.Name + "-section" }
+				class="uk-button uk-button-default text-xs"
+			>
+				<uk-icon icon="check" class="text-green-500 pr-2"></uk-icon><span>Confirm</span>
+			</button>
+		</div>
+	</div>
 }

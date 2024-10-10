@@ -44,7 +44,7 @@ func hxLayout(title string, bodyContent templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link rel=\"shortcut icon\" href=\"/assets/favicon.ico\" type=\"image/x-icon\"><link rel=\"stylesheet\" href=\"/assets/style.css\" type=\"text/css\"><link rel=\"stylesheet\" href=\"https://unpkg.com/franken-ui/dist/css/core.min.css\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link rel=\"shortcut icon\" href=\"/assets/favicon.ico\" type=\"image/x-icon\"><link rel=\"stylesheet\" href=\"https://unpkg.com/franken-ui/dist/css/core.min.css\"><link rel=\"stylesheet\" href=\"/assets/style.css\" type=\"text/css\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

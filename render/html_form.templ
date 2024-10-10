@@ -52,11 +52,11 @@ templ hxFormSection(title, subtitle string) {
 }
 
 templ hxFormRow(label, path string, editor templ.Component, required bool) {
-	<div>
+	<div class="min-h-8">
 		<label class="uk-form-label font-semibold text-gray-900">
 			{ label }
 			if required {
-				<p class="text-slate-300 font-thin text-xs">required</p>
+				<p class="text-slate-300 font-thin text-xxs">required</p>
 			}
 		</label>
 		<div class="uk-form-controls">
@@ -99,7 +99,7 @@ templ hxFormActions(rx *Context, value folio.Object) {
 						Cancel
 					</button>
 					<button class="uk-button uk-button-primary">
-						Save
+						<uk-icon icon="save" class="pr-2"></uk-icon>Save
 					</button>
 				case ModeCreate:
 					<button
@@ -109,7 +109,7 @@ templ hxFormActions(rx *Context, value folio.Object) {
 						Cancel
 					</button>
 					<button class="uk-button uk-button-primary">
-						Save
+						<uk-icon icon="save" class="pr-2"></uk-icon>Save
 					</button>
 			}
 		</div>

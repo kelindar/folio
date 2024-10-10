@@ -218,6 +218,8 @@ func editorOf(props *Props) (string, templ.Component) {
 		return label, Bool(props)
 	case reflect.Struct:
 		return "", Struct(props, renderStruct(props, rv))
+	case reflect.Slice:
+		return "", Slice(props)
 	case reflect.Pointer:
 		ptrKind := rv.Type().Elem().Kind()
 		switch {
