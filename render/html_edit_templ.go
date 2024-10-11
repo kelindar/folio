@@ -915,7 +915,7 @@ func Slice(props *Props) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = hxFormComponent(props.Context, props.Parent, props.Name).Render(ctx, templ_7745c5c3_Buffer)
+			templ_7745c5c3_Err = hxFormComponent(props.Context, nil, props.Name).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -972,11 +972,6 @@ func Slice(props *Props) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" hx-swap=\"beforeend\"><uk-icon icon=\"check\" class=\"text-green-500 pr-2\"></uk-icon><span>Confirm</span></button></div></form></div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		case ModeView:
-			templ_7745c5c3_Err = hxFormComponent(props.Context, props.Parent, props.Name).Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

@@ -175,22 +175,44 @@ func Component(rx *Context, value any, path string) (out []templ.Component) {
 	}
 
 	ft := field.Type
+	et := ft.Elem()
 
 	//fv := rv.FieldByIndex(field.Index)
 
 	// Create a new instance of the field's element, given the field should be an array
 	//instance := reflect.New(field.Type.Elem()).Interface()
 
+	fmt.Println()
+	fmt.Println()
+	fmt.Printf("path: %s\n", path)
+	fmt.Printf("type: %T\n", value)
+	fmt.Printf("input value: %+v\n", value)
+	fmt.Printf("input is nil: %v\n", value == nil)
+
+	// If we got a slice, we need to create a new instance of the element
+	/*if field.Type.Kind() == reflect.Slice  {
+		value = reflect.Indirect(reflect.New(et)).Interface()
+	}*/
+
+	if value == nil {
+		value = reflect.Indirect(reflect.New(et)).Interface()
+	}
+
+	fmt.Printf("output value: %+v\n", value)
+
 	switch {
-	case ft.Kind() == reflect.Struct || ft.Kind() == reflect.Ptr && ft.Elem().Kind() == reflect.Struct:
-		return renderStruct(op, reflect.Indirect(reflect.New(ft)))
+	case ft.Kind() == reflect.Struct || ft.Kind() == reflect.Ptr && et.Kind() == reflect.Struct:
+		println("(struct) rendering struct")
+		return renderStruct(op, reflect.Indirect(reflect.ValueOf(value)))
 	case ft.Kind() == reflect.Slice:
-		et := ft.Elem()
+
 		switch {
 		case et == reflect.TypeOf(folio.URN{}):
-			return renderURN(op, reflect.Indirect(reflect.New(et)), field)
+			println("(slice) rendering urn")
+			return renderURN(op, reflect.Indirect(reflect.ValueOf(value)), field)
 		case et.Kind() == reflect.Struct:
-			return renderStruct(op, reflect.Indirect(reflect.New(et)))
+			println("(slice) rendering struct")
+			return renderStruct(op, reflect.Indirect(reflect.ValueOf(value)))
 		}
 	}
 
@@ -233,6 +255,12 @@ func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 func editorOf(props *Props) (string, templ.Component) {
 	rv := props.Value
 	label := convert.Label(props.Name)
+
+	if !props.Field.IsExported() {
+		return "", nil
+	}
+
+	fmt.Printf("- [%v] %v = %+v (%T)\n", rv.Type().String(), props.Name, rv.Interface(), rv.Interface())
 
 	// If the field implements the Renderer interface, we can render it directly
 	if render, ok := rv.Interface().(Renderer); ok {

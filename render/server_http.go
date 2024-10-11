@@ -220,7 +220,12 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 				return errors.BadRequest("unable to find path, %v", err)
 			}
 
-			fv := reflect.ValueOf(instance).FieldByIndex(field.Index).Interface()
+			//fv := reflect.ValueOf(instance).FieldByIndex(field.Index).Interface()
+			fv := reflect.New(field.Type.Elem()).Interface()
+			fmt.Printf("make field: %+v\n", field)
+			fmt.Printf("make value: %+v\n", fv)
+			fmt.Printf("make type: %T\n", fv)
+
 			return w.Render(hxFormComponent(rx, fv, path))
 		}
 	})

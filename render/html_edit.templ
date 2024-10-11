@@ -149,7 +149,7 @@ templ Slice(props *Props) {
 			</div>
 			<div id={ props.Name + "-section" } class="form-list-add" hidden>
 				<form id={ props.Name + "-form" }>
-					@hxFormComponent(props.Context, props.Parent, props.Name)
+					@hxFormComponent(props.Context, nil, props.Name)
 					<div class="w-full flex justify-end gap-2">
 						<button
 							type="button"
@@ -170,7 +170,5 @@ templ Slice(props *Props) {
 					</div>
 				</form>
 			</div>
-		case ModeView:
-			@hxFormComponent(props.Context, props.Parent, props.Name)
 	}
 }
