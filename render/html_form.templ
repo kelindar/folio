@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"time"
 
-	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/convert"
+	"github.com/kelindar/folio/errors"
 )
 
 templ hxFormContent(rx *Context, value folio.Object) {
@@ -31,6 +30,21 @@ templ hxFormComponent(rx *Context, value folio.Object, path string) {
 	for _, edit := range Component(rx, value, path) {
 		@edit
 	}
+}
+
+templ hxArrayComponent(rx *Context, value folio.Object, path string) {
+	<li>
+		<div id={ path + "-content" }>
+			@hxFormComponent(rx, value, path)
+		</div>
+		<button
+			type="button"
+			uk-toggle={ "target: #" + path + "-content" }
+			class="uk-button uk-button-ghost w-full text-xs p-0"
+		>
+			<uk-icon icon="unfold-vertical" class="mr-1"></uk-icon>
+		</button>
+	</li>
 }
 
 templ hxDivider(title string) {
@@ -178,14 +192,14 @@ templ hxButtonDropdown(id string, primary templ.Component, options ...templ.Comp
 	</div>
 }
 
-templ hxValidationErrors(v folio.Object, translator ut.Translator, errors validator.ValidationErrors) {
+templ hxValidationErrors(errors []errors.Validation) {
 	for _, err := range errors {
 		<p
-			id={ validationPath(err.Namespace()) + "-error" }
+			id={ err.Path + "-error" }
 			hx-swap-oob="true"
 			class="mt-2 text-xs text-red-600 text-right"
 		>
-			{ err.Translate(translator) }
+			{ err.String() }
 		</p>
 	}
 }

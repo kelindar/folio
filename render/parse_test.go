@@ -75,7 +75,7 @@ func TestUnmarshalForm(t *testing.T) {
 
 	inputJSON, _ := json.Marshal(input)
 	var car Car
-	assert.NoError(t, decodeForm(bytes.NewBuffer(inputJSON), &car))
+	assert.NoError(t, decodeForm(bytes.NewBuffer(inputJSON), &car, ""))
 	assert.Equal(t, "sedan", car.Type)
 }
 
@@ -100,7 +100,7 @@ func TestJSONPath(t *testing.T) {
 		t.Run(test.path, func(t *testing.T) {
 			typ, err := jsonPath(rt, test.path)
 			assert.NoError(t, err)
-			assert.Equal(t, test.expect, typ.Kind().String())
+			assert.Equal(t, test.expect, typ.Type.Kind().String())
 		})
 	}
 }

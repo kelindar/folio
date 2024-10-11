@@ -134,30 +134,43 @@ templ StructPtr(props *Props) {
 
 templ Slice(props *Props) {
 	@hxDivider(convert.Label(props.Name))
-	<div>
-		<button
-			id={ props.Name + "-section" }
-			uk-toggle={ "target: #" + props.Name + "-section" }
-			class="uk-button uk-button-ghost w-full text-xs p-0"
-		>
-			<uk-icon icon="list-plus" class="mr-1"></uk-icon> <span>New</span>
-		</button>
-	</div>
-	<div id={ props.Name + "-section" } hidden>
-		Hello
-		<div class="w-full flex justify-end gap-2">
-			<button
-				uk-toggle={ "target: #" + props.Name + "-section" }
-				class="uk-button uk-button-ghost text-xs"
-			>
-				Cancel
-			</button>
-			<button
-				uk-toggle={ "target: #" + props.Name + "-section" }
-				class="uk-button uk-button-default text-xs"
-			>
-				<uk-icon icon="check" class="text-green-500 pr-2"></uk-icon><span>Confirm</span>
-			</button>
-		</div>
-	</div>
+	<ul id={ props.Name } class="uk-list uk-list-divider form-list"></ul>
+	switch props.Mode {
+		case ModeEdit, ModeCreate :
+			<div>
+				<button
+					type="button"
+					id={ props.Name + "-section" }
+					uk-toggle={ "target: #" + props.Name + "-section" }
+					class="uk-button uk-button-ghost w-full text-xs p-0"
+				>
+					<uk-icon icon="list-plus" class="mr-1"></uk-icon> <span>New</span>
+				</button>
+			</div>
+			<div id={ props.Name + "-section" } class="form-list-add" hidden>
+				<form id={ props.Name + "-form" }>
+					@hxFormComponent(props.Context, props.Parent, props.Name)
+					<div class="w-full flex justify-end gap-2">
+						<button
+							type="button"
+							uk-toggle={ "target: #" + props.Name + "-section" }
+							class="uk-button uk-button-ghost text-xs"
+						>
+							Cancel
+						</button>
+						<button
+							uk-toggle={ "target: #" + props.Name + "-section" }
+							class="uk-button uk-button-default text-xs"
+							hx-put={ fmt.Sprintf("/array/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
+							hx-target={ "#" + props.Name }
+							hx-swap="beforeend"
+						>
+							<uk-icon icon="check" class="text-green-500 pr-2"></uk-icon><span>Confirm</span>
+						</button>
+					</div>
+				</form>
+			</div>
+		case ModeView:
+			@hxFormComponent(props.Context, props.Parent, props.Name)
+	}
 }

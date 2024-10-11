@@ -51,7 +51,7 @@ func decodeKind(field reflect.StructField, registry folio.Registry) (folio.Type,
 // ---------------------------------- Form ----------------------------------
 
 // decodeForm parses the input flat JSON form.
-func decodeForm(reader io.Reader, dst any) (err error) {
+func decodeForm(reader io.Reader, dst any, prefix string) (err error) {
 	input, err := io.ReadAll(reader)
 	if err != nil {
 		return err
@@ -64,6 +64,7 @@ func decodeForm(reader io.Reader, dst any) (err error) {
 
 	nested := make([]byte, 0, len(input)*2)
 	for key, value := range data {
+		key = strings.TrimPrefix(key, prefix)
 		if nested, err = sjson.SetBytes(nested, key, value); err != nil {
 			return fmt.Errorf("unable to decode %s: %w", key, err)
 		}
@@ -84,22 +85,23 @@ func validationPath(path string) string {
 // ---------------------------------- Path Scan ----------------------------------
 
 // jsonPath finds a JSON path in the given type.
-func jsonPath(parent reflect.Type, path string) (reflect.Type, error) {
+func jsonPath(parent reflect.Type, path string) (reflect.StructField, error) {
 	parts := strings.Split(path, ".")
 	rtype := parent
 
+	var out reflect.StructField
 	for _, component := range parts {
-		switch {
-		case rtype.Kind() == reflect.Struct:
+		switch rtype.Kind() {
+		case reflect.Struct:
 			// continue
-		case rtype.Kind() == reflect.Slice:
+		case reflect.Slice:
 			rtype = rtype.Elem()
-		case rtype.Kind() == reflect.Map:
+		case reflect.Map:
 			rtype = rtype.Elem()
-		case rtype.Kind() == reflect.Ptr:
+		case reflect.Ptr:
 			rtype = rtype.Elem()
 		default:
-			return nil, fmt.Errorf("type %s is not supported", rtype)
+			return out, fmt.Errorf("type %s is not supported", rtype)
 		}
 
 		found := false
@@ -109,6 +111,7 @@ func jsonPath(parent reflect.Type, path string) (reflect.Type, error) {
 			if field := rtype.Field(i); jsonName(field) == component {
 				found = true
 				rtype = field.Type
+				out = field
 				if rtype.Kind() == reflect.Ptr {
 					rtype = rtype.Elem()
 				}
@@ -117,11 +120,11 @@ func jsonPath(parent reflect.Type, path string) (reflect.Type, error) {
 		}
 
 		if !found {
-			return nil, fmt.Errorf("field %q not found in type %s", component, rtype)
+			return out, fmt.Errorf("field %q not found in type %s", component, rtype)
 		}
 	}
 
-	return rtype, nil
+	return out, nil
 }
 
 // jsonName returns the JSON name of the field.

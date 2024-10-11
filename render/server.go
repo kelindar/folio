@@ -20,6 +20,7 @@ var assets embed.FS
 
 // ListenAndServe starts the server on the given port.
 func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
+	vd := errors.NewValidator()
 
 	// Handle static files from the embed FS (with a custom handler).
 	http.Handle("GET /assets/", serveStatic(http.FS(assets)))
@@ -35,12 +36,15 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	http.Handle("GET /make/{kind}", makeObject(registry, db))
 
 	// Object CRUD endpoints
-	http.Handle("PUT /obj/{urn}", saveObject(registry, db))
+	http.Handle("PUT /obj/{urn}", saveObject(registry, db, vd))
 	http.Handle("DELETE /obj/{urn}", deleteObject(db))
 
 	// Search and listing endpoints
 	http.Handle("GET /search/{kind}", search(registry, db))
 	http.Handle("POST /search/{kind}", search(registry, db))
+
+	// Array-based endpoints
+	http.Handle("PUT /array/{kind}", addArray(registry, db, vd))
 
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/

@@ -162,19 +162,71 @@ func Object(rx *Context, obj folio.Object) (out []templ.Component) {
 
 // Component renders the object into a list of components for each field.
 func Component(rx *Context, obj folio.Object, path string) (out []templ.Component) {
-	rv := reflect.Indirect(reflect.ValueOf(obj))
 	op := &Props{
 		Context: rx,
 		Parent:  obj,
 		Name:    path,
 	}
 
-	ct, err := jsonPath(rv.Type(), path)
+	rv := reflect.Indirect(reflect.ValueOf(obj))
+	field, err := jsonPath(rv.Type(), path)
 	if err != nil {
 		return nil
 	}
 
-	return renderStruct(op, reflect.Indirect(reflect.New(ct)))
+	ft := field.Type
+	//fv := rv.FieldByIndex(field.Index)
+
+	// Create a new instance of the field's element, given the field should be an array
+	//instance := reflect.New(field.Type.Elem()).Interface()
+
+	switch {
+	case ft.Kind() == reflect.Struct || ft.Kind() == reflect.Ptr && ft.Elem().Kind() == reflect.Struct:
+		return renderStruct(op, reflect.Indirect(reflect.New(ft)))
+	case ft.Kind() == reflect.Slice:
+		et := ft.Elem()
+		switch {
+		case et == reflect.TypeOf(folio.URN{}):
+			return renderURN(op, reflect.Indirect(reflect.New(et)), field)
+		case et.Kind() == reflect.Struct:
+			return renderStruct(op, reflect.Indirect(reflect.New(et)))
+		}
+	}
+
+	slog.Warn("Unsupported type", "type", ft.Kind())
+	return nil
+}
+
+func renderURN(parent *Props, rv reflect.Value, field reflect.StructField) (out []templ.Component) {
+	if rv.Type() == reflect.TypeOf(folio.URN{}) {
+		props := propsOf(parent, field, rv)
+		label, editor := editorOf(props)
+		switch {
+		case label == "":
+			out = append(out, editor)
+		default:
+			out = append(out, hxFormRow(label, validationPath(props.Name), editor, isRequired(field)))
+		}
+	}
+
+	return out
+}
+
+func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
+	for _, field := range reflect.VisibleFields(rv.Type()) {
+		props := propsOf(parent, field, rv.FieldByName(field.Name))
+		label, editor := editorOf(props)
+		switch {
+		case editor == nil:
+			continue // skip hidden fields
+		case label == "":
+			out = append(out, editor)
+		default:
+			out = append(out, hxFormRow(label, validationPath(props.Name), editor, isRequired(field)))
+		}
+	}
+
+	return out
 }
 
 func editorOf(props *Props) (string, templ.Component) {
@@ -236,23 +288,6 @@ func editorOf(props *Props) (string, templ.Component) {
 	}
 
 	return "", nil
-}
-
-func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
-	for _, field := range reflect.VisibleFields(rv.Type()) {
-		props := propsOf(parent, field, rv.FieldByName(field.Name))
-		label, editor := editorOf(props)
-		switch {
-		case editor == nil:
-			continue // skip hidden fields
-		case label == "":
-			out = append(out, editor)
-		default:
-			out = append(out, hxFormRow(label, validationPath(props.Name), editor, isRequired(field)))
-		}
-	}
-
-	return out
 }
 
 func propsOf(parent *Props, field reflect.StructField, rv reflect.Value) *Props {

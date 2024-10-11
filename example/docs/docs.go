@@ -108,6 +108,10 @@ type Vehicle struct {
 		Color string `json:"color" form:"rw" validate:"required"`
 	} `json:"upholstery" form:"rw"`
 	Owners []folio.URN `json:"owners" form:"rw" kind:"person"`
+	Extras []struct {
+		Name  string `json:"name" form:"rw" validate:"required"`
+		Value string `json:"value" form:"rw" validate:"required"`
+	} `json:"extras" form:"rw"`
 }
 
 func (c *Vehicle) Title() string {

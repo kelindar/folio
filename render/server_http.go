@@ -11,10 +11,6 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/angelofallars/htmx-go"
-	"github.com/go-playground/locales/en"
-	ut "github.com/go-playground/universal-translator"
-	"github.com/go-playground/validator/v10"
-	en_translations "github.com/go-playground/validator/v10/translations/en"
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/convert"
 	"github.com/kelindar/folio/errors"
@@ -240,19 +236,7 @@ func deleteObject(db folio.Storage) http.Handler {
 	})
 }
 
-func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
-	en := en.New()
-	uni := ut.New(en, en)
-	trans, _ := uni.GetTranslator("en")
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		if name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]; name != "-" {
-			return name
-		}
-		return ""
-	})
-	en_translations.RegisterDefaultTranslations(validate, trans)
-
+func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		urn, err := folio.ParseURN(r.PathValue("urn"))
 		if err != nil {
@@ -273,19 +257,17 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 
 		// Hydrate the instance with the new data we've received
 		defer r.Body.Close()
-		if err := decodeForm(r.Body, instance); err != nil {
+		if err := decodeForm(r.Body, instance, ""); err != nil {
 			return errors.BadRequest("unable to decode request, %v", err)
 		}
 
 		// Validate the input data, and if it's invalid, return the validation errors. We also
 		// need to swap the response strategy to none, so that the client doesn't replace the
 		// entire form with the validation errors.
-		if err := validate.Struct(instance); err != nil {
-			return w.RenderWith(
-				hxValidationErrors(instance, trans, err.(validator.ValidationErrors)),
-				func(r htmx.Response) htmx.Response {
-					return r.Reswap(htmx.SwapNone)
-				})
+		if errs, ok := vd.Validate(instance); !ok {
+			return w.RenderWith(hxValidationErrors(errs), func(r htmx.Response) htmx.Response {
+				return r.Reswap(htmx.SwapNone)
+			})
 		}
 
 		// Save the instance back to the database
@@ -312,6 +294,48 @@ func saveObject(registry folio.Registry, db folio.Storage) http.Handler {
 				Registry: registry,
 			}, updated))
 		}
+	})
+}
+
+func addArray(registry folio.Registry, db folio.Storage, vd errors.Validator) http.Handler {
+	return handle(func(r *http.Request, w *Response) error {
+		rx, err := newContext(ModeEdit, r, registry, db)
+		if err != nil {
+			return err
+		}
+
+		// Resolve the field by path
+		path := r.URL.Query().Get("path")
+		field, err := jsonPath(rx.Type.Type, path)
+		if err != nil {
+			return errors.BadRequest("unable to find path, %v", err)
+		}
+
+		// Create a parent object
+		parent, err := folio.NewByType(rx.Type.Type, rx.Namespace)
+		if err != nil {
+			return errors.Internal("unable to create object, %v", err)
+		}
+
+		// Create a new instance of the field's element, given the field should be an array
+		instance := reflect.New(field.Type.Elem()).Interface()
+
+		// Hydrate the instance with the new data we've received
+		defer r.Body.Close()
+		if err := decodeForm(r.Body, instance, path+"."); err != nil {
+			return errors.BadRequest("unable to decode request, %v", err)
+		}
+
+		// Validate the input data, and if it's invalid, return the validation errors. We also
+		// need to swap the response strategy to none, so that the client doesn't replace the
+		// entire form with the validation errors.
+		if errs, ok := vd.Validate(instance); !ok {
+			return w.RenderWith(hxValidationErrors(errs), func(r htmx.Response) htmx.Response {
+				return r.Reswap(htmx.SwapNone)
+			})
+		}
+
+		return w.Render(hxArrayComponent(rx, parent, path))
 	})
 }
 
