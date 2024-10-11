@@ -24,9 +24,16 @@ type Registry interface {
 
 // Type represents a registration of a resource kind.
 type Type struct {
+	fields  map[string]reflect.StructField
 	Kind    Kind         // Kind of the resource
 	Type    reflect.Type // Type of the resource
 	Options              // Options of the resource
+}
+
+// Field retrieves a field information by the specified path.
+func (t *Type) Field(path string) (reflect.StructField, bool) {
+	field, ok := t.fields[path]
+	return field, ok
 }
 
 // registry represents a registry of various resource kinds.
@@ -66,6 +73,9 @@ func (c *registry) Register(typ Type) error {
 			}
 		}
 	}
+
+	// Construct the fields map
+	typ.fields = fieldsOf(typ.Type)
 
 	//Register the resource kind and sort the data
 	c.data[typ.Kind] = typ
@@ -175,4 +185,80 @@ func typeOf(v any) reflect.Type {
 func typeOfT[T any]() reflect.Type {
 	var instance T
 	return typeOf(instance)
+}
+
+// ---------------------------------- Path Scan ----------------------------------
+
+// fieldsOf constructs a map from JSON paths to *reflect.StructField for the given type.
+func fieldsOf(typ reflect.Type) map[string]reflect.StructField {
+	fields := make(map[string]reflect.StructField, 16)
+	visited := make(map[reflect.Type]bool, 16)
+	walkType(typ, "", fields, visited)
+	return fields
+}
+
+// walkType recursively traverses the type to build JSON paths.
+func walkType(typ reflect.Type, current string, paths map[string]reflect.StructField, visited map[reflect.Type]bool) {
+	for typ.Kind() == reflect.Ptr {
+		typ = typ.Elem()
+	}
+
+	// Avoid infinite recursion on recursive types
+	if visited[typ] {
+		return
+	}
+
+	visited[typ] = true
+	switch typ.Kind() {
+	case reflect.Struct:
+		for i := 0; i < typ.NumField(); i++ {
+			field := typ.Field(i)
+			name, inline := jsonName(field)
+			switch {
+			case inline:
+				walkType(field.Type, current, paths, visited)
+				continue
+			case name == "":
+				continue // Skip fields with JSON tag "-"
+			case current != "":
+				name = current + "." + name
+			}
+
+			// Store and recurse into the field
+			paths[name] = field
+			walkType(field.Type, name, paths, visited)
+		}
+
+	// Recurse into the element type without changing the path
+	case reflect.Slice, reflect.Array, reflect.Map:
+		walkType(typ.Elem(), current, paths, visited)
+	default:
+		// Ignore unsupported types
+	}
+}
+
+// jsonName returns the JSON name of the field and whether it is inlined.
+// A field is considered inlined if it's anonymous or has the `json:",inline"` tag.
+func jsonName(field reflect.StructField) (name string, inline bool) {
+	tag := strings.Split(field.Tag.Get("json"), ",")
+	for _, part := range tag[1:] {
+		if part == "inline" {
+			inline = true
+			break
+		}
+	}
+
+	// If the field is anonymous, it's inlined
+	if field.Anonymous {
+		inline = true
+	}
+
+	switch {
+	case len(tag) > 0 && tag[0] != "" && tag[0] != "-":
+		return tag[0], inline
+	case !inline && field.Anonymous:
+		return field.Type.Name(), inline
+	default:
+		return name, inline
+	}
 }

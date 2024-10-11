@@ -3,7 +3,6 @@ package render
 import (
 	"bytes"
 	"encoding/json"
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -77,30 +76,4 @@ func TestUnmarshalForm(t *testing.T) {
 	var car Car
 	assert.NoError(t, decodeForm(bytes.NewBuffer(inputJSON), &car, ""))
 	assert.Equal(t, "sedan", car.Type)
-}
-
-func TestJSONPath(t *testing.T) {
-	rt := reflect.TypeOf(Car{})
-	tests := []struct {
-		path   string
-		expect string
-	}{
-		{"type", "string"},
-		{"year", "int"},
-		{"model", "string"},
-		{"engine", "struct"},
-		{"engine.type", "string"},
-		{"engine.power", "int"},
-		{"engines", "slice"},
-		{"engines.power", "int"},
-		{"companyInfo.departments.employees.role", "string"},
-	}
-
-	for _, test := range tests {
-		t.Run(test.path, func(t *testing.T) {
-			typ, err := jsonPath(rt, test.path)
-			assert.NoError(t, err)
-			assert.Equal(t, test.expect, typ.Type.Kind().String())
-		})
-	}
 }

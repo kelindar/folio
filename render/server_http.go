@@ -205,7 +205,7 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.BadRequest("invalid namespace")
 		}
 
-		// Create a new instance
+		// Create a new object
 		instance, err := folio.NewByType(rx.Type.Type, rx.Namespace)
 		if err != nil {
 			return errors.Internal("Unable to create object, %v", err)
@@ -215,7 +215,13 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 		case "":
 			return w.Render(hxFormContent(rx, instance))
 		default:
-			return w.Render(hxFormComponent(rx, instance, path))
+			field, ok := rx.Type.Field(path)
+			if !ok {
+				return errors.BadRequest("unable to find path, %v", err)
+			}
+
+			fv := reflect.ValueOf(instance).FieldByIndex(field.Index).Interface()
+			return w.Render(hxFormComponent(rx, fv, path))
 		}
 	})
 }
@@ -297,7 +303,9 @@ func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) 
 	})
 }
 
-func addArray(registry folio.Registry, db folio.Storage, vd errors.Validator) http.Handler {
+// ---------------------------------- Field CRUD ----------------------------------
+
+func addField(registry folio.Registry, db folio.Storage, vd errors.Validator) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		rx, err := newContext(ModeEdit, r, registry, db)
 		if err != nil {
@@ -306,15 +314,9 @@ func addArray(registry folio.Registry, db folio.Storage, vd errors.Validator) ht
 
 		// Resolve the field by path
 		path := r.URL.Query().Get("path")
-		field, err := jsonPath(rx.Type.Type, path)
-		if err != nil {
+		field, ok := rx.Type.Field(path)
+		if !ok {
 			return errors.BadRequest("unable to find path, %v", err)
-		}
-
-		// Create a parent object
-		parent, err := folio.NewByType(rx.Type.Type, rx.Namespace)
-		if err != nil {
-			return errors.Internal("unable to create object, %v", err)
 		}
 
 		// Create a new instance of the field's element, given the field should be an array
@@ -335,7 +337,7 @@ func addArray(registry folio.Registry, db folio.Storage, vd errors.Validator) ht
 			})
 		}
 
-		return w.Render(hxArrayComponent(rx, parent, path))
+		return w.Render(hxFieldComponent(rx, instance, path))
 	})
 }
 

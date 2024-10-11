@@ -161,7 +161,7 @@ templ Slice(props *Props) {
 						<button
 							uk-toggle={ "target: #" + props.Name + "-section" }
 							class="uk-button uk-button-default text-xs"
-							hx-put={ fmt.Sprintf("/array/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
+							hx-put={ fmt.Sprintf("/field/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
 							hx-target={ "#" + props.Name }
 							hx-swap="beforeend"
 						>

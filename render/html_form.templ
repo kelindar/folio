@@ -26,13 +26,13 @@ templ hxFormContent(rx *Context, value folio.Object) {
 	</form>
 }
 
-templ hxFormComponent(rx *Context, value folio.Object, path string) {
+templ hxFormComponent(rx *Context, value any, path string) {
 	for _, edit := range Component(rx, value, path) {
 		@edit
 	}
 }
 
-templ hxArrayComponent(rx *Context, value folio.Object, path string) {
+templ hxFieldComponent(rx *Context, value any, path string) {
 	<li>
 		<div id={ path + "-content" }>
 			@hxFormComponent(rx, value, path)

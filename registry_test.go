@@ -64,8 +64,8 @@ func TestRegisterInvalid(t *testing.T) {
 
 type Kind1 struct {
 	Meta `kind:"kind1" json:",inline"`
-	Name string
-	Link URN `json:"link"`
+	Name string `json:"name"`
+	Link URN    `json:"link"`
 }
 
 type Kind2 struct {
@@ -100,4 +100,58 @@ func newRegistry() Registry {
 	Register[*Kind3](registry)
 	Register[*Kind4](registry)
 	return registry
+}
+
+// ---------------------------------- Field Paths ----------------------------------
+
+// Example structs to demonstrate the transformation
+type Engine struct {
+	Type  string `json:"type"`
+	Power int    `json:"power"`
+}
+
+type Employee struct {
+	Name string `json:"name"`
+	Role string `json:"role"`
+}
+
+type Department struct {
+	Name      string     `json:"name"`
+	Employees []Employee `json:"employees,omitempty"`
+}
+
+type Address struct {
+	Street string `json:"street"`
+	City   string `json:"city"`
+}
+
+type Company struct {
+	Name        string       `json:"name"`
+	Address     *Address     `json:"address,omitempty"`
+	Departments []Department `json:"departments,omitempty"`
+}
+
+type Car struct {
+	Type        string   `json:"type"`
+	Year        int      `json:"year"`
+	Model       string   `json:"model"`
+	Description string   `json:"description"`
+	Company     string   `json:"company"`
+	Engine      *Engine  `json:"engine,omitempty"`
+	Engines     []Engine `json:"engines,omitempty"`
+	CompanyInfo *Company `json:"companyInfo,omitempty"`
+}
+
+func TestFieldsOf(t *testing.T) {
+	registry := newRegistry()
+	Register[*Kind1](registry)
+
+	typ, err := registry.Resolve("kind1")
+	assert.NoError(t, err)
+	assert.NotNil(t, typ)
+
+	f, ok := typ.Field("name")
+	assert.True(t, ok)
+	assert.Equal(t, "Name", f.Name)
+	assert.Equal(t, 10, len(typ.fields))
 }

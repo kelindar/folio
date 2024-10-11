@@ -161,20 +161,21 @@ func Object(rx *Context, obj folio.Object) (out []templ.Component) {
 }
 
 // Component renders the object into a list of components for each field.
-func Component(rx *Context, obj folio.Object, path string) (out []templ.Component) {
+func Component(rx *Context, value any, path string) (out []templ.Component) {
 	op := &Props{
 		Context: rx,
-		Parent:  obj,
 		Name:    path,
 	}
 
-	rv := reflect.Indirect(reflect.ValueOf(obj))
-	field, err := jsonPath(rv.Type(), path)
-	if err != nil {
+	//rv := reflect.Indirect(reflect.ValueOf(obj))
+	field, ok := rx.Type.Field(path)
+	if !ok {
+		slog.Warn("field not found", "path", path)
 		return nil
 	}
 
 	ft := field.Type
+
 	//fv := rv.FieldByIndex(field.Index)
 
 	// Create a new instance of the field's element, given the field should be an array

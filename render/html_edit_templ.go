@@ -950,7 +950,7 @@ func Slice(props *Props) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var54 string
-			templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/array/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name))
+			templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/field/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name))
 			if templ_7745c5c3_Err != nil {
 				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_edit.templ`, Line: 164, Col: 108}
 			}
