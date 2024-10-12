@@ -26,15 +26,30 @@ templ hxFormContent(rx *Context, value folio.Object) {
 	</form>
 }
 
-templ hxFormComponent(rx *Context, value any, path string) {
+templ hxStructItem(rx *Context, value any, path string) {
 	for _, edit := range Component(rx, value, path) {
 		@edit
 	}
 }
 
-templ hxFieldComponent(rx *Context, value any, path string) {
+templ hxSliceItem(rx *Context, value any, path string) {
 	<li>
-		@hxFormComponent(rx, value, path)
+		<div uk-grid>
+			<div class="uk-width-expand@m">
+				@hxStructItem(rx, value, path)
+			</div>
+			<div class="uk-width-auto@m">
+				<button
+					type="button"
+					class="uk-button uk-button-danger"
+					uk-tooltip="Delete"
+					hx-trigger="click"
+					hx-on:click="removeClosest(this, 'li')"
+				>
+					<uk-icon icon="trash" class="px-2"></uk-icon>
+				</button>
+			</div>
+		</div>
 	</li>
 }
 

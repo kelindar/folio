@@ -80,3 +80,10 @@ function onInit() {
   htmlElement.classList.add(localStorage.getItem("theme") || "uk-theme-zinc");
 }
 onInit();
+
+function removeClosest(target, selector) {
+  const li = target.closest(selector);
+  if (li) {
+    li.remove();
+  }
+}

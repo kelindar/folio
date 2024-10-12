@@ -223,9 +223,9 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			fv := reflect.New(field.Type.Elem()).Interface()
 			switch {
 			case field.Type.Kind() == reflect.Slice:
-				return w.Render(hxFieldComponent(rx, fv, path))
+				return w.Render(hxSliceItem(rx, fv, path))
 			default:
-				return w.Render(hxFormComponent(rx, fv, path))
+				return w.Render(hxStructItem(rx, fv, path))
 			}
 		}
 	})
@@ -342,7 +342,7 @@ func addField(registry folio.Registry, db folio.Storage, vd errors.Validator) ht
 			})
 		}
 		*/
-		return w.Render(hxFieldComponent(rx, instance, path))
+		return w.Render(hxSliceItem(rx, instance, path))
 	})
 }
 
