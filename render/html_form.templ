@@ -34,21 +34,12 @@ templ hxFormComponent(rx *Context, value any, path string) {
 
 templ hxFieldComponent(rx *Context, value any, path string) {
 	<li>
-		<div id={ path + "-content" }>
-			@hxFormComponent(rx, value, path)
-		</div>
-		<button
-			type="button"
-			uk-toggle={ "target: #" + path + "-content" }
-			class="uk-button uk-button-ghost w-full text-xs p-0"
-		>
-			<uk-icon icon="unfold-vertical" class="mr-1"></uk-icon>
-		</button>
+		@hxFormComponent(rx, value, path)
 	</li>
 }
 
 templ hxDivider(title string) {
-	<div class="divider">{ title }</div>
+	<div class="divider"><span class="mx-10">{ title }</span></div>
 }
 
 templ hxFormSection(title, subtitle string) {

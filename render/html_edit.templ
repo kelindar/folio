@@ -119,56 +119,57 @@ templ Struct(props *Props, children []templ.Component) {
 templ StructPtr(props *Props) {
 	switch props.Mode {
 		case ModeEdit, ModeCreate :
-			@hxDivider(convert.Label(props.Name))
-			<button
-				id={ props.Name + "-placeholder" }
-				class="uk-button uk-button-ghost w-full text-xs p-0"
-				hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
-				hx-target={ "#" + props.Name + "-placeholder" }
-				hx-swap="outerHTML"
-			>
-				<uk-icon icon="circle-plus" class="mr-1"></uk-icon> <span>Add { convert.Label(props.Name) }</span>
-			</button>
+			<div class="divider">
+				<button
+					id={ "add-" + props.Name }
+					class="uk-button uk-button-ghost text-xs"
+					uk-tooltip={ "pos: top; title: Add " + convert.Label(props.Name) }
+					uk-toggle={ "target: #add-" + props.Name }
+					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
+					hx-target={ "#" + props.Name + "-placeholder" }
+					hx-swap="outerHTML"
+				>
+					<uk-icon icon="circle-plus"></uk-icon>
+				</button>
+				<div class="ml-10" id={ "add-" + props.Name } hidden></div>
+				<span class="mr-10">{ convert.Label(props.Name) }</span>
+			</div>
+			<div id={ props.Name + "-placeholder" }>
+				<span class="text-gray-400 text-xs block text-center">none</span>
+			</div>
 	}
 }
 
 templ Slice(props *Props) {
-	@hxDivider(convert.Label(props.Name))
-	<ul id={ props.Name } class="uk-list uk-list-divider form-list"></ul>
-	switch props.Mode {
-		case ModeEdit, ModeCreate :
-			<div>
+	<div class="divider">
+		switch props.Mode {
+			case ModeEdit, ModeCreate :
 				<button
 					type="button"
-					id={ props.Name + "-section" }
-					uk-toggle={ "target: #" + props.Name + "-section" }
-					class="uk-button uk-button-ghost w-full text-xs p-0"
+					class="uk-button uk-button-ghost text-xs"
+					uk-tooltip="title: Add new item; pos: top"
+					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
+					hx-target={ "#" + props.Name }
+					hx-swap="beforeend"
 				>
-					<uk-icon icon="list-plus" class="mr-1"></uk-icon> <span>New</span>
+					<uk-icon icon="circle-plus"></uk-icon>
 				</button>
-			</div>
-			<div id={ props.Name + "-section" } class="form-list-add" hidden>
-				<form id={ props.Name + "-form" }>
-					@hxFormComponent(props.Context, nil, props.Name)
-					<div class="w-full flex justify-end gap-2">
-						<button
-							type="button"
-							uk-toggle={ "target: #" + props.Name + "-section" }
-							class="uk-button uk-button-ghost text-xs"
-						>
-							Cancel
-						</button>
-						<button
-							uk-toggle={ "target: #" + props.Name + "-section" }
-							class="uk-button uk-button-default text-xs"
-							hx-put={ fmt.Sprintf("/field/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
-							hx-target={ "#" + props.Name }
-							hx-swap="beforeend"
-						>
-							<uk-icon icon="check" class="text-green-500 pr-2"></uk-icon><span>Confirm</span>
-						</button>
-					</div>
-				</form>
-			</div>
-	}
+			default:
+				<div class="ml-10"></div>
+		}
+		<span>{ convert.Label(props.Name) }</span>
+		<button
+			type="button"
+			class="uk-button uk-button-ghost text-xs"
+			uk-tooltip="title: Collapse/Expand; pos: top"
+			uk-toggle={ "animation: uk-animation-fade; target: .toggle-" + props.Name }
+		>
+			<uk-icon icon="fold-vertical" class={ "toggle-" + props.Name }></uk-icon>
+			<uk-icon icon="unfold-vertical" class={ "toggle-" + props.Name } hidden></uk-icon>
+		</button>
+	</div>
+	<ul
+		id={ props.Name }
+		class={ "uk-list uk-list-divider form-list toggle-" + props.Name }
+	></ul>
 }

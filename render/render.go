@@ -177,18 +177,6 @@ func Component(rx *Context, value any, path string) (out []templ.Component) {
 	ft := field.Type
 	et := ft.Elem()
 
-	//fv := rv.FieldByIndex(field.Index)
-
-	// Create a new instance of the field's element, given the field should be an array
-	//instance := reflect.New(field.Type.Elem()).Interface()
-
-	fmt.Println()
-	fmt.Println()
-	fmt.Printf("path: %s\n", path)
-	fmt.Printf("type: %T\n", value)
-	fmt.Printf("input value: %+v\n", value)
-	fmt.Printf("input is nil: %v\n", value == nil)
-
 	// If we got a slice, we need to create a new instance of the element
 	/*if field.Type.Kind() == reflect.Slice  {
 		value = reflect.Indirect(reflect.New(et)).Interface()
@@ -198,20 +186,14 @@ func Component(rx *Context, value any, path string) (out []templ.Component) {
 		value = reflect.Indirect(reflect.New(et)).Interface()
 	}
 
-	fmt.Printf("output value: %+v\n", value)
-
 	switch {
 	case ft.Kind() == reflect.Struct || ft.Kind() == reflect.Ptr && et.Kind() == reflect.Struct:
-		println("(struct) rendering struct")
 		return renderStruct(op, reflect.Indirect(reflect.ValueOf(value)))
 	case ft.Kind() == reflect.Slice:
-
 		switch {
 		case et == reflect.TypeOf(folio.URN{}):
-			println("(slice) rendering urn")
 			return renderURN(op, reflect.Indirect(reflect.ValueOf(value)), field)
 		case et.Kind() == reflect.Struct:
-			println("(slice) rendering struct")
 			return renderStruct(op, reflect.Indirect(reflect.ValueOf(value)))
 		}
 	}
@@ -253,17 +235,17 @@ func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 }
 
 func editorOf(props *Props) (string, templ.Component) {
-	rv := props.Value
-	label := convert.Label(props.Name)
-
 	if !props.Field.IsExported() {
 		return "", nil
 	}
 
-	fmt.Printf("- [%v] %v = %+v (%T)\n", rv.Type().String(), props.Name, rv.Interface(), rv.Interface())
+	value := props.Value
+	label := convert.Label(props.Name)
+
+	// fmt.Printf("- [%v] %v = %+v (%T)\n", rv.Type().String(), props.Name, value.Interface(), value.Interface())
 
 	// If the field implements the Renderer interface, we can render it directly
-	if render, ok := rv.Interface().(Renderer); ok {
+	if render, ok := value.Interface().(Renderer); ok {
 		return "", render.Render(props)
 	}
 
@@ -276,19 +258,19 @@ func editorOf(props *Props) (string, templ.Component) {
 	}
 
 	// If the field implements the Lookup interface, we can render it directly
-	if lookup, ok := rv.Interface().(Lookup); ok && lookup.Init(props) {
+	if lookup, ok := value.Interface().(Lookup); ok && lookup.Init(props) {
 		return label, Select(props, lookup)
 	}
 
 	// If the field has a oneof tag, we need to create a lookup wrapper
-	if lookup := lookupForEnum(rv); lookup.Init(props) {
+	if lookup := lookupForEnum(value); lookup.Init(props) {
 		return label, Select(props, lookup)
 	}
 	if lookup := lookupForUrn(); lookup.Init(props) {
 		return label, Select(props, lookup)
 	}
 
-	switch rv.Kind() {
+	switch value.Kind() {
 	case reflect.String:
 		return label, String(props)
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
@@ -298,22 +280,22 @@ func editorOf(props *Props) (string, templ.Component) {
 	case reflect.Bool:
 		return label, Bool(props)
 	case reflect.Struct:
-		return "", Struct(props, renderStruct(props, rv))
+		return "", Struct(props, renderStruct(props, value))
 	case reflect.Slice:
 		return "", Slice(props)
 	case reflect.Pointer:
-		ptrKind := rv.Type().Elem().Kind()
+		ptrKind := value.Type().Elem().Kind()
 		switch {
-		case ptrKind == reflect.Struct && rv.IsNil():
+		case ptrKind == reflect.Struct && value.IsNil():
 			return "", StructPtr(props)
 		case ptrKind == reflect.Struct:
-			return "", Struct(props, renderStruct(props, rv.Elem()))
+			return "", Struct(props, renderStruct(props, value.Elem()))
 		default:
-			slog.Warn("Unsupported pointer type", "type", rv.Elem().Kind())
+			slog.Warn("Unsupported pointer type", "type", value.Elem().Kind())
 		}
 
 	default:
-		slog.Warn("Unsupported editor type", "type", rv.Kind())
+		slog.Warn("Unsupported editor type", "type", value.Kind())
 	}
 
 	return "", nil
