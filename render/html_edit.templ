@@ -1,19 +1,16 @@
 package render
 
-import (
-	"fmt"
-	"github.com/kelindar/folio/convert"
-)
+import "fmt"
 
 templ String(props *Props) {
 	switch props.Mode {
 		case ModeView :
-			<p id={ props.Name }>{ props.Value.String() }</p>
+			<p>{ props.Value.String() }</p>
 		case ModeEdit, ModeCreate:
 			<input
 				type="text"
-				id={ props.Name }
-				name={ props.Name }
+				id={ props.Name.String() }
+				name={ props.Name.String() }
 				class="uk-input"
 				placeholder={ props.Desc }
 				value={ props.Value.String() }
@@ -24,12 +21,12 @@ templ String(props *Props) {
 templ Number(props *Props) {
 	switch props.Mode {
 		case ModeView :
-			<p id={ props.Name }>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
+			<p>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
 		case ModeEdit, ModeCreate:
 			<input
 				type="number"
-				id={ props.Name }
-				name={ props.Name }
+				id={ props.Name.String() }
+				name={ props.Name.String() }
 				class="uk-input"
 				placeholder={ props.Desc }
 				value={ fmt.Sprintf("%v", props.Value.Interface()) }
@@ -53,8 +50,8 @@ templ Bool(props *Props) {
 			<div class="relative flex items-start">
 				<div class="flex h-5 items-center">
 					<input
-						id={ props.Name }
-						name={ props.Name }
+						id={ props.Name.String() }
+						name={ props.Name.String() }
 						aria-describedby="offers-description"
 						type="checkbox"
 						class="uk-checkbox mt-1"
@@ -65,7 +62,7 @@ templ Bool(props *Props) {
 					/>
 				</div>
 				<div class="ml-2">
-					<label class="text-sm text-gray-500" for={ props.Name }>
+					<label class="text-sm text-gray-500" for={ props.Name.String() }>
 						{ props.Desc }
 					</label>
 				</div>
@@ -76,9 +73,9 @@ templ Bool(props *Props) {
 templ Select(props *Props, lookup Lookup) {
 	switch props.Mode {
 		case ModeView :
-			<p id={ props.Name }>{ currentValue(lookup) }</p>
+			<p>{ currentValue(lookup) }</p>
 		case ModeEdit, ModeCreate:
-			<uk-select name={ props.Name } id={ props.Name } searchable?={ lookup.Len() > 10 || lookup.Len() < 0 } uk-cloak>
+			<uk-select name={ props.Name.String() } id={ props.Name.String() } searchable?={ lookup.Len() > 10 || lookup.Len() < 0 } uk-cloak>
 				for key, label := range lookup.Choices() {
 					if currentKey(lookup) == key {
 						<option value={ key } selected>{ label }</option>
@@ -93,12 +90,12 @@ templ Select(props *Props, lookup Lookup) {
 templ Range(props *Props, min, max, step float64) {
 	switch props.Mode {
 		case ModeView :
-			<p id={ props.Name }>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
+			<p>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
 		case ModeEdit, ModeCreate:
 			<input
 				type="range"
-				id={ props.Name }
-				name={ props.Name }
+				id={ props.Name.String() }
+				name={ props.Name.String() }
 				class="uk-range"
 				placeholder={ props.Desc }
 				value={ fmt.Sprintf("%v", props.Value.Interface()) }
@@ -110,7 +107,7 @@ templ Range(props *Props, min, max, step float64) {
 }
 
 templ Struct(props *Props, children []templ.Component) {
-	@hxDivider(props.Name)
+	@hxDivider(props.Name.Label())
 	for _, child := range children {
 		@child
 	}
@@ -121,20 +118,20 @@ templ StructPtr(props *Props) {
 		case ModeEdit, ModeCreate :
 			<div class="divider">
 				<button
-					id={ "add-" + props.Name }
+					id={ props.ID("add") }
 					class="uk-button uk-button-ghost text-xs"
-					uk-tooltip={ "pos: top; title: Add " + convert.Label(props.Name) }
-					uk-toggle={ "target: #add-" + props.Name }
+					uk-tooltip={ "pos: top; title: Add " + props.Name.Label() }
+					uk-toggle={ "target: #" + props.ID("add") }
 					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Context.Namespace, props.Name) }
-					hx-target={ "#" + props.Name + "-placeholder" }
+					hx-target={ "#" + props.ID("hx") }
 					hx-swap="outerHTML"
 				>
 					<uk-icon icon="file-plus"></uk-icon>
 				</button>
-				<div class="ml-10" id={ "add-" + props.Name } hidden></div>
-				<span class="mr-10">{ convert.Label(props.Name) }</span>
+				<div class="ml-10" id={ props.ID("add") } hidden></div>
+				<span class="mr-10">{ props.Name.Label() }</span>
 			</div>
-			<div id={ props.Name + "-placeholder" }>
+			<div id={ props.ID("hx") }>
 				<span class="text-gray-400 text-xs block text-center">none</span>
 			</div>
 	}
@@ -149,7 +146,7 @@ templ Slice(props *Props) {
 					class="uk-button uk-button-ghost text-xs"
 					uk-tooltip="title: Add new item; pos: top"
 					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
-					hx-target={ "#" + props.Name }
+					hx-target={ "#" + props.Name.String() }
 					hx-swap="beforeend"
 				>
 					<uk-icon icon="list-plus"></uk-icon>
@@ -157,20 +154,20 @@ templ Slice(props *Props) {
 			default:
 				<div class="ml-10"></div>
 		}
-		<span>{ convert.Label(props.Name) }</span>
+		<span>{ props.Name.Label() }</span>
 		<button
 			type="button"
 			class="uk-button uk-button-ghost text-xs"
 			uk-tooltip="title: Collapse/Expand; pos: top"
-			uk-toggle={ "animation: uk-animation-fade; target: .toggle-" + props.Name }
+			uk-toggle={ "animation: uk-animation-fade; target: ." + props.ID("toggle") }
 		>
-			<uk-icon icon="fold-vertical" class={ "toggle-" + props.Name }></uk-icon>
-			<uk-icon icon="unfold-vertical" class={ "toggle-" + props.Name } hidden></uk-icon>
+			<uk-icon icon="fold-vertical" class={ props.ID("toggle") }></uk-icon>
+			<uk-icon icon="unfold-vertical" class={ props.ID("toggle") } hidden></uk-icon>
 		</button>
 	</div>
 	<ul
-		id={ props.Name }
+		id={ props.Name.String() }
 		uk-sortable="handle: .uk-sortable-handle"
-		class={ "uk-list uk-list-divider list-ul  toggle-" + props.Name }
+		class={ "uk-list uk-list-divider list-ul " + props.ID("toggle") }
 	></ul>
 }

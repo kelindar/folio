@@ -103,7 +103,7 @@ func hxFormContent(rx *Context, value folio.Object) templ.Component {
 	})
 }
 
-func hxStructItem(rx *Context, value any, path string) templ.Component {
+func hxStructItem(rx *Context, value any, path Path) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -134,7 +134,7 @@ func hxStructItem(rx *Context, value any, path string) templ.Component {
 	})
 }
 
-func hxSliceItem(rx *Context, value any, path string) templ.Component {
+func hxSliceItem(rx *Context, value any, path Path) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -268,7 +268,7 @@ func hxFormSection(title, subtitle string) templ.Component {
 	})
 }
 
-func hxFormRow(label, path string, editor templ.Component, required bool) templ.Component {
+func hxFormRow(label string, path Path, editor templ.Component, required bool) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -325,9 +325,9 @@ func hxFormRow(label, path string, editor templ.Component, required bool) templ.
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var12 string
-		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(path + "-error")
+		templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(path.ID("err"))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_form.templ`, Line: 91, Col: 27}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_form.templ`, Line: 91, Col: 26}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 		if templ_7745c5c3_Err != nil {
@@ -652,9 +652,9 @@ func hxValidationErrors(errors []errors.Validation) templ.Component {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var25 string
-			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(err.Path + "-error")
+			templ_7745c5c3_Var25, templ_7745c5c3_Err = templ.JoinStringErrs(err.Path.ID("err"))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_form.templ`, Line: 210, Col: 27}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_form.templ`, Line: 210, Col: 26}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var25))
 			if templ_7745c5c3_Err != nil {

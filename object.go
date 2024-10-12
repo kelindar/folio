@@ -1,11 +1,15 @@
 package folio
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/kelindar/folio/convert"
 )
 
 // Object represents an object in the system.
@@ -171,4 +175,25 @@ func ReadJSON(c Registry, reader io.Reader) (Object, error) {
 	}
 
 	return FromJSON(c, data)
+}
+
+// ---------------------------------- Path ----------------------------------
+
+// Path represents a rendering path for a particular field.
+type Path string
+
+// ID generates a unique ID for the path, encoded in hex.
+func (p Path) ID(prefix string) string {
+	id := hex.EncodeToString([]byte(p))
+	return fmt.Sprintf("%s-%s", prefix, id)
+}
+
+// Label returns the label of the path.
+func (p Path) Label() string {
+	return convert.Label(string(p))
+}
+
+// String returns the string representation of the path.
+func (p Path) String() string {
+	return string(p)
 }

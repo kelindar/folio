@@ -169,21 +169,12 @@ func renderList(rx *Context, r *http.Request, defaultQuery folio.Query) (templ.C
 func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
 		rx, err := newContext(mode, r, registry, db)
-		//urn, err := folio.ParseURN(r.PathValue("urn"))
 		switch {
 		case err != nil:
 			return errors.BadRequest("invalid request, %v", err)
 		case !rx.URN.IsValid():
 			return errors.BadRequest("invalid URN")
 		}
-		/*if err != nil {
-			return errors.BadRequest("Unable to decode URN, %v", err)
-		}
-
-		typ, err := registry.Resolve(urn.Kind)
-		if err != nil {
-			return errors.BadRequest("invalid kind, %v", err)
-		}*/
 
 		// Get the person from the database
 		document, err := db.Fetch(rx.URN)
@@ -212,11 +203,11 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			return errors.Internal("Unable to create object, %v", err)
 		}
 
-		switch path := r.URL.Query().Get("path"); path {
+		switch rx.Path {
 		case "":
 			return w.Render(hxFormContent(rx, instance))
 		default:
-			field, ok := rx.Type.Field(path)
+			field, ok := rx.Type.Field(rx.Path)
 			if !ok {
 				return errors.BadRequest("unable to find path, %v", err)
 			}
@@ -224,9 +215,9 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			fv := reflect.New(field.Type.Elem()).Interface()
 			switch {
 			case field.Type.Kind() == reflect.Slice:
-				return w.Render(hxSliceItem(rx, fv, path))
+				return w.Render(hxSliceItem(rx, fv, rx.Path))
 			default:
-				return w.Render(hxStructItem(rx, fv, path))
+				return w.Render(hxStructItem(rx, fv, rx.Path))
 			}
 		}
 	})
@@ -311,42 +302,6 @@ func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) 
 
 // ---------------------------------- Field CRUD ----------------------------------
 
-func addField(registry folio.Registry, db folio.Storage, vd errors.Validator) http.Handler {
-	return handle(func(r *http.Request, w *Response) error {
-		rx, err := newContext(ModeEdit, r, registry, db)
-		if err != nil {
-			return err
-		}
-
-		// Resolve the field by path
-		path := r.URL.Query().Get("path")
-		field, ok := rx.Type.Field(path)
-		if !ok {
-			return errors.BadRequest("unable to find path, %v", err)
-		}
-
-		// Create a new instance of the field's element, given the field should be an array
-		instance := reflect.New(field.Type.Elem()).Interface()
-
-		// Hydrate the instance with the new data we've received
-		defer r.Body.Close()
-		if err := decodeForm(r.Body, instance, path+"."); err != nil {
-			return errors.BadRequest("unable to decode request, %v", err)
-		}
-
-		// Validate the input data, and if it's invalid, return the validation errors. We also
-		// need to swap the response strategy to none, so that the client doesn't replace the
-		// entire form with the validation errors.
-		/*if errs, ok := vd.Validate(instance); !ok {
-			return w.RenderWith(hxValidationErrors(errs), func(r htmx.Response) htmx.Response {
-				return r.Reswap(htmx.SwapNone)
-			})
-		}
-		*/
-		return w.Render(hxSliceItem(rx, instance, path))
-	})
-}
-
 // fetchOrCreate fetches or creates an object from the database.
 func fetchOrCreate(registry folio.Registry, db folio.Storage, urn folio.URN) (folio.Object, error) {
 	instance, err := db.Fetch(urn)
@@ -382,6 +337,7 @@ func newContext(mode Mode, r *http.Request, reg folio.Registry, db folio.Storage
 
 	return &Context{
 		Mode:      mode,
+		Path:      Path(r.URL.Query().Get("path")),
 		Kind:      typ.Kind,
 		Type:      typ,
 		Store:     db,

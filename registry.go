@@ -24,14 +24,14 @@ type Registry interface {
 
 // Type represents a registration of a resource kind.
 type Type struct {
-	fields  map[string]reflect.StructField
+	fields  map[Path]reflect.StructField
 	Kind    Kind         // Kind of the resource
 	Type    reflect.Type // Type of the resource
 	Options              // Options of the resource
 }
 
 // Field retrieves a field information by the specified path.
-func (t *Type) Field(path string) (reflect.StructField, bool) {
+func (t *Type) Field(path Path) (reflect.StructField, bool) {
 	field, ok := t.fields[path]
 	return field, ok
 }
@@ -190,15 +190,15 @@ func typeOfT[T any]() reflect.Type {
 // ---------------------------------- Path Scan ----------------------------------
 
 // fieldsOf constructs a map from JSON paths to *reflect.StructField for the given type.
-func fieldsOf(typ reflect.Type) map[string]reflect.StructField {
-	fields := make(map[string]reflect.StructField, 16)
+func fieldsOf(typ reflect.Type) map[Path]reflect.StructField {
+	fields := make(map[Path]reflect.StructField, 16)
 	visited := make(map[reflect.Type]bool, 16)
 	walkType(typ, "", fields, visited)
 	return fields
 }
 
 // walkType recursively traverses the type to build JSON paths.
-func walkType(typ reflect.Type, current string, paths map[string]reflect.StructField, visited map[reflect.Type]bool) {
+func walkType(typ reflect.Type, current string, paths map[Path]reflect.StructField, visited map[reflect.Type]bool) {
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
@@ -225,7 +225,7 @@ func walkType(typ reflect.Type, current string, paths map[string]reflect.StructF
 			}
 
 			// Store and recurse into the field
-			paths[name] = field
+			paths[Path(name)] = field
 			walkType(field.Type, name, paths, visited)
 		}
 

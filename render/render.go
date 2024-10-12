@@ -1,7 +1,6 @@
 package render
 
 import (
-	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"reflect"
@@ -12,6 +11,8 @@ import (
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/convert"
 )
+
+type Path = folio.Path
 
 // Mode represents the rendering mode.
 type Mode int
@@ -25,6 +26,7 @@ const (
 // Context represents the rendering context.
 type Context struct {
 	Mode      Mode
+	Path      Path
 	Kind      folio.Kind
 	Type      folio.Type
 	URN       folio.URN
@@ -37,7 +39,7 @@ type Context struct {
 // Props represents the properties of the editor use to render the field.
 type Props struct {
 	*Context                     // Context of the editor
-	Name     string              // Name of the field (or the JSON tag)
+	Name     Path                // Name of the field (or the JSON tag)
 	Label    string              // Label of the field, Title Case
 	Desc     string              // Description of the field, used for placeholder & tooltip
 	Value    reflect.Value       // Value of the field
@@ -45,9 +47,8 @@ type Props struct {
 	Field    reflect.StructField // Field of the object
 }
 
-func (p *Props) ID(suffix string) string {
-	b64 := base64.URLEncoding.EncodeToString([]byte(p.Name))
-	return fmt.Sprintf("%s-%s", b64, suffix)
+func (p *Props) ID(prefix string) string {
+	return p.Name.ID(prefix)
 }
 
 // ---------------------------------- Inspect ----------------------------------
@@ -167,7 +168,7 @@ func Object(rx *Context, obj folio.Object) (out []templ.Component) {
 }
 
 // Component renders the object into a list of components for each field.
-func Component(rx *Context, value any, path string) (out []templ.Component) {
+func Component(rx *Context, value any, path Path) (out []templ.Component) {
 	op := &Props{
 		Context: rx,
 		Name:    path,
@@ -216,7 +217,7 @@ func renderURN(parent *Props, rv reflect.Value, field reflect.StructField) (out 
 		case label == "":
 			out = append(out, editor)
 		default:
-			out = append(out, hxFormRow(label, validationPath(props.Name), editor, isRequired(field)))
+			out = append(out, hxFormRow(label, props.Name, editor, isRequired(field)))
 		}
 	}
 
@@ -233,7 +234,7 @@ func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 		case label == "":
 			out = append(out, editor)
 		default:
-			out = append(out, hxFormRow(label, validationPath(props.Name), editor, isRequired(field)))
+			out = append(out, hxFormRow(label, props.Name, editor, isRequired(field)))
 		}
 	}
 
@@ -246,7 +247,7 @@ func editorOf(props *Props) (string, templ.Component) {
 	}
 
 	value := props.Value
-	label := convert.Label(props.Name)
+	label := props.Name.Label()
 
 	// fmt.Printf("- [%v] %v = %+v (%T)\n", rv.Type().String(), props.Name, value.Interface(), value.Interface())
 
@@ -319,24 +320,24 @@ func propsOf(parent *Props, field reflect.StructField, rv reflect.Value) *Props 
 	}
 }
 
-func descOf(name string, field reflect.StructField) string {
-	desc := fmt.Sprintf("Enter %s", convert.Label(name))
+func descOf(name Path, field reflect.StructField) string {
+	desc := fmt.Sprintf("Enter %s", convert.Label(string(name)))
 	if d := field.Tag.Get("desc"); d != "" {
 		desc = d
 	}
 	return desc
 }
 
-func nameOf(field reflect.StructField, parent string) string {
+func nameOf(field reflect.StructField, parent Path) Path {
 	name := field.Name
 	if n := field.Tag.Get("json"); n != "" && n != "-" {
 		name = strings.Split(n, ",")[0]
 	}
 
 	if parent == "" {
-		return name
+		return Path(name)
 	}
-	return fmt.Sprintf("%s.%s", parent, name)
+	return Path(fmt.Sprintf("%s.%s", parent, name))
 }
 
 func namespaces(store folio.Storage) []folio.Object {

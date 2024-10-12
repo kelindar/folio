@@ -43,9 +43,6 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	http.Handle("GET /search/{kind}", search(registry, db))
 	http.Handle("POST /search/{kind}", search(registry, db))
 
-	// Field-based endpoints
-	http.Handle("PUT /field/{kind}", addField(registry, db, vd))
-
 	// Create a new server instance with options from environment variables.
 	// For more information, see https://blog.cloudflare.com/the-complete-guide-to-golang-net-http-timeouts/
 	server := &http.Server{

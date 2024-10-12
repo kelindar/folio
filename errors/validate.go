@@ -8,6 +8,7 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-playground/validator/v10"
 	en_translations "github.com/go-playground/validator/v10/translations/en"
+	"github.com/kelindar/folio"
 )
 
 // Validator represents a validator
@@ -17,7 +18,7 @@ type Validator interface {
 
 // Validation represents a result of a validation.
 type Validation struct {
-	Path    string
+	Path    folio.Path
 	Message string
 }
 
@@ -67,11 +68,11 @@ func (v *enValidator) Validate(value any) ([]Validation, bool) {
 	return result, false
 }
 
-func validationPath(path string) string {
+func validationPath(path string) folio.Path {
 	// If the first letter is capitalized, it's a nested field
 	if len(path) > 0 && path[0] >= 'A' && path[0] <= 'Z' {
 		path = path[strings.Index(path, ".")+1:]
 	}
 
-	return strings.ReplaceAll(path, ".", "-")
+	return folio.Path(path)
 }
