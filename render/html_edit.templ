@@ -125,7 +125,7 @@ templ StructPtr(props *Props) {
 					class="uk-button uk-button-ghost text-xs"
 					uk-tooltip={ "pos: top; title: Add " + convert.Label(props.Name) }
 					uk-toggle={ "target: #add-" + props.Name }
-					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
+					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Context.Namespace, props.Name) }
 					hx-target={ "#" + props.Name + "-placeholder" }
 					hx-swap="outerHTML"
 				>

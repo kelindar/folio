@@ -168,29 +168,30 @@ func renderList(rx *Context, r *http.Request, defaultQuery folio.Query) (templ.C
 
 func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		urn, err := folio.ParseURN(r.PathValue("urn"))
-		if err != nil {
+		rx, err := newContext(mode, r, registry, db)
+		//urn, err := folio.ParseURN(r.PathValue("urn"))
+		switch {
+		case err != nil:
+			return errors.BadRequest("invalid request, %v", err)
+		case !rx.URN.IsValid():
+			return errors.BadRequest("invalid URN")
+		}
+		/*if err != nil {
 			return errors.BadRequest("Unable to decode URN, %v", err)
 		}
 
 		typ, err := registry.Resolve(urn.Kind)
 		if err != nil {
 			return errors.BadRequest("invalid kind, %v", err)
-		}
+		}*/
 
 		// Get the person from the database
-		document, err := db.Fetch(urn)
+		document, err := db.Fetch(rx.URN)
 		if err != nil {
 			return errors.Internal("Unable to fetch object, %v", err)
 		}
 
-		return w.Render(hxFormContent(&Context{
-			Mode:     mode,
-			Kind:     typ.Kind,
-			Type:     typ,
-			Store:    db,
-			Registry: registry,
-		}, document))
+		return w.Render(hxFormContent(rx, document))
 	})
 
 }
@@ -363,7 +364,18 @@ func isCreated(obj folio.Object) bool {
 }
 
 func newContext(mode Mode, r *http.Request, reg folio.Registry, db folio.Storage) (*Context, error) {
-	typ, err := reg.Resolve(folio.Kind(r.PathValue("kind")))
+	kind := folio.Kind(r.PathValue("kind"))
+	ns := r.URL.Query().Get("ns")
+
+	// If we have a URN, we match kind/namespace to the URN
+	urn, err := folio.ParseURN(r.PathValue("urn"))
+	if err == nil {
+		ns = urn.Namespace
+		kind = urn.Kind
+	}
+
+	// Resolve the metadata for the kind
+	typ, err := reg.Resolve(kind)
 	if err != nil {
 		return nil, errors.BadRequest("invalid kind, %v", err)
 	}
@@ -374,6 +386,7 @@ func newContext(mode Mode, r *http.Request, reg folio.Registry, db folio.Storage
 		Type:      typ,
 		Store:     db,
 		Registry:  reg,
-		Namespace: r.URL.Query().Get("ns"),
+		URN:       urn,
+		Namespace: ns,
 	}, nil
 }

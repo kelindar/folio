@@ -1,6 +1,7 @@
 package render
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"reflect"
@@ -42,6 +43,11 @@ type Props struct {
 	Value    reflect.Value       // Value of the field
 	Parent   folio.Object        // Object to which the field belongs
 	Field    reflect.StructField // Field of the object
+}
+
+func (p *Props) ID(suffix string) string {
+	b64 := base64.URLEncoding.EncodeToString([]byte(p.Name))
+	return fmt.Sprintf("%s-%s", b64, suffix)
 }
 
 // ---------------------------------- Inspect ----------------------------------

@@ -26,6 +26,7 @@ html {
   width: 600px !important;
   left: -600px !important; /* Hide the drawer off-screen */
   padding: 0 !important;
+  overflow-y: scroll !important;
 }
 
 /* Handle flipped drawer (drawer opens from the right) */
