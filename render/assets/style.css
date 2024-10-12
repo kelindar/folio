@@ -83,6 +83,8 @@ html {
     width: 150px;
     margin-top: 4px;
     float: left;
+    text-align: right;
+    padding-right: 20px;
   }
 }
 
@@ -92,13 +94,6 @@ html {
     color: #666666;
     font-size: 14px;
   }
-}
-
-.form-list-add {
-  box-shadow: rgba(0, 0, 0, 0.1) 0px 0px 5px 0px,
-    rgba(0, 0, 0, 0.1) 0px 0px 1px 0px;
-  border-radius: 9px;
-  padding: 15px;
 }
 
 /* ---------------- Notification ---------------- */
@@ -157,4 +152,33 @@ html {
   margin-right: 5px;
   height: 30px;
   width: 30px;
+}
+
+/* ---------------- List ---------------- */
+
+.list-panel {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.list-controls {
+  align-content: center;
+  width: 42px;
+  margin-left: 10px;
+  padding: 5px;
+  background: #f4f4f49c;
+  border-radius: 12px;
+}
+
+.uk-sortable-drag .list-controls {
+  cursor: grab;
+  visibility: hidden;
+}
+
+.list-ul.uk-list-divider > :nth-child(n + 2) {
+  margin-top: 1rem;
+  border-top-width: 1px;
+  border-color: hsl(var(--border));
+  padding-top: 1rem;
 }

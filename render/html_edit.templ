@@ -129,7 +129,7 @@ templ StructPtr(props *Props) {
 					hx-target={ "#" + props.Name + "-placeholder" }
 					hx-swap="outerHTML"
 				>
-					<uk-icon icon="circle-plus"></uk-icon>
+					<uk-icon icon="file-plus"></uk-icon>
 				</button>
 				<div class="ml-10" id={ "add-" + props.Name } hidden></div>
 				<span class="mr-10">{ convert.Label(props.Name) }</span>
@@ -152,7 +152,7 @@ templ Slice(props *Props) {
 					hx-target={ "#" + props.Name }
 					hx-swap="beforeend"
 				>
-					<uk-icon icon="circle-plus"></uk-icon>
+					<uk-icon icon="list-plus"></uk-icon>
 				</button>
 			default:
 				<div class="ml-10"></div>
@@ -170,6 +170,7 @@ templ Slice(props *Props) {
 	</div>
 	<ul
 		id={ props.Name }
-		class={ "uk-list uk-list-divider form-list toggle-" + props.Name }
+		uk-sortable="handle: .uk-sortable-handle"
+		class={ "uk-list uk-list-divider list-ul  toggle-" + props.Name }
 	></ul>
 }

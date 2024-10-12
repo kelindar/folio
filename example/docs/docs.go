@@ -103,14 +103,21 @@ type Vehicle struct {
 		Type  string `json:"type" form:"rw" validate:"oneof=electric petrol diesel"`
 		Power int    `json:"power" form:"rw" validate:"gte=0"`
 	} `json:"engine" form:"rw"`
-	Upholstery *struct {
-		Type  string `json:"type" form:"rw" validate:"required,oneof=leather fabric"`
-		Color string `json:"color" form:"rw" validate:"required"`
-	} `json:"upholstery" form:"rw"`
+	Insurance *struct {
+		Type string `json:"type" form:"rw" validate:"required,oneof=third_party comprehensive"`
+		Term int    `json:"term" form:"rw" validate:"gte=1"`
+	} `json:"insurance" form:"rw"`
 	Owners []folio.URN `json:"owners" form:"rw" kind:"person"`
 	Extras []struct {
-		Name  string `json:"name" form:"rw" validate:"required"`
-		Value string `json:"value" form:"rw" validate:"required"`
+		Price   int `json:"price" form:"rw" validate:"required,gte=0"`
+		Coating *struct {
+			Type     string `json:"type" form:"rw" validate:"required,oneof=ceramic polymer"`
+			Warranty int    `json:"warranty" form:"rw" validate:"gte=0"`
+		} `json:"coating" form:"rw"`
+		Upholstery *struct {
+			Type  string `json:"type" form:"rw" validate:"required,oneof=leather fabric"`
+			Color string `json:"color" form:"rw" validate:"required"`
+		} `json:"upholstery" form:"rw"`
 	} `json:"extras" form:"rw"`
 }
 

@@ -34,15 +34,21 @@ templ hxStructItem(rx *Context, value any, path string) {
 
 templ hxSliceItem(rx *Context, value any, path string) {
 	<li>
-		<div uk-grid>
-			<div class="uk-width-expand@m">
+		<div class="flex uk-form-horizontal">
+			<div class="list-panel">
 				@hxStructItem(rx, value, path)
 			</div>
-			<div class="uk-width-auto@m">
+			<div class="list-controls">
+				<div
+					class="uk-sortable-handle uk-button uk-button-ghost w-8 h-8"
+					uk-tooltip="title: Move; pos: left"
+				>
+					<uk-icon icon="arrow-down-up" class="px-2"></uk-icon>
+				</div>
 				<button
 					type="button"
-					class="uk-button uk-button-danger"
-					uk-tooltip="Delete"
+					class="uk-button uk-button-ghost w-8 h-8"
+					uk-tooltip="title: Remove; pos: left"
 					hx-trigger="click"
 					hx-on:click="removeClosest(this, 'li')"
 				>
