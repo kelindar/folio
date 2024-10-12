@@ -24,7 +24,7 @@ type Registry interface {
 
 // Type represents a registration of a resource kind.
 type Type struct {
-	fields  map[Path]reflect.StructField
+	fields  map[string]reflect.StructField
 	Kind    Kind         // Kind of the resource
 	Type    reflect.Type // Type of the resource
 	Options              // Options of the resource
@@ -32,7 +32,7 @@ type Type struct {
 
 // Field retrieves a field information by the specified path.
 func (t *Type) Field(path Path) (reflect.StructField, bool) {
-	field, ok := t.fields[path]
+	field, ok := t.fields[path.field()]
 	return field, ok
 }
 
@@ -190,25 +190,18 @@ func typeOfT[T any]() reflect.Type {
 // ---------------------------------- Path Scan ----------------------------------
 
 // fieldsOf constructs a map from JSON paths to *reflect.StructField for the given type.
-func fieldsOf(typ reflect.Type) map[Path]reflect.StructField {
-	fields := make(map[Path]reflect.StructField, 16)
-	visited := make(map[reflect.Type]bool, 16)
-	walkType(typ, "", fields, visited)
+func fieldsOf(typ reflect.Type) map[string]reflect.StructField {
+	fields := make(map[string]reflect.StructField, 16)
+	walkType(typ, "", fields)
 	return fields
 }
 
 // walkType recursively traverses the type to build JSON paths.
-func walkType(typ reflect.Type, current string, paths map[Path]reflect.StructField, visited map[reflect.Type]bool) {
+func walkType(typ reflect.Type, current string, paths map[string]reflect.StructField) {
 	for typ.Kind() == reflect.Ptr {
 		typ = typ.Elem()
 	}
 
-	// Avoid infinite recursion on recursive types
-	if visited[typ] {
-		return
-	}
-
-	visited[typ] = true
 	switch typ.Kind() {
 	case reflect.Struct:
 		for i := 0; i < typ.NumField(); i++ {
@@ -216,7 +209,7 @@ func walkType(typ reflect.Type, current string, paths map[Path]reflect.StructFie
 			name, inline := jsonName(field)
 			switch {
 			case inline:
-				walkType(field.Type, current, paths, visited)
+				walkType(field.Type, current, paths)
 				continue
 			case name == "":
 				continue // Skip fields with JSON tag "-"
@@ -225,13 +218,13 @@ func walkType(typ reflect.Type, current string, paths map[Path]reflect.StructFie
 			}
 
 			// Store and recurse into the field
-			paths[Path(name)] = field
-			walkType(field.Type, name, paths, visited)
+			paths[name] = field
+			walkType(field.Type, name, paths)
 		}
 
 	// Recurse into the element type without changing the path
 	case reflect.Slice, reflect.Array, reflect.Map:
-		walkType(typ.Elem(), current, paths, visited)
+		walkType(typ.Elem(), current, paths)
 	default:
 		// Ignore unsupported types
 	}

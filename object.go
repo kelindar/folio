@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"regexp"
 	"strings"
 	"time"
 
@@ -179,6 +180,9 @@ func ReadJSON(c Registry, reader io.Reader) (Object, error) {
 
 // ---------------------------------- Path ----------------------------------
 
+// Regex for cleaning up the path
+var rxPathToField = regexp.MustCompile(`\.\d+(\.|$)`)
+
 // Path represents a rendering path for a particular field.
 type Path string
 
@@ -196,4 +200,11 @@ func (p Path) Label() string {
 // String returns the string representation of the path.
 func (p Path) String() string {
 	return string(p)
+}
+
+// removes all the full digits from the path, as they refer to a slice
+// e.g. "engines.41354.type" -> "engines.type"
+// e.g. "foo.1.bar.2.baz" -> "foo.bar.baz"
+func (p Path) field() string {
+	return rxPathToField.ReplaceAllString(string(p), "$1")
 }

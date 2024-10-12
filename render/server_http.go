@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math/rand/v2"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -215,6 +216,10 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 			fv := reflect.New(field.Type.Elem()).Interface()
 			switch {
 			case field.Type.Kind() == reflect.Slice:
+
+				rx.Path = Path(fmt.Sprintf("%s.%d", rx.Path, rand.Int32()))
+				fmt.Printf("path: %s, field: %s\n", rx.Path, field.Name)
+
 				return w.Render(hxSliceItem(rx, fv, rx.Path))
 			default:
 				return w.Render(hxStructItem(rx, fv, rx.Path))

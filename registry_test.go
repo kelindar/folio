@@ -132,6 +132,7 @@ type Company struct {
 }
 
 type Car struct {
+	Meta        `kind:"car" json:",inline"`
 	Type        string   `json:"type"`
 	Year        int      `json:"year"`
 	Model       string   `json:"model"`
@@ -154,4 +155,38 @@ func TestFieldsOf(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, "Name", f.Name)
 	assert.Equal(t, 10, len(typ.fields))
+}
+
+func TestPath(t *testing.T) {
+	p := Path("name")
+	assert.Equal(t, "name", p.String())
+	assert.Equal(t, "prefix-6e616d65", p.ID("prefix"))
+	assert.Equal(t, "Name", p.Label())
+}
+
+func TestField_Slice(t *testing.T) {
+	registry := newRegistry()
+	Register[*Car](registry)
+
+	typ, err := registry.Resolve("car")
+	assert.NoError(t, err)
+	assert.NotNil(t, typ)
+
+	f, ok := typ.Field("engines.41354.type")
+	assert.True(t, ok)
+	assert.Equal(t, "Type", f.Name)
+}
+
+func TestPath_Field(t *testing.T) {
+	tests := map[string]string{
+		"engines.41354.type": "engines.type",
+		"engines.41354":      "engines",
+		"engines":            "engines",
+		"foo.1.bar.2.baz":    "foo.bar.baz",
+	}
+
+	for path, expected := range tests {
+		p := Path(path)
+		assert.Equal(t, expected, p.field())
+	}
 }
