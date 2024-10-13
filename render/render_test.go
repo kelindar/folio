@@ -9,16 +9,15 @@ import (
 
 type Person struct {
 	folio.Meta `kind:"person" json:",inline"`
-	Details    Section `json:"-" form:"ro" name:"Details" desc:"Details of the person."`
-	Name       string  `json:"name" form:"rw" validate:"required"`
-	Age        int     `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Address    string  `json:"address" form:"rw"`
-	Phone      string  `json:"phone" form:"rw"`
-	Company    string  `json:"company" form:"rw"`
-	JobTitle   string  `json:"jobTitle" form:"rw"`
-	Country    string  `json:"country" form:"rw"`
-	Gender     string  `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
-	IsEmployed bool    `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
+	Name       string `json:"name" form:"rw" validate:"required"`
+	Age        int    `json:"age" form:"rw" validate:"gte=0,lte=130"`
+	Address    string `json:"address" form:"rw"`
+	Phone      string `json:"phone" form:"rw"`
+	Company    string `json:"company" form:"rw"`
+	JobTitle   string `json:"jobTitle" form:"rw"`
+	Country    string `json:"country" form:"rw"`
+	Gender     string `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	IsEmployed bool   `json:"isEmployed" form:"rw" desc:"Is the person employed?"`
 }
 
 func TestObject_View(t *testing.T) {

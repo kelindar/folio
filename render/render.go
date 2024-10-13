@@ -12,6 +12,10 @@ import (
 	"github.com/kelindar/folio/convert"
 )
 
+type Renderer interface {
+	Render(*Props) templ.Component
+}
+
 type Path = folio.Path
 
 // Mode represents the rendering mode.
@@ -63,90 +67,6 @@ func (p *Props) ID(prefix string) string {
 	return p.Name.ID(prefix)
 }
 
-// ---------------------------------- Inspect ----------------------------------
-
-// TitleOf returns the title of the object.
-func TitleOf(obj any) string {
-	return StringOf(obj, "Title")
-}
-
-// StringOf returns the string representation of the property.
-func StringOf(obj any, property string) string {
-	rv := reflect.ValueOf(obj)
-
-	// First lookup for a stringer method with the same name (i.e. <property>() string ) and
-	// make sure the signature is correct
-	if method := rv.MethodByName(property); method.IsValid() {
-		if method.Type().NumIn() == 0 && method.Type().NumOut() == 1 && method.Type().Out(0).Kind() == reflect.String {
-			return method.Call(nil)[0].String()
-		}
-	}
-
-	// Otherwise lookup for a field with the same name
-	if field := reflect.Indirect(rv).FieldByName(property); field.IsValid() {
-		switch field.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			return strconv.FormatInt(field.Int(), 10)
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			return strconv.FormatUint(field.Uint(), 10)
-		case reflect.String:
-			return field.String()
-		}
-	}
-
-	return ""
-}
-
-// ListOf returns the list of strings for the property.
-func ListOf(obj any, property string) []string {
-	rv := reflect.ValueOf(obj)
-	if method := rv.MethodByName(property); method.IsValid() &&
-		method.Type().NumIn() == 0 &&
-		method.Type().NumOut() == 1 &&
-		method.Type().Out(0).Kind() == reflect.Slice &&
-		method.Type().Out(0).Elem().Kind() == reflect.String {
-		return method.Call(nil)[0].Interface().([]string)
-	}
-
-	// Otherwise lookup for a field with the same name
-	if field := reflect.Indirect(rv).FieldByName(property); field.IsValid() &&
-		field.CanInterface() &&
-		field.Kind() == reflect.Slice &&
-		field.Type().Elem().Kind() == reflect.String {
-		return field.Interface().([]string)
-	}
-
-	return nil
-}
-
-// ---------------------------------- Section ----------------------------------
-
-type Renderer interface {
-	Render(*Props) templ.Component
-}
-
-// Section represents a section of the form. It should contain the tags "name" and "desc"
-// that will be automatically used to render the section.
-type Section struct{}
-
-// Render renders the section.
-func (s Section) Render(props *Props) templ.Component {
-	name := convert.TitleCase(props.Field.Name)
-	desc := ""
-
-	// Get the name and description from the tag
-	if n := props.Field.Tag.Get("name"); n != "" {
-		name = n
-	}
-
-	// Get the description from the tag
-	if d := props.Field.Tag.Get("desc"); d != "" {
-		desc = d
-	}
-
-	return hxFormSection(name, desc)
-}
-
 // ---------------------------------- Object Rendering ----------------------------------
 
 const (
@@ -186,7 +106,6 @@ func Component(rx *Context, value any, path Path) (out []templ.Component) {
 		Name:    path,
 	}
 
-	//rv := reflect.Indirect(reflect.ValueOf(obj))
 	field, ok := rx.Type.Field(path)
 	if !ok {
 		slog.Warn("field not found", "path", path)
@@ -194,20 +113,21 @@ func Component(rx *Context, value any, path Path) (out []templ.Component) {
 	}
 
 	ft := field.Type
-	et := ft.Elem()
+	rt := ft.Elem()
 
 	if value == nil {
-		value = reflect.Indirect(reflect.New(et)).Interface()
+		value = reflect.Indirect(reflect.New(rt)).Interface()
 	}
 
+	op.Value = reflect.ValueOf(value)
+	op.Field = field
+
 	switch {
-	case ft.Kind() == reflect.Struct || ft.Kind() == reflect.Ptr && et.Kind() == reflect.Struct:
+	case ft.Kind() == reflect.Struct || ft.Kind() == reflect.Ptr && rt.Kind() == reflect.Struct:
 		return renderStruct(op, reflect.Indirect(reflect.ValueOf(value)))
 	case ft.Kind() == reflect.Slice:
 		switch {
-		case et == reflect.TypeOf(folio.URN{}):
-			return renderURN(op, reflect.Indirect(reflect.ValueOf(value)), field)
-		case et.Kind() == reflect.Struct:
+		case rt.Kind() == reflect.Struct:
 			return renderStruct(op, reflect.Indirect(reflect.ValueOf(value)))
 		}
 	}
@@ -216,32 +136,30 @@ func Component(rx *Context, value any, path Path) (out []templ.Component) {
 	return nil
 }
 
-func renderURN(parent *Props, rv reflect.Value, field reflect.StructField) (out []templ.Component) {
-	if rv.Type() == reflect.TypeOf(folio.URN{}) {
-		props := propsOf(parent, field, rv)
-		label, editor := editorOf(props)
-		switch {
-		case label == "":
-			out = append(out, editor)
-		default:
-			out = append(out, hxFormRow(label, props.Name, editor, isRequired(field)))
-		}
-	}
-
-	return out
-}
-
 func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
-	for _, field := range reflect.VisibleFields(rv.Type()) {
-		props := propsOf(parent, field, rv.FieldByName(field.Name))
-		label, editor := editorOf(props)
-		switch {
-		case editor == nil:
-			continue // skip hidden fields
-		case label == "":
-			out = append(out, editor)
-		default:
-			out = append(out, hxFormRow(label, props.Name, editor, isRequired(field)))
+	parent.Value = rv
+
+	// If the struct has no visible fields, render the value directly
+	fields := reflect.VisibleFields(rv.Type())
+	switch {
+	case len(fields) == 0 || rv.Type() == reflect.TypeOf(folio.URN{}):
+		if _, component := renderValue(parent); component != nil {
+			out = append(out, component)
+		}
+
+	// Render all visible fields of a struct
+	default:
+		for _, field := range fields {
+			props := propsOf(parent, field, rv.FieldByName(field.Name))
+			label, editor := renderValue(props)
+			switch {
+			case editor == nil:
+				continue // skip hidden fields
+			case label == "":
+				out = append(out, editor)
+			default:
+				out = append(out, hxFormRow(label, props.Name, editor, isRequired(field)))
+			}
 		}
 	}
 
@@ -252,23 +170,31 @@ func renderSlice(parent *Props, rv reflect.Value) (out []templ.Component) {
 	for i := 0; i < rv.Len(); i++ {
 		props := propsOf(parent, rv.Index(i).Type().Field(0), rv.Index(i))
 		props.Name = Path(fmt.Sprintf("%s.%d", parent.Name, i))
-
 		out = append(out, hxSliceItem(parent.Context, rv.Index(i).Interface(), props.Name))
-		/*label, editor := editorOf(props)
-		switch {
-		case editor == nil:
-			continue // skip hidden fields
-		case label == "":
-			out = append(out, editor)
-		default:
-			out = append(out, hxFormRow(label, props.Name, editor, isRequired(props.Field)))
-		}*/
 	}
 
 	return out
 }
 
-func editorOf(props *Props) (string, templ.Component) {
+// renderField renders a field of a struct into a component.
+func renderField(props *Props) (string, templ.Component) {
+	if !props.Field.IsExported() {
+		return "", nil
+	}
+
+	// Check the level of the field
+	switch levelOf(props.Field.Tag.Get("form")) {
+	case levelHidden:
+		return "", nil
+	case levelReadOnly:
+		props.Mode = ModeView
+	}
+
+	// Render the actual value
+	return renderValue(props)
+}
+
+func renderValue(props *Props) (string, templ.Component) {
 	if !props.Field.IsExported() {
 		return "", nil
 	}
@@ -378,4 +304,60 @@ func namespaces(store folio.Storage) []folio.Object {
 		out = append(out, obj)
 	}
 	return out
+}
+
+// ---------------------------------- Inspect ----------------------------------
+
+// TitleOf returns the title of the object.
+func TitleOf(obj any) string {
+	return StringOf(obj, "Title")
+}
+
+// StringOf returns the string representation of the property.
+func StringOf(obj any, property string) string {
+	rv := reflect.ValueOf(obj)
+
+	// First lookup for a stringer method with the same name (i.e. <property>() string ) and
+	// make sure the signature is correct
+	if method := rv.MethodByName(property); method.IsValid() {
+		if method.Type().NumIn() == 0 && method.Type().NumOut() == 1 && method.Type().Out(0).Kind() == reflect.String {
+			return method.Call(nil)[0].String()
+		}
+	}
+
+	// Otherwise lookup for a field with the same name
+	if field := reflect.Indirect(rv).FieldByName(property); field.IsValid() {
+		switch field.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			return strconv.FormatInt(field.Int(), 10)
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			return strconv.FormatUint(field.Uint(), 10)
+		case reflect.String:
+			return field.String()
+		}
+	}
+
+	return ""
+}
+
+// ListOf returns the list of strings for the property.
+func ListOf(obj any, property string) []string {
+	rv := reflect.ValueOf(obj)
+	if method := rv.MethodByName(property); method.IsValid() &&
+		method.Type().NumIn() == 0 &&
+		method.Type().NumOut() == 1 &&
+		method.Type().Out(0).Kind() == reflect.Slice &&
+		method.Type().Out(0).Elem().Kind() == reflect.String {
+		return method.Call(nil)[0].Interface().([]string)
+	}
+
+	// Otherwise lookup for a field with the same name
+	if field := reflect.Indirect(rv).FieldByName(property); field.IsValid() &&
+		field.CanInterface() &&
+		field.Kind() == reflect.Slice &&
+		field.Type().Elem().Kind() == reflect.String {
+		return field.Interface().([]string)
+	}
+
+	return nil
 }

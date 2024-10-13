@@ -76,7 +76,7 @@ func lookupForUrn() *lookupUrn {
 
 func (o *lookupUrn) Init(props *Props) bool {
 	kind := props.Field.Tag.Get("kind")
-	if props.Field.Type.Name() != "URN" || kind == "" {
+	if props.Value.Type().Name() != "URN" || kind == "" {
 		return false
 	}
 
@@ -95,7 +95,7 @@ func (o *lookupUrn) Init(props *Props) bool {
 
 	// Parse the query
 	query, err := folio.ParseQuery(props.Field.Tag.Get("query"), props.Parent, folio.Query{
-		Namespace: props.Parent.URN().Namespace,
+		Namespace: props.Context.Namespace,
 	})
 	if err != nil {
 		return false // Invalid query

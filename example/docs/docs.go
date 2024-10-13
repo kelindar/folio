@@ -109,7 +109,6 @@ type Vehicle struct {
 	} `json:"insurance" form:"rw"`
 	Owners []folio.URN `json:"owners" form:"rw" kind:"person"`
 	Extras []struct {
-		Price   int `json:"price" form:"rw" validate:"required,gte=0"`
 		Coating *struct {
 			Type     string `json:"type" form:"rw" validate:"required,oneof=ceramic polymer"`
 			Warranty int    `json:"warranty" form:"rw" validate:"gte=0"`
@@ -118,6 +117,7 @@ type Vehicle struct {
 			Type  string `json:"type" form:"rw" validate:"required,oneof=leather fabric"`
 			Color string `json:"color" form:"rw" validate:"required"`
 		} `json:"upholstery" form:"rw"`
+		Price int `json:"price" form:"rw" validate:"required,gte=0"`
 	} `json:"extras" form:"rw" validate:"dive"`
 }
 
