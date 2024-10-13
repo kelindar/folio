@@ -59,9 +59,9 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 		return err
 	}
 
-	obj := reflect.Indirect(reflect.ValueOf(dst))
-
 	const appendop = 1e6 // starting from this index, it means we're appending to an array
+
+	lookup := make(map[Path]int, 16)
 
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
 		/*key = strings.TrimPrefix(key.String(), prefix)
@@ -70,6 +70,8 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 			return false
 		}*/
 
+		rv := reflect.Indirect(reflect.ValueOf(dst))
+
 		field, ok := typ.Field(Path(key.String()))
 		if !ok {
 			errDecode = fmt.Errorf("unable to find path %s", key.String())
@@ -77,7 +79,8 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 		}
 
 		fmt.Printf("[%s] value: %s, field: %s, type: %v\n", key.String(), value.String(), field.Name, field.Type.Kind())
-		index := make([]int, 0, len(field.Index))
+		//index := make([]int, 0, len(field.Index))
+		//rv := obj.FieldByIndex(field.Index)
 
 		// Ensure that the field is settable and the path can be reached. If not, allocate
 		// everything along the way (analogous to MkDirAll)
@@ -88,26 +91,34 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 				return false
 			}
 
-			index = append(index, fd.Index...)
-			fmt.Printf(" - %s, field: %s, type: %v\n",
-				subpath, fd.Name, fd.Type.Kind())
+			//index = append(index, fd.Index...)
 
-			fv := obj.FieldByIndex(index)
+			fmt.Printf(" - %s of %s, field: %s, type: %v",
+				subpath, rv.Kind(), fd.Name, fd.Type.Kind())
 
-			// For slices and pointers, always create an empty value. The value then
-			// will get populated by subsequent calls, in order of appearance.
-			switch {
-			case fv.Kind() == reflect.Ptr && fv.IsNil():
-				fv.Set(reflect.New(fv.Type().Elem()))
-			case fv.Kind() == reflect.Slice: //
-				fv.Set(reflect.MakeSlice(fv.Type(), 0, 8))
-				//case fv.Kind() == reflect.Slice && fd.Index[len(fd.Index)-1] == appendop:
-				//	fv.Set(reflect.Append(fv, reflect.New(fv.Type().Elem())))
+			switch rv.Kind() {
+			case reflect.Struct:
+				rv = rv.FieldByIndex(fd.Index)
+				rv = newOrDefault(rv)
+			case reflect.Ptr:
+				rv = newOrDefault(rv)
+			case reflect.Slice:
+				idx, ok := lookup[subpath]
+				if !ok { // If not found, append a new element
+					idx := rv.Len()
+					lookup[subpath] = idx
+					rv.Set(reflect.Append(rv, reflect.New(rv.Type().Elem()).Elem()))
+				}
 
+				// Point to the correct index within the slice
+				rv = rv.Index(idx)
 			}
+
+			fmt.Print(" => ", rv.Type(), "\n")
+
 		}
 
-		rv := obj.FieldByIndex(index)
+		//rv := obj.FieldByIndex(index)
 
 		// Try to decode value directly
 		if errDecode = unmarshalJSON(rv, value.Raw); errDecode != skip {
@@ -158,4 +169,38 @@ func unmarshalJSON(dst reflect.Value, value string) error {
 	}
 	return nil
 
+}
+
+func newOrDefault(rv reflect.Value) reflect.Value {
+	switch {
+	case rv.Kind() == reflect.Pointer && rv.IsNil():
+		instance := reflect.New(rv.Type().Elem())
+		rv.Set(instance)
+		return instance.Elem()
+	case rv.Kind() == reflect.Pointer:
+		return rv.Elem()
+	//case rv.Kind() == reflect.Slice && rv.Len() == 0:
+	//	return reflect.MakeSlice(rv.Type(), 0, 8)
+	case rv.Kind() == reflect.Map && rv.IsNil():
+		instance := reflect.MakeMap(rv.Type())
+		rv.Set(instance)
+		return instance
+	default:
+		return rv
+	}
+}
+
+func instance(typ reflect.Type) reflect.Value {
+	switch typ.Kind() {
+	case reflect.Ptr:
+		return reflect.New(typ.Elem())
+	case reflect.Slice:
+		return reflect.MakeSlice(typ, 0, 8)
+	case reflect.Map:
+		return reflect.MakeMap(typ)
+	case reflect.Struct:
+		return reflect.New(typ).Elem()
+	default:
+		return reflect.New(typ).Elem()
+	}
 }

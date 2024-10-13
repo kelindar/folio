@@ -81,7 +81,7 @@ func TestUnmarshalForm(t *testing.T) {
 
 	var car Car
 	assert.NoError(t, hydrate(strings.NewReader(inputJSON), typ, &car))
-	assert.Equal(t, "sedanx", car.Type)
+	assert.Equal(t, "sedan", car.Type)
 }
 
 func TestUnmarshal_URN(t *testing.T) {
