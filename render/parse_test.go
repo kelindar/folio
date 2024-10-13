@@ -80,7 +80,8 @@ func TestUnmarshalForm(t *testing.T) {
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	assert.NoError(t, hydrate(strings.NewReader(inputJSON), typ, &car))
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	assert.NoError(t, err)
 	assert.Equal(t, "sedan", car.Type)
 }
 
@@ -93,7 +94,8 @@ func TestUnmarshal_URN(t *testing.T) {
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	assert.NoError(t, hydrate(strings.NewReader(inputJSON), typ, &car))
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	assert.NoError(t, err)
 	assert.Equal(t, "urn:default:company:cs0m2m1hq4ujcu6kfr30", car.Company.String())
 }
 
@@ -107,7 +109,8 @@ func TestUnmarshal_Struct(t *testing.T) {
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	assert.NoError(t, hydrate(strings.NewReader(inputJSON), typ, &car))
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	assert.NoError(t, err)
 	assert.Equal(t, "electric", car.Engine.Type)
 	assert.Equal(t, 200, car.Engine.Power)
 }
@@ -124,7 +127,8 @@ func TestUnmarshal_Slice(t *testing.T) {
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	assert.NoError(t, hydrate(strings.NewReader(inputJSON), typ, &car))
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	assert.NoError(t, err)
 	assert.Equal(t, "diesel", car.Engines[0].Type)
 	assert.Equal(t, 150, car.Engines[0].Power)
 	assert.Equal(t, "electric", car.Engines[1].Type)

@@ -1,13 +1,13 @@
 package render
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"reflect"
 	"strings"
 
 	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/errors"
 	"github.com/tidwall/gjson"
 )
 
@@ -53,13 +53,14 @@ func decodeKind(field reflect.StructField, registry folio.Registry) (folio.Type,
 // ---------------------------------- Form ----------------------------------
 
 // hydrate parses the input flat JSON form.
-func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode error) {
+func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (_ []errors.Validation, errDecode error) {
 	input, err := io.ReadAll(reader)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	lookup := make(map[Path]int, 16)
+	reverse := make(map[string]Path, 16)
 
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
 		rv := reflect.Indirect(reflect.ValueOf(dst))
@@ -86,6 +87,7 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 				if !ok { // If not found, append a new element
 					idx = rv.Len()
 					lookup[subpath] = idx
+					remap(reverse, subpath, idx)
 					rv.Set(reflect.Append(rv, reflect.New(rv.Type().Elem()).Elem()))
 				}
 
@@ -127,10 +129,19 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 	if errDecode == skip {
 		errDecode = nil
 	}
-	return
+
+	vd := errors.NewValidator()
+	errs, ok := vd.Validate(dst)
+	if !ok {
+		for i := range errs {
+			errs[i].Path = errorPath(reverse, errs[i].Path)
+		}
+	}
+
+	return errs, errDecode
 }
 
-var skip = errors.New("skip")
+var skip = fmt.Errorf("skip")
 
 func unmarshalJSON(dst reflect.Value, value string) error {
 	out, ok := dst.Interface().(interface {
@@ -166,17 +177,32 @@ func newOrDefault(rv reflect.Value) reflect.Value {
 	}
 }
 
-func instance(typ reflect.Type) reflect.Value {
-	switch typ.Kind() {
-	case reflect.Ptr:
-		return reflect.New(typ.Elem())
-	case reflect.Slice:
-		return reflect.MakeSlice(typ, 0, 8)
-	case reflect.Map:
-		return reflect.MakeMap(typ)
-	case reflect.Struct:
-		return reflect.New(typ).Elem()
-	default:
-		return reflect.New(typ).Elem()
+func remap(paths map[string]Path, subpath Path, index int) {
+	i := strings.LastIndex(string(subpath), ".")
+	p := fmt.Sprintf("%s[%d]", subpath[:i], index)
+
+	//paths[p] = Path(errorPath(paths, string(subpath[:i])))
+	for v, prefix := range paths {
+		if !strings.HasPrefix(string(subpath), string(prefix)) {
+			continue
+		}
+
+		// replace first occurrence of prefix in p
+		p = strings.Replace(p, string(prefix), string(v), 1)
 	}
+
+	paths[p] = subpath
+}
+
+func errorPath(paths map[string]Path, path Path) Path {
+	p := string(path)
+	for v, prefix := range paths {
+		if !strings.HasPrefix(string(path), string(v)) {
+			continue
+		}
+
+		// replace first occurrence of prefix in p
+		p = strings.Replace(p, string(v), string(prefix), 1)
+	}
+	return Path(p)
 }

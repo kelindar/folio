@@ -262,18 +262,28 @@ func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) 
 
 		// Hydrate the instance with the new data we've received
 		defer r.Body.Close()
-		if err := hydrate(r.Body, typ, instance); err != nil {
+		validations, err := hydrate(r.Body, typ, instance)
+		if err != nil {
 			return errors.BadRequest("unable to decode request, %v", err)
 		}
 
 		// Validate the input data, and if it's invalid, return the validation errors. We also
 		// need to swap the response strategy to none, so that the client doesn't replace the
 		// entire form with the validation errors.
-		if errs, ok := vd.Validate(instance); !ok {
-			return w.RenderWith(hxValidationErrors(errs), func(r htmx.Response) htmx.Response {
+		if len(validations) > 0 {
+			return w.RenderWith(hxValidationErrors(validations), func(r htmx.Response) htmx.Response {
 				return r.Reswap(htmx.SwapNone)
 			})
 		}
+
+		// Validate the input data, and if it's invalid, return the validation errors. We also
+		// need to swap the response strategy to none, so that the client doesn't replace the
+		// entire form with the validation errors.
+		/*if errs, ok := vd.Validate(instance); !ok {
+			return w.RenderWith(hxValidationErrors(errs), func(r htmx.Response) htmx.Response {
+				return r.Reswap(htmx.SwapNone)
+			})
+		}*/
 
 		// Save the instance back to the database
 		updated, err := folio.Upsert(db, instance, "sys")
