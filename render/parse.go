@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/kelindar/folio"
@@ -53,14 +54,14 @@ func decodeKind(field reflect.StructField, registry folio.Registry) (folio.Type,
 // ---------------------------------- Form ----------------------------------
 
 // hydrate parses the input flat JSON form.
-func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (_ []errors.Validation, errDecode error) {
+func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Validator) (_ []errors.Validation, errDecode error) {
 	input, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
 
 	lookup := make(map[Path]int, 16)
-	reverse := make(map[string]Path, 16)
+	reverse := make(slicePath, 0, 16)
 
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
 		rv := reflect.Indirect(reflect.ValueOf(dst))
@@ -87,7 +88,7 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (_ []errors.Val
 				if !ok { // If not found, append a new element
 					idx = rv.Len()
 					lookup[subpath] = idx
-					remap(reverse, subpath, idx)
+					reverse = remap(reverse, subpath, idx)
 					rv.Set(reflect.Append(rv, reflect.New(rv.Type().Elem()).Elem()))
 				}
 
@@ -125,20 +126,21 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (_ []errors.Val
 		return true
 	})
 
-	// Skip is safe to ignore
-	if errDecode == skip {
-		errDecode = nil
+	// Check if we have any errors during parsing
+	if errDecode != nil && errDecode != skip {
+		return nil, errDecode
 	}
 
-	vd := errors.NewValidator()
-	errs, ok := vd.Validate(dst)
-	if !ok {
+	// If we parsed successfully, validate the object
+	if errs, ok := vd.Validate(dst); !ok {
 		for i := range errs {
 			errs[i].Path = errorPath(reverse, errs[i].Path)
 		}
+		return errs, nil
 	}
 
-	return errs, errDecode
+	// Success
+	return nil, nil
 }
 
 var skip = fmt.Errorf("skip")
@@ -177,32 +179,36 @@ func newOrDefault(rv reflect.Value) reflect.Value {
 	}
 }
 
-func remap(paths map[string]Path, subpath Path, index int) {
-	i := strings.LastIndex(string(subpath), ".")
-	p := fmt.Sprintf("%s[%d]", subpath[:i], index)
+type slicePath [][2]Path
 
-	//paths[p] = Path(errorPath(paths, string(subpath[:i])))
-	for v, prefix := range paths {
-		if !strings.HasPrefix(string(subpath), string(prefix)) {
-			continue
+func (a slicePath) Len() int           { return len(a) }
+func (a slicePath) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a slicePath) Less(i, j int) bool { return len(a[i][1]) > len(a[j][1]) }
+
+// swap iterates over the ordered mappings and replaces the first matching prefix
+func swap(mappings slicePath, input Path, fromIdx int, toIdx int) Path {
+	for _, m := range mappings {
+		a := string(m[fromIdx])
+		b := string(m[toIdx])
+
+		if strings.HasPrefix(string(input), a) {
+			return Path(strings.Replace(string(input), a, b, 1))
 		}
-
-		// replace first occurrence of prefix in p
-		p = strings.Replace(p, string(prefix), string(v), 1)
 	}
-
-	paths[p] = subpath
+	return input
 }
 
-func errorPath(paths map[string]Path, path Path) Path {
-	p := string(path)
-	for v, prefix := range paths {
-		if !strings.HasPrefix(string(path), string(v)) {
-			continue
-		}
+// remap updates the paths map by remapping the subpath with the given index
+func remap(mappings slicePath, subpath Path, index int) slicePath {
+	i := strings.LastIndex(string(subpath), ".")
+	p := swap(mappings, Path(fmt.Sprintf("%s[%d]", subpath[:i], index)), 1, 0)
 
-		// replace first occurrence of prefix in p
-		p = strings.Replace(p, string(v), string(prefix), 1)
-	}
-	return Path(p)
+	// Append the new path & keep sorted
+	defer sort.Sort(mappings)
+	return append(mappings, [2]Path{p, subpath})
+}
+
+// errorPath generates an error path by replacing the Key with the Prefix.
+func errorPath(mappings slicePath, path Path) Path {
+	return swap(mappings, path, 0, 1)
 }

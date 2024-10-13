@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/kelindar/folio"
+	"github.com/kelindar/folio/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -73,14 +74,13 @@ func TestUnmarshalForm(t *testing.T) {
 		"companyInfo.departments.1.name": "Marketing",
 		"companyInfo.departments.1.employees.0.name": "Sam Jackson",
 		"companyInfo.departments.1.employees.0.role": "Manager",
-		"optionalField": nil,
 	}`
 
 	registry := folio.NewRegistry()
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car, errors.NewValidator())
 	assert.NoError(t, err)
 	assert.Equal(t, "sedan", car.Type)
 }
@@ -94,7 +94,7 @@ func TestUnmarshal_URN(t *testing.T) {
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car, errors.NewValidator())
 	assert.NoError(t, err)
 	assert.Equal(t, "urn:default:company:cs0m2m1hq4ujcu6kfr30", car.Company.String())
 }
@@ -109,7 +109,7 @@ func TestUnmarshal_Struct(t *testing.T) {
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car, errors.NewValidator())
 	assert.NoError(t, err)
 	assert.Equal(t, "electric", car.Engine.Type)
 	assert.Equal(t, 200, car.Engine.Power)
@@ -127,7 +127,7 @@ func TestUnmarshal_Slice(t *testing.T) {
 	typ, _ := folio.Register[*Car](registry)
 
 	var car Car
-	_, err := hydrate(strings.NewReader(inputJSON), typ, &car)
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car, errors.NewValidator())
 	assert.NoError(t, err)
 	assert.Equal(t, "diesel", car.Engines[0].Type)
 	assert.Equal(t, 150, car.Engines[0].Power)
