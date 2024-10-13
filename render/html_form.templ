@@ -17,7 +17,7 @@ templ hxFormContent(rx *Context, value folio.Object) {
 			for _, edit := range Object(rx, value) {
 				@edit
 			}
-			if rx.Mode != ModeCreate {
+			if rx.Mode == ModeView {
 				@hxDivider("Governance")
 				@hxFormRow("Created", "createdAt", timedAt(value.Created()), false)
 				@hxFormRow("Updated", "updatedAt", timedAt(value.Updated()), false)

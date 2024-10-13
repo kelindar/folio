@@ -66,7 +66,6 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 	// Reset slices, we need to do it only once to be able to overwrite
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
 		rv := reflect.Indirect(reflect.ValueOf(dst))
-
 		for subpath := range Path(key.String()).Walk() {
 			fd, ok := typ.Field(subpath)
 			if !ok {
@@ -76,16 +75,13 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 
 			switch {
 			case rv.Kind() == reflect.Struct:
-				rv = rv.FieldByIndex(fd.Index)
-				rv = newOrDefault(rv)
-			case rv.Kind() == reflect.Ptr:
-				rv = newOrDefault(rv)
+				rv = newOrDefault(rv.FieldByIndex(fd.Index))
+
+			// If we have a non-empty slice, reset it
 			case rv.Kind() == reflect.Slice && rv.Len() > 0:
-				instance := reflect.MakeSlice(rv.Type(), 0, 8)
-				rv.Set(instance)
+				rv.Set(reflect.MakeSlice(rv.Type(), 0, 8))
 			}
 		}
-
 		return true
 	})
 
@@ -101,14 +97,11 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 				return false
 			}
 
-			fmt.Printf(" - %s of %s, field: %s, type: %v\n", subpath, rv.Kind(), fd.Name, fd.Type.Kind())
+			// fmt.Printf(" - %s of %s, field: %s, type: %v\n", subpath, rv.Kind(), fd.Name, fd.Type.Kind())
 
 			switch rv.Kind() {
 			case reflect.Struct:
-				rv = rv.FieldByIndex(fd.Index)
-				rv = newOrDefault(rv)
-			case reflect.Ptr:
-				rv = newOrDefault(rv)
+				rv = newOrDefault(rv.FieldByIndex(fd.Index))
 			case reflect.Slice:
 				idx, ok := lookup[subpath]
 				if !ok { // If not found, append a new element
@@ -199,10 +192,6 @@ func newOrDefault(rv reflect.Value) reflect.Value {
 	instance := reflect.MakeSlice(rv.Type(), 0, 8)
 	rv.Set(instance)
 	return rv*/
-	case rv.Kind() == reflect.Map:
-		instance := reflect.MakeMap(rv.Type())
-		rv.Set(instance)
-		return rv
 	default:
 		return rv
 	}

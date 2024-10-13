@@ -73,7 +73,7 @@ func hxFormContent(rx *Context, value folio.Object) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		if rx.Mode != ModeCreate {
+		if rx.Mode == ModeView {
 			templ_7745c5c3_Err = hxDivider("Governance").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
