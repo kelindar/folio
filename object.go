@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"iter"
 	"reflect"
 	"regexp"
 	"strings"
@@ -207,4 +208,18 @@ func (p Path) String() string {
 // e.g. "foo.1.bar.2.baz" -> "foo.bar.baz"
 func (p Path) field() string {
 	return rxPathToField.ReplaceAllString(string(p), "$1")
+}
+
+// Walk iterates over all sub-paths (e.g. "foo.bar.baz" -> "foo", "foo.bar", "foo.bar.baz")
+func (p Path) Walk() iter.Seq[Path] {
+	return func(yield func(Path) bool) {
+		for i := 0; i < len(p); i++ {
+			if p[i] == '.' {
+				if !yield(Path(p[:i])) {
+					return
+				}
+			}
+		}
+		yield(p)
+	}
 }

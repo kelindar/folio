@@ -172,21 +172,22 @@ func TestField_Slice(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, typ)
 
-	f, ok := typ.Field("engines.41354.type")
-	assert.True(t, ok)
-	assert.Equal(t, "Type", f.Name)
-}
-
-func TestPath_Field(t *testing.T) {
-	tests := map[string]string{
-		"engines.41354.type": "engines.type",
-		"engines.41354":      "engines",
-		"engines":            "engines",
-		"foo.1.bar.2.baz":    "foo.bar.baz",
+	{ // Test the elem type
+		f, ok := typ.Field("engines.41354")
+		assert.True(t, ok)
+		assert.Equal(t, reflect.Struct, f.Type.Kind())
 	}
 
-	for path, expected := range tests {
-		p := Path(path)
-		assert.Equal(t, expected, p.field())
+	{ // Test the slice itself
+		f, ok := typ.Field("engines")
+		assert.True(t, ok)
+		assert.Equal(t, reflect.Slice, f.Type.Kind())
 	}
+
+	{ // Test the field of the elem
+		f, ok := typ.Field("engines.41354.type")
+		assert.True(t, ok)
+		assert.Equal(t, reflect.String, f.Type.Kind())
+	}
+
 }

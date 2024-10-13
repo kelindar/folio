@@ -69,3 +69,36 @@ func TestMarshal(t *testing.T) {
 		assert.Equal(t, o, decoded)
 	}
 }
+
+func TestPath_Field(t *testing.T) {
+	tests := map[string]string{
+		"engines.41354.type": "engines.type",
+		"engines.41354":      "engines",
+		"engines":            "engines",
+		"foo.1.bar.2.baz":    "foo.bar.baz",
+	}
+
+	for path, expected := range tests {
+		p := Path(path)
+		assert.Equal(t, expected, p.field())
+	}
+}
+
+func TestPath_Walk(t *testing.T) {
+	tests := map[Path][]string{
+		"foo.bar.baz":   {"foo", "foo.bar", "foo.bar.baz"},
+		"foo.bar":       {"foo", "foo.bar"},
+		"foo":           {"foo"},
+		"foo.41354":     {"foo", "foo.41354"},
+		"foo.41354.bar": {"foo", "foo.41354", "foo.41354.bar"},
+	}
+
+	for path, expected := range tests {
+		var out []string
+		for v := range path.Walk() {
+			out = append(out, v.String())
+		}
+
+		assert.Equal(t, expected, out)
+	}
+}

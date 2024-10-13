@@ -109,7 +109,7 @@ func (c *registry) Resolve(kind Kind) (Type, error) {
 // ---------------------------------- Generic ----------------------------------
 
 // Register registers a resource kind into the specified registry.
-func Register[T Object](c Registry, opts ...Options) {
+func Register[T Object](c Registry, opts ...Options) (Type, error) {
 	typ := typeOfT[T]()
 	kind, err := KindOf(typ)
 	if err != nil {
@@ -126,8 +126,10 @@ func Register[T Object](c Registry, opts ...Options) {
 		Type:    typ,
 		Options: options,
 	}); err != nil {
-		panic(err)
+		return Type{}, err
 	}
+
+	return c.Resolve(kind)
 }
 
 // ---------------------------------- Reflection ----------------------------------
@@ -224,6 +226,7 @@ func walkType(typ reflect.Type, current string, paths map[string]reflect.StructF
 
 	// Recurse into the element type without changing the path
 	case reflect.Slice, reflect.Array, reflect.Map:
+		paths[current+".#"] = reflect.StructField{Type: typ.Elem()}
 		walkType(typ.Elem(), current, paths)
 	default:
 		// Ignore unsupported types

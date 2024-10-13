@@ -265,7 +265,7 @@ func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) 
 
 		// Hydrate the instance with the new data we've received
 		defer r.Body.Close()
-		if err := decodeForm(r.Body, instance, ""); err != nil {
+		if err := hydrate(r.Body, typ, instance); err != nil {
 			return errors.BadRequest("unable to decode request, %v", err)
 		}
 
