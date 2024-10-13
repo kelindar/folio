@@ -105,7 +105,7 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 			case reflect.Slice:
 				idx, ok := lookup[subpath]
 				if !ok { // If not found, append a new element
-					idx := rv.Len()
+					idx = rv.Len()
 					lookup[subpath] = idx
 					rv.Set(reflect.Append(rv, reflect.New(rv.Type().Elem()).Elem()))
 				}
