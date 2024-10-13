@@ -184,11 +184,6 @@ func Component(rx *Context, value any, path Path) (out []templ.Component) {
 	ft := field.Type
 	et := ft.Elem()
 
-	// If we got a slice, we need to create a new instance of the element
-	/*if field.Type.Kind() == reflect.Slice  {
-		value = reflect.Indirect(reflect.New(et)).Interface()
-	}*/
-
 	if value == nil {
 		value = reflect.Indirect(reflect.New(et)).Interface()
 	}

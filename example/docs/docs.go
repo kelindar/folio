@@ -118,7 +118,7 @@ type Vehicle struct {
 			Type  string `json:"type" form:"rw" validate:"required,oneof=leather fabric"`
 			Color string `json:"color" form:"rw" validate:"required"`
 		} `json:"upholstery" form:"rw"`
-	} `json:"extras" form:"rw"`
+	} `json:"extras" form:"rw" validate:"dive"`
 }
 
 func (c *Vehicle) Title() string {

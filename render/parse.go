@@ -59,28 +59,10 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 		return err
 	}
 
-	const appendop = 1e6 // starting from this index, it means we're appending to an array
-
 	lookup := make(map[Path]int, 16)
 
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
-		/*key = strings.TrimPrefix(key.String(), prefix)
-		if err = sjson.SetBytes(input, key, value.Value()); err != nil {
-			err = fmt.Errorf("unable to decode %s: %w", key, err)
-			return false
-		}*/
-
 		rv := reflect.Indirect(reflect.ValueOf(dst))
-
-		field, ok := typ.Field(Path(key.String()))
-		if !ok {
-			errDecode = fmt.Errorf("unable to find path %s", key.String())
-			return false
-		}
-
-		fmt.Printf("[%s] value: %s, field: %s, type: %v\n", key.String(), value.String(), field.Name, field.Type.Kind())
-		//index := make([]int, 0, len(field.Index))
-		//rv := obj.FieldByIndex(field.Index)
 
 		// Ensure that the field is settable and the path can be reached. If not, allocate
 		// everything along the way (analogous to MkDirAll)
@@ -91,10 +73,7 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 				return false
 			}
 
-			//index = append(index, fd.Index...)
-
-			fmt.Printf(" - %s of %s, field: %s, type: %v",
-				subpath, rv.Kind(), fd.Name, fd.Type.Kind())
+			//fmt.Printf(" - %s of %s, field: %s, type: %v\n", subpath, rv.Kind(), fd.Name, fd.Type.Kind())
 
 			switch rv.Kind() {
 			case reflect.Struct:
@@ -114,11 +93,8 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object) (errDecode erro
 				rv = rv.Index(idx)
 			}
 
-			fmt.Print(" => ", rv.Type(), "\n")
-
+			//fmt.Print(" => ", rv.Type(), "\n")
 		}
-
-		//rv := obj.FieldByIndex(index)
 
 		// Try to decode value directly
 		if errDecode = unmarshalJSON(rv, value.Raw); errDecode != skip {

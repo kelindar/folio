@@ -71,7 +71,7 @@ func TestUnmarshalForm(t *testing.T) {
 		"companyInfo.departments.0.employees.0.name": "Alice Smith",
 		"companyInfo.departments.0.employees.0.role": "Engineer",
 		"companyInfo.departments.1.name": "Marketing",
-		"companyInfo.departments.1.employees.0.name": "Bob Johnson",
+		"companyInfo.departments.1.employees.0.name": "Sam Jackson",
 		"companyInfo.departments.1.employees.0.role": "Manager",
 		"optionalField": nil,
 	}`
