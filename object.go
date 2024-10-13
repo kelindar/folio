@@ -203,6 +203,14 @@ func (p Path) String() string {
 	return string(p)
 }
 
+// Index retrieves the index of the path, if it's a slice. Otherwise, returns -1.
+func (p Path) Index() int {
+	if i := strings.LastIndex(string(p), "."); i != -1 {
+		return convert.Int(string(p[i+1:]), -1)
+	}
+	return -1
+}
+
 // removes all the full digits from the path, as they refer to a slice
 // e.g. "engines.41354.type" -> "engines.type"
 // e.g. "foo.1.bar.2.baz" -> "foo.bar.baz"

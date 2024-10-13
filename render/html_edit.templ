@@ -169,5 +169,12 @@ templ Slice(props *Props) {
 		id={ props.Name.String() }
 		uk-sortable="handle: .uk-sortable-handle"
 		class={ "uk-list uk-list-divider list-ul " + props.ID("toggle") }
-	></ul>
+	>
+		switch props.Mode {
+			case ModeView, ModeEdit:
+				for _, child := range renderSlice(props, props.Value) {
+					@child
+				}
+		}
+	</ul>
 }

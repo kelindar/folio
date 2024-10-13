@@ -102,3 +102,17 @@ func TestPath_Walk(t *testing.T) {
 		assert.Equal(t, expected, out)
 	}
 }
+
+func TestPath_Index(t *testing.T) {
+	tests := map[string]int{
+		"engines.41354.type": -1,
+		"engines.41354":      41354,
+		"engines":            -1,
+		"foo.1.bar.2":        2,
+	}
+
+	for path, expected := range tests {
+		p := Path(path)
+		assert.Equal(t, expected, p.Index())
+	}
+}

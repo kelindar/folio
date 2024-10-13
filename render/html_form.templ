@@ -38,23 +38,26 @@ templ hxSliceItem(rx *Context, value any, path Path) {
 			<div class="list-panel">
 				@hxStructItem(rx, value, path)
 			</div>
-			<div class="list-controls">
-				<div
-					class="uk-sortable-handle uk-button uk-button-ghost w-8 h-8"
-					uk-tooltip="title: Move; pos: left"
-				>
-					<uk-icon icon="arrow-down-up" class="px-2"></uk-icon>
-				</div>
-				<button
-					type="button"
-					class="uk-button uk-button-ghost w-8 h-8"
-					uk-tooltip="title: Remove; pos: left"
-					hx-trigger="click"
-					hx-on:click="removeClosest(this, 'li')"
-				>
-					<uk-icon icon="trash" class="px-2"></uk-icon>
-				</button>
-			</div>
+			switch rx.Mode {
+				case ModeEdit, ModeCreate:
+					<div class="list-controls">
+						<div
+							class="uk-sortable-handle uk-button uk-button-ghost w-8 h-8"
+							uk-tooltip="title: Move; pos: left"
+						>
+							<uk-icon icon="arrow-down-up" class="px-2"></uk-icon>
+						</div>
+						<button
+							type="button"
+							class="uk-button uk-button-ghost w-8 h-8"
+							uk-tooltip="title: Remove; pos: left"
+							hx-trigger="click"
+							hx-on:click="removeClosest(this, 'li')"
+						>
+							<uk-icon icon="trash" class="px-2"></uk-icon>
+						</button>
+					</div>
+			}
 		</div>
 	</li>
 }

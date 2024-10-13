@@ -236,6 +236,26 @@ func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 	return out
 }
 
+func renderSlice(parent *Props, rv reflect.Value) (out []templ.Component) {
+	for i := 0; i < rv.Len(); i++ {
+		props := propsOf(parent, rv.Index(i).Type().Field(0), rv.Index(i))
+		props.Name = Path(fmt.Sprintf("%s.%d", parent.Name, i))
+
+		out = append(out, hxSliceItem(parent.Context, rv.Index(i).Interface(), props.Name))
+		/*label, editor := editorOf(props)
+		switch {
+		case editor == nil:
+			continue // skip hidden fields
+		case label == "":
+			out = append(out, editor)
+		default:
+			out = append(out, hxFormRow(label, props.Name, editor, isRequired(props.Field)))
+		}*/
+	}
+
+	return out
+}
+
 func editorOf(props *Props) (string, templ.Component) {
 	if !props.Field.IsExported() {
 		return "", nil
@@ -293,11 +313,11 @@ func editorOf(props *Props) (string, templ.Component) {
 		case ptrKind == reflect.Struct:
 			return "", Struct(props, renderStruct(props, value.Elem()))
 		default:
-			slog.Warn("Unsupported pointer type", "type", value.Elem().Kind())
+			slog.Warn("unsupported pointer type", "type", value.Elem().Kind())
 		}
 
 	default:
-		slog.Warn("Unsupported editor type", "type", value.Kind())
+		slog.Warn("unsupported editor type", "type", value.Kind())
 	}
 
 	return "", nil

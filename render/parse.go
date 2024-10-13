@@ -63,6 +63,32 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 	lookup := make(map[Path]int, 16)
 	reverse := make(slicePath, 0, 16)
 
+	// Reset slices, we need to do it only once to be able to overwrite
+	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
+		rv := reflect.Indirect(reflect.ValueOf(dst))
+
+		for subpath := range Path(key.String()).Walk() {
+			fd, ok := typ.Field(subpath)
+			if !ok {
+				errDecode = fmt.Errorf("unable to find path %s", key.String())
+				return false
+			}
+
+			switch {
+			case rv.Kind() == reflect.Struct:
+				rv = rv.FieldByIndex(fd.Index)
+				rv = newOrDefault(rv)
+			case rv.Kind() == reflect.Ptr:
+				rv = newOrDefault(rv)
+			case rv.Kind() == reflect.Slice && rv.Len() > 0:
+				instance := reflect.MakeSlice(rv.Type(), 0, 8)
+				rv.Set(instance)
+			}
+		}
+
+		return true
+	})
+
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
 		rv := reflect.Indirect(reflect.ValueOf(dst))
 
@@ -75,7 +101,7 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 				return false
 			}
 
-			//fmt.Printf(" - %s of %s, field: %s, type: %v\n", subpath, rv.Kind(), fd.Name, fd.Type.Kind())
+			fmt.Printf(" - %s of %s, field: %s, type: %v\n", subpath, rv.Kind(), fd.Name, fd.Type.Kind())
 
 			switch rv.Kind() {
 			case reflect.Struct:
@@ -89,14 +115,15 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 					idx = rv.Len()
 					lookup[subpath] = idx
 					reverse = remap(reverse, subpath, idx)
-					rv.Set(reflect.Append(rv, reflect.New(rv.Type().Elem()).Elem()))
+
+					slice := reflect.Append(rv, reflect.New(rv.Type().Elem()).Elem())
+					rv.Set(slice)
+					rv = slice
 				}
 
 				// Point to the correct index within the slice
 				rv = rv.Index(idx)
 			}
-
-			//fmt.Print(" => ", rv.Type(), "\n")
 		}
 
 		// Try to decode value directly
@@ -168,12 +195,14 @@ func newOrDefault(rv reflect.Value) reflect.Value {
 		return instance.Elem()
 	case rv.Kind() == reflect.Pointer:
 		return rv.Elem()
-	//case rv.Kind() == reflect.Slice && rv.Len() == 0:
-	//	return reflect.MakeSlice(rv.Type(), 0, 8)
-	case rv.Kind() == reflect.Map && rv.IsNil():
+	/*case rv.Kind() == reflect.Slice:
+	instance := reflect.MakeSlice(rv.Type(), 0, 8)
+	rv.Set(instance)
+	return rv*/
+	case rv.Kind() == reflect.Map:
 		instance := reflect.MakeMap(rv.Type())
 		rv.Set(instance)
-		return instance
+		return rv
 	default:
 		return rv
 	}

@@ -135,3 +135,28 @@ func TestUnmarshal_Slice(t *testing.T) {
 	assert.Equal(t, 200, car.Engines[1].Power)
 	assert.Equal(t, 2, len(car.Engines))
 }
+
+func TestUnmarshal_Slice_Overwrite(t *testing.T) {
+	inputJSON := `{
+		"engines.0.type": "diesel",
+		"engines.0.power": 150,
+		"engines.99999.type": "electric",
+		"engines.99999.power": 200,
+	}`
+
+	registry := folio.NewRegistry()
+	typ, _ := folio.Register[*Car](registry)
+
+	car := Car{
+		Engines: []Engine{
+			{Type: "gasoline", Power: 100},
+		},
+	}
+	_, err := hydrate(strings.NewReader(inputJSON), typ, &car, errors.NewValidator())
+	assert.NoError(t, err)
+	assert.Equal(t, "diesel", car.Engines[0].Type)
+	assert.Equal(t, 150, car.Engines[0].Power)
+	assert.Equal(t, "electric", car.Engines[1].Type)
+	assert.Equal(t, 200, car.Engines[1].Power)
+	assert.Equal(t, 2, len(car.Engines))
+}
