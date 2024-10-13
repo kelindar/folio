@@ -945,7 +945,7 @@ func Slice(props *Props) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var55 = []any{"uk-list uk-list-divider list-ul " + props.ID("toggle")}
+		var templ_7745c5c3_Var55 = []any{"uk-list list-ul " + props.ID("toggle")}
 		templ_7745c5c3_Err = templ.RenderCSSItems(ctx, templ_7745c5c3_Buffer, templ_7745c5c3_Var55...)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err

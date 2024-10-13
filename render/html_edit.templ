@@ -168,7 +168,7 @@ templ Slice(props *Props) {
 	<ul
 		id={ props.Name.String() }
 		uk-sortable="handle: .uk-sortable-handle"
-		class={ "uk-list uk-list-divider list-ul " + props.ID("toggle") }
+		class={ "uk-list list-ul " + props.ID("toggle") }
 	>
 		switch props.Mode {
 			case ModeView, ModeEdit:

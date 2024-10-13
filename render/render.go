@@ -23,6 +23,18 @@ const (
 	ModeCreate
 )
 
+func (m Mode) String() string {
+	switch m {
+	case ModeView:
+		return "view"
+	case ModeEdit:
+		return "edit"
+	case ModeCreate:
+		return "create"
+	}
+	return ""
+}
+
 // Context represents the rendering context.
 type Context struct {
 	Mode      Mode

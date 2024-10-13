@@ -188,10 +188,6 @@ func newOrDefault(rv reflect.Value) reflect.Value {
 		return instance.Elem()
 	case rv.Kind() == reflect.Pointer:
 		return rv.Elem()
-	/*case rv.Kind() == reflect.Slice:
-	instance := reflect.MakeSlice(rv.Type(), 0, 8)
-	rv.Set(instance)
-	return rv*/
 	default:
 		return rv
 	}

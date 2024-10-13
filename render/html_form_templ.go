@@ -155,7 +155,7 @@ func hxSliceItem(rx *Context, value any, path Path) templ.Component {
 			templ_7745c5c3_Var4 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<li><div class=\"flex uk-form-horizontal\"><div class=\"list-panel\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<li><div class=\"flex uk-form-horizontal list-card\"><div class=\"list-panel\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
