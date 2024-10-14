@@ -1,11 +1,8 @@
-# Auto-generated config file for Air live-reloading tool.
-# See https://gowebly.org for more information.
-
 root = "."
 tmp_dir = "tmp"
 
 [build]
-cmd = "go run github.com/a-h/templ/cmd/templ@latest generate && go build -o ./tmp/main.exe ./example"
+cmd = "go run github.com/a-h/templ/cmd/templ@latest generate && go build -o ./tmp/main.exe ./examples/chatbot"
 bin = "tmp/main.exe"
 include_ext = ["go", "templ", "html", "json", "js", "ts", "css", "scss"]
 exclude_dir = [".parcel-cache", "bin", "dist", "node_modules", "static", "tmp", "tests", "vendor"]

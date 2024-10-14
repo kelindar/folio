@@ -5,7 +5,6 @@ go 1.23
 require (
 	github.com/a-h/templ v0.2.778
 	github.com/angelofallars/htmx-go v0.5.0
-	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/creasty/defaults v1.8.0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1

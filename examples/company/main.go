@@ -5,28 +5,27 @@ import (
 	"os"
 
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/example/docs"
 	"github.com/kelindar/folio/render"
 	"github.com/kelindar/folio/sqlite"
 )
 
 func main() {
 	reg := folio.NewRegistry()
-	folio.Register[*docs.Person](reg, folio.Options{
+	folio.Register[*Person](reg, folio.Options{
 		Icon:   "user-round",
 		Title:  "Person",
 		Plural: "People",
 		Sort:   "1",
 	})
 
-	folio.Register[*docs.Company](reg, folio.Options{
+	folio.Register[*Company](reg, folio.Options{
 		Icon:   "store",
 		Title:  "Company",
 		Plural: "Companies",
 		Sort:   "2",
 	})
 
-	folio.Register[*docs.Vehicle](reg, folio.Options{
+	folio.Register[*Vehicle](reg, folio.Options{
 		Icon:   "car",
 		Title:  "Vehicle",
 		Plural: "Vehicles",

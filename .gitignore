@@ -8,9 +8,6 @@
 .idea/
 .vscode/
 
-# Go workflow files.
-go.work
-
 # Environment files.
 .env
 
@@ -28,7 +25,7 @@ vendor/
 # Temp folders.
 .parcel-cache/
 tmp/
-data.db
+*.db
 
 # Logs.
 logs/
