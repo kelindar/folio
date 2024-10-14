@@ -25,7 +25,7 @@ vendor/
 # Temp folders.
 .parcel-cache/
 tmp/
-*.db
+/*.db
 
 # Logs.
 logs/
