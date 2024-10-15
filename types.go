@@ -154,9 +154,9 @@ type Query struct {
 	Indexes   []string            // Indexes is a list of indexes to filter by
 	Filters   map[string][]string // Filters is a map of filters to apply
 	Match     string              // Match is the full-text search query
-	SortBy    []string            `default:"[\"+id\"]"` // Sort is the set of fields to order by
-	Offset    int                 `default:"0"`         // Offset is the number of records to skip
-	Limit     int                 `default:"1000"`      // Limit is the maximum number of records to return
+	SortBy    []string            // Sort is the set of fields to order by
+	Offset    int                 // Offset is the number of records to skip
+	Limit     int                 // Limit is the maximum number of records to return
 }
 
 // String returns the string representation of the query.

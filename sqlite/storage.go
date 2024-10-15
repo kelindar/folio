@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/creasty/defaults"
 	"github.com/kelindar/folio"
 	_ "github.com/ncruces/go-sqlite3/driver" // cgo-free, uses wazero
 	_ "github.com/ncruces/go-sqlite3/embed"  // cgo-free, uses wazero
@@ -58,8 +57,11 @@ func (s *rds) Close() error {
 
 // query creates a query for the specified resource kind
 func (s *rds) query(projection string, kind folio.Kind, q folio.Query) (*sql.Rows, error) {
-	if err := defaults.Set(&q); err != nil {
-		return nil, err
+	switch {
+	case q.SortBy == nil:
+		q.SortBy = []string{"id"}
+	case q.Limit == 0:
+		q.Limit = 1000
 	}
 
 	// Validate the query
