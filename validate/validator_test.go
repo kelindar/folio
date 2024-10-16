@@ -57,7 +57,7 @@ func TestValidate_Simple(t *testing.T) {
 	}
 
 	// Validate the struct
-	ok, err := Validate(car)
+	ok, err := Struct(car)
 	assert.True(t, ok)
 	assert.Nil(t, err)
 }
@@ -76,7 +76,7 @@ func TestValidate_Errors(t *testing.T) {
 	}
 
 	// Validate the struct
-	ok, err := Validate(car)
+	ok, err := Struct(car)
 	assert.False(t, ok)
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
 }
