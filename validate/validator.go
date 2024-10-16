@@ -440,7 +440,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 }
 
 func stripParams(validatorString string) string {
-	return paramsRegexp.ReplaceAllString(validatorString, "")
+	return rxParams.ReplaceAllString(validatorString, "")
 }
 
 // isEmptyValue checks whether value empty or not

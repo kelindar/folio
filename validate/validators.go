@@ -24,50 +24,13 @@ import (
 var (
 	fieldsRequiredByDefault bool
 	nilPtrAllowedByRequired = false
-	notNumberRegexp         = regexp.MustCompile("[^0-9]+")
-	whiteSpacesAndMinus     = regexp.MustCompile(`[\s-]+`)
-	paramsRegexp            = regexp.MustCompile(`\(.*\)$`)
 )
 
-const maxURLRuneCount = 2083
-const minURLRuneCount = 3
-const rfc3339WithoutZone = "2006-01-02T15:04:05"
-
-// SetFieldsRequiredByDefault causes validation to fail when struct fields
-// do not include validations or are not explicitly marked as exempt (using `valid:"-"` or `valid:"email,optional"`).
-// This struct definition will fail govalidator.ValidateStruct() (and the field values do not matter):
-//
-//	type exampleStruct struct {
-//	    Name  string ``
-//	    Email string `valid:"email"`
-//
-// This, however, will only fail when Email is empty or an invalid email address:
-//
-//	type exampleStruct2 struct {
-//	    Name  string `valid:"-"`
-//	    Email string `valid:"email"`
-//
-// Lastly, this will only fail when Email is an invalid email address but not when it's empty:
-//
-//	type exampleStruct2 struct {
-//	    Name  string `valid:"-"`
-//	    Email string `valid:"email,optional"`
-func SetFieldsRequiredByDefault(value bool) {
-	fieldsRequiredByDefault = value
-}
-
-// SetNilPtrAllowedByRequired causes validation to pass for nil ptrs when a field is set to required.
-// The validation will still reject ptr fields in their zero value state. Example with this enabled:
-//
-//	type exampleStruct struct {
-//	    Name  *string `valid:"required"`
-//
-// With `Name` set to "", this will be considered invalid input and will cause a validation error.
-// With `Name` set to nil, this will be considered valid by validation.
-// By default this is disabled.
-func SetNilPtrAllowedByRequired(value bool) {
-	nilPtrAllowedByRequired = value
-}
+const (
+	maxURLRuneCount    = 2083
+	minURLRuneCount    = 3
+	rfc3339WithoutZone = "2006-01-02T15:04:05"
+)
 
 // IsEmail checks if the string is an email.
 func IsEmail(str string) bool {
@@ -427,7 +390,7 @@ var ulidDec = [...]byte{
 
 // IsCreditCard checks if the string is a credit card.
 func IsCreditCard(str string) bool {
-	sanitized := whiteSpacesAndMinus.ReplaceAllString(str, "")
+	sanitized := rxWhiteSpacesAndMinus.ReplaceAllString(str, "")
 	if !rxCreditCard.MatchString(sanitized) {
 		return false
 	}
@@ -521,7 +484,7 @@ func IsDataURI(str string) bool {
 
 // IsISO3166Alpha2 checks if a string is valid two-letter country code
 func IsISO3166Alpha2(str string) bool {
-	for _, entry := range ISO3166List {
+	for _, entry := range lookupISO3166 {
 		if str == entry.Alpha2Code {
 			return true
 		}
@@ -531,7 +494,7 @@ func IsISO3166Alpha2(str string) bool {
 
 // IsISO3166Alpha3 checks if a string is valid three-letter country code
 func IsISO3166Alpha3(str string) bool {
-	for _, entry := range ISO3166List {
+	for _, entry := range lookupISO3166 {
 		if str == entry.Alpha3Code {
 			return true
 		}
@@ -541,7 +504,7 @@ func IsISO3166Alpha3(str string) bool {
 
 // IsISO693Alpha2 checks if a string is valid two-letter language code
 func IsISO693Alpha2(str string) bool {
-	for _, entry := range ISO693List {
+	for _, entry := range lookupISO693 {
 		if str == entry.Alpha2Code {
 			return true
 		}
@@ -551,7 +514,7 @@ func IsISO693Alpha2(str string) bool {
 
 // IsISO693Alpha3b checks if a string is valid three-letter language code
 func IsISO693Alpha3b(str string) bool {
-	for _, entry := range ISO693List {
+	for _, entry := range lookupISO693 {
 		if str == entry.Alpha3bCode {
 			return true
 		}
@@ -862,7 +825,7 @@ func IsRFC3339WithoutZone(str string) bool {
 
 // IsISO4217 checks if string is valid ISO currency code
 func IsISO4217(str string) bool {
-	for _, currency := range ISO4217List {
+	for _, currency := range lookupISO4217 {
 		if str == currency {
 			return true
 		}

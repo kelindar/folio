@@ -66,41 +66,44 @@ const (
 )
 
 var (
-	rxUser              = regexp.MustCompile("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+$")
-	rxHost              = regexp.MustCompile("^[^\\s]+\\.[^\\s]+$")
-	rxUserDot           = regexp.MustCompile("(^[.]{1})|([.]{1}$)|([.]{2,})")
-	rxEmail             = regexp.MustCompile(rsEmail)
-	rxCreditCard        = regexp.MustCompile(rsCreditCard)
-	rxUUID3             = regexp.MustCompile(rsUUID3)
-	rxUUID4             = regexp.MustCompile(rsUUID4)
-	rxUUID5             = regexp.MustCompile(rsUUID5)
-	rxUUID              = regexp.MustCompile(rsUUID)
-	rxAlpha             = regexp.MustCompile(rsAlpha)
-	rxAlphanumeric      = regexp.MustCompile(rsAlphanumeric)
-	rxNumeric           = regexp.MustCompile(rsNumeric)
-	rxInt               = regexp.MustCompile(rsInt)
-	rxFloat             = regexp.MustCompile(rsFloat)
-	rxHexadecimal       = regexp.MustCompile(rsHexadecimal)
-	rxHexcolor          = regexp.MustCompile(rsHexcolor)
-	rxRGBcolor          = regexp.MustCompile(rsRGBcolor)
-	rxASCII             = regexp.MustCompile(rsASCII)
-	rxPrintableASCII    = regexp.MustCompile(rsPrintableASCII)
-	rxMultibyte         = regexp.MustCompile(rsMultibyte)
-	rxBase64            = regexp.MustCompile(rsBase64)
-	rxDataURI           = regexp.MustCompile(rsDataURI)
-	rxLatitude          = regexp.MustCompile(rsLatitude)
-	rxLongitude         = regexp.MustCompile(rsLongitude)
-	rxDNSName           = regexp.MustCompile(rsDNSName)
-	rxURL               = regexp.MustCompile(rsURL)
-	rxSSN               = regexp.MustCompile(rsSSN)
-	rxWinPath           = regexp.MustCompile(rsWinARPath)
-	rxUnixPath          = regexp.MustCompile(rsUnixARPath)
-	rxSemver            = regexp.MustCompile(rsSemver)
-	rxHasWhitespace     = regexp.MustCompile(rsWhitespace)
-	rxHasWhitespaceOnly = regexp.MustCompile(hasWhitespaceOnly)
-	rxIMEI              = regexp.MustCompile(rsIMEI)
-	rxIMSI              = regexp.MustCompile(rsIMSI)
-	rxE164              = regexp.MustCompile(rsE164)
+	rxNotNumber           = regexp.MustCompile("[^0-9]+")
+	rxWhiteSpacesAndMinus = regexp.MustCompile(`[\s-]+`)
+	rxParams              = regexp.MustCompile(`\(.*\)$`)
+	rxUser                = regexp.MustCompile("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+$")
+	rxHost                = regexp.MustCompile("^[^\\s]+\\.[^\\s]+$")
+	rxUserDot             = regexp.MustCompile("(^[.]{1})|([.]{1}$)|([.]{2,})")
+	rxEmail               = regexp.MustCompile(rsEmail)
+	rxCreditCard          = regexp.MustCompile(rsCreditCard)
+	rxUUID3               = regexp.MustCompile(rsUUID3)
+	rxUUID4               = regexp.MustCompile(rsUUID4)
+	rxUUID5               = regexp.MustCompile(rsUUID5)
+	rxUUID                = regexp.MustCompile(rsUUID)
+	rxAlpha               = regexp.MustCompile(rsAlpha)
+	rxAlphanumeric        = regexp.MustCompile(rsAlphanumeric)
+	rxNumeric             = regexp.MustCompile(rsNumeric)
+	rxInt                 = regexp.MustCompile(rsInt)
+	rxFloat               = regexp.MustCompile(rsFloat)
+	rxHexadecimal         = regexp.MustCompile(rsHexadecimal)
+	rxHexcolor            = regexp.MustCompile(rsHexcolor)
+	rxRGBcolor            = regexp.MustCompile(rsRGBcolor)
+	rxASCII               = regexp.MustCompile(rsASCII)
+	rxPrintableASCII      = regexp.MustCompile(rsPrintableASCII)
+	rxMultibyte           = regexp.MustCompile(rsMultibyte)
+	rxBase64              = regexp.MustCompile(rsBase64)
+	rxDataURI             = regexp.MustCompile(rsDataURI)
+	rxLatitude            = regexp.MustCompile(rsLatitude)
+	rxLongitude           = regexp.MustCompile(rsLongitude)
+	rxDNSName             = regexp.MustCompile(rsDNSName)
+	rxURL                 = regexp.MustCompile(rsURL)
+	rxSSN                 = regexp.MustCompile(rsSSN)
+	rxWinPath             = regexp.MustCompile(rsWinARPath)
+	rxUnixPath            = regexp.MustCompile(rsUnixARPath)
+	rxSemver              = regexp.MustCompile(rsSemver)
+	rxHasWhitespace       = regexp.MustCompile(rsWhitespace)
+	rxHasWhitespaceOnly   = regexp.MustCompile(hasWhitespaceOnly)
+	rxIMEI                = regexp.MustCompile(rsIMEI)
+	rxIMSI                = regexp.MustCompile(rsIMSI)
+	rxE164                = regexp.MustCompile(rsE164)
 )
 
 // Validator is a wrapper for a validator function that returns bool and accepts string.
@@ -257,8 +260,8 @@ var TagMap = map[string]Validator{
 	"IMEI":               IsIMEI,
 }
 
-// ISO3166Entry stores country codes
-type ISO3166Entry struct {
+// iso3166 stores country codes
+type iso3166 struct {
 	EnglishShortName string
 	FrenchShortName  string
 	Alpha2Code       string
@@ -266,8 +269,8 @@ type ISO3166Entry struct {
 	Numeric          string
 }
 
-// ISO3166List based on https://www.iso.org/obp/ui/#search/code/ Code Type "Officially Assigned Codes"
-var ISO3166List = []ISO3166Entry{
+// lookupISO3166 based on https://www.iso.org/obp/ui/#search/code/ Code Type "Officially Assigned Codes"
+var lookupISO3166 = []iso3166{
 	{"Afghanistan", "Afghanistan (l')", "AF", "AFG", "004"},
 	{"Albania", "Albanie (l')", "AL", "ALB", "008"},
 	{"Antarctica", "Antarctique (l')", "AQ", "ATA", "010"},
@@ -519,8 +522,8 @@ var ISO3166List = []ISO3166Entry{
 	{"Zambia", "Zambie (la)", "ZM", "ZMB", "894"},
 }
 
-// ISO4217List is the list of ISO currency codes
-var ISO4217List = []string{
+// lookupISO4217 is the list of ISO currency codes
+var lookupISO4217 = []string{
 	"AED", "AFN", "ALL", "AMD", "ANG", "AOA", "ARS", "AUD", "AWG", "AZN",
 	"BAM", "BBD", "BDT", "BGN", "BHD", "BIF", "BMD", "BND", "BOB", "BOV", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD",
 	"CAD", "CDF", "CHE", "CHF", "CHW", "CLF", "CLP", "CNY", "COP", "COU", "CRC", "CUC", "CUP", "CVE", "CZK",
@@ -549,15 +552,15 @@ var ISO4217List = []string{
 	"ZAR", "ZMW", "ZWL",
 }
 
-// ISO693Entry stores ISO language codes
-type ISO693Entry struct {
+// iso693 stores ISO language codes
+type iso693 struct {
 	Alpha3bCode string
 	Alpha2Code  string
 	English     string
 }
 
-// ISO693List based on http://data.okfn.org/data/core/language-codes/r/language-codes-3b2.json
-var ISO693List = []ISO693Entry{
+// lookupISO693 based on http://data.okfn.org/data/core/language-codes/r/language-codes-3b2.json
+var lookupISO693 = []iso693{
 	{Alpha3bCode: "aar", Alpha2Code: "aa", English: "Afar"},
 	{Alpha3bCode: "abk", Alpha2Code: "ab", English: "Abkhazian"},
 	{Alpha3bCode: "afr", Alpha2Code: "af", English: "Afrikaans"},
