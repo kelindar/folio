@@ -23,7 +23,6 @@ import (
 
 var (
 	fieldsRequiredByDefault bool
-	nilPtrAllowedByRequired = false
 )
 
 const (
