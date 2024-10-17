@@ -16,7 +16,7 @@ type Product struct {
 
 func TestEnum(t *testing.T) {
 	test := &struct {
-		Field string `is:"oneof=one two three"`
+		Field string `is:"in(one|two|three)"`
 	}{
 		Field: "one",
 	}

@@ -220,7 +220,7 @@ func swap(mappings slicePath, input Path, fromIdx int, toIdx int) Path {
 // remap updates the paths map by remapping the subpath with the given index
 func remap(mappings slicePath, subpath Path, index int) slicePath {
 	i := strings.LastIndex(string(subpath), ".")
-	p := swap(mappings, Path(fmt.Sprintf("%s[%d]", subpath[:i], index)), 1, 0)
+	p := swap(mappings, Path(fmt.Sprintf("%s.%d", subpath[:i], index)), 1, 0)
 
 	// Append the new path & keep sorted
 	defer sort.Sort(mappings)

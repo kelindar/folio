@@ -14,9 +14,9 @@ func registerBuiltins(r Registry) {
 // Namespace represents a namespace in the system.
 type Namespace struct {
 	Meta  `kind:"namespace" json:",inline"`
-	Name  string `json:"name" form:"rw" is:"required,lowercase,alphanum,min=2,max=25"`
-	Label string `json:"label" form:"rw" is:"required,min=2,max=50"`
-	Desc  string `json:"desc" form:"rw" is:"max=255"`
+	Name  string `json:"name" form:"rw" is:"required,lowercase,alphanum,minlen(2),maxlen(25)"`
+	Label string `json:"label" form:"rw" is:"required,minlen(2),maxlen(50)"`
+	Desc  string `json:"desc" form:"rw" is:"maxlen(255)"`
 }
 
 func (n *Namespace) Title() string {
