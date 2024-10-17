@@ -150,6 +150,7 @@ func TestNestedStruct(t *testing.T) {
 		assert.Equal(t, test.expected, actual)
 		if test.expectedErr != "" {
 			assert.Error(t, err)
+			assert.EqualError(t, err, test.expectedErr)
 		} else {
 			assert.NoError(t, err)
 		}

@@ -40,47 +40,64 @@ func (es Errors) Error() string {
 
 // Error encapsulates a name, an error and whether there's a custom error message or not.
 type Error struct {
+	error
 	Name      string
-	Err       error
 	Validator string
 	Path      []string
 }
 
 func (e Error) Error() string {
-	errName := e.Name
-	if len(e.Path) > 0 {
-		errName = strings.Join(append(e.Path, e.Name), ".")
-	}
-
-	return errName + ": " + e.Err.Error()
+	return strings.Join(e.Path, ".") + ": " + e.error.Error()
 }
 
 func errorf(name, validator, message string, args ...any) Error {
 	return Error{
+		error:     fmt.Errorf(message, args...),
 		Name:      name,
-		Err:       fmt.Errorf(message, args...),
 		Validator: stripParams(validator),
 	}
 }
 
-// TruncatingErrorf removes extra args from fmt.Errorf if not formatted in the str object
-func TruncatingErrorf(str string, args ...interface{}) error {
-	n := strings.Count(str, "%s")
-	return fmt.Errorf(str, args[:n]...)
+func stripParams(validatorString string) string {
+	return rxParams.ReplaceAllString(validatorString, "")
 }
 
-func withPath(err error, path ...string) error {
-	switch err2 := err.(type) {
+func withPath(ex error, path ...string) error {
+	switch err := ex.(type) {
 	case Error:
-		err2.Path = append(path, err2.Path...)
-		err2.Path = append(path, err2.Name)
-		return err2
-	case Errors:
-		errors := err2.Errors()
-		for i, err3 := range errors {
-			errors[i] = withPath(err3, path...)
+		path = append(path, err.Path...)
+		if err.Path == nil {
+			path = append(path, err.Name)
 		}
-		return err2
+		err.Path = path
+		return err
+	case Errors:
+		errors := err.Errors()
+		for i, e := range errors {
+			errors[i] = withPath(e, path...)
+		}
+		return err
+	default:
+		return ex
+	}
+}
+
+// withName sets the name of the error (or sub-errors) to the given name.
+func withName(err error, name string) error {
+	switch ex := err.(type) {
+	case Error:
+		ex.Name = name
+		return ex
+	case Errors:
+		for j, nested := range ex {
+			switch v := nested.(type) {
+			case Error:
+				v.Name = name
+				ex[j] = v
+			}
+		}
+
+		return ex
 	}
 	return err
 }

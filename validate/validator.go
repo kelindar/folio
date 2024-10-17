@@ -23,7 +23,6 @@ func Struct(s any) (bool, error) {
 	}
 
 	result := true
-	var err error
 	val := reflect.ValueOf(s)
 	if val.Kind() == reflect.Interface || val.Kind() == reflect.Ptr {
 		val = val.Elem()
@@ -34,58 +33,49 @@ func Struct(s any) (bool, error) {
 		return false, fmt.Errorf("function only accepts structs; got %s", val.Kind())
 	}
 
+	var err error
 	var errs Errors
 	for i := 0; i < val.NumField(); i++ {
-		valueField := val.Field(i)
-		typeField := val.Type().Field(i)
-		if typeField.PkgPath != "" {
+		fv := val.Field(i)
+		ft := val.Type().Field(i)
+		if ft.PkgPath != "" {
 			continue // Private field
 		}
-		structResult := true
-		if valueField.Kind() == reflect.Interface {
-			valueField = valueField.Elem()
+
+		validStruct := true
+		if fv.Kind() == reflect.Interface {
+			fv = fv.Elem()
 		}
-		if (valueField.Kind() == reflect.Struct ||
-			(valueField.Kind() == reflect.Ptr && valueField.Elem().Kind() == reflect.Struct)) &&
-			typeField.Tag.Get(rsTagName) != "-" {
-			var err error
-			structResult, err = Struct(valueField.Interface())
+
+		// If the field is a struct (or a pointer to a struct) then validate it
+		if (fv.Kind() == reflect.Struct ||
+			(fv.Kind() == reflect.Ptr && fv.Elem().Kind() == reflect.Struct)) &&
+			ft.Tag.Get(rsTagName) != "-" {
+			validStruct, err = Struct(fv.Interface())
 			if err != nil {
-				err = withPath(err, typeField.Name)
+				err = withPath(err, ft.Name)
 				errs = append(errs, err)
 			}
 		}
-		resultField, err2 := typeCheck(valueField, typeField, val, nil)
-		if err2 != nil {
 
-			// Replace structure name with JSON name if there is a tag on the variable
-			jsonTag := nameOf(&typeField)
-			if jsonTag != "" {
-				switch jsonError := err2.(type) {
-				case Error:
-					jsonError.Name = jsonTag
-					err2 = jsonError
-				case Errors:
-					for i2, err3 := range jsonError {
-						switch customErr := err3.(type) {
-						case Error:
-							customErr.Name = jsonTag
-							jsonError[i2] = customErr
-						}
-					}
-
-					err2 = jsonError
-				}
+		// Validate the field itself
+		validField, err := typeCheck(fv, ft, val, nil)
+		if err != nil {
+			if name := nameOf(&ft); name != "" {
+				err = withName(err, name)
 			}
 
-			errs = append(errs, err2)
+			errs = append(errs, err)
 		}
-		result = result && resultField && structResult
+
+		// Merge result
+		result = result && validField && validStruct
 	}
+
 	if len(errs) > 0 {
-		err = errs
+		return result, errs
 	}
-	return result, err
+	return result, nil
 }
 
 func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options opts) (isValid bool, resultErr error) {
@@ -354,10 +344,6 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 	}
 }
 
-func stripParams(validatorString string) string {
-	return rxParams.ReplaceAllString(validatorString, "")
-}
-
 // isEmptyValue checks whether value empty or not
 func isEmptyValue(v reflect.Value) bool {
 	switch v.Kind() {
@@ -388,7 +374,7 @@ func nameOf(field *reflect.StructField) string {
 
 	tag := field.Tag.Get("json")
 	if tag == "" {
-		return ""
+		return field.Name
 	}
 
 	// JSON name always comes first. If there's no options then split[0] is
