@@ -24,10 +24,11 @@ func (e *ErrUnsupported) Error() string {
 
 // ---------------------------------- Error ----------------------------------
 
-func errorf(field *reflect.StructField, validator, message string, args ...any) Error {
+func errorf(field *reflect.StructField, path []string, validator, message string, args ...any) Error {
 	return Error{
 		error:     fmt.Errorf(message, args...),
 		Name:      nameOf(field),
+		Path:      path,
 		Validator: stripParams(validator),
 	}
 }
@@ -84,26 +85,6 @@ func (es Errors) Error() string {
 }
 
 // ---------------------------------- Path & Name ----------------------------------
-
-func withPath(ex error, path ...string) error {
-	switch err := ex.(type) {
-	case Error:
-		path = append(path, err.Path...)
-		if err.Path == nil {
-			path = append(path, err.Name)
-		}
-		err.Path = path
-		return err
-	case Errors:
-		errors := err
-		for i, e := range errors {
-			errors[i] = withPath(e, path...)
-		}
-		return err
-	default:
-		return ex
-	}
-}
 
 // withName sets the name of the error (or sub-errors) to the given name.
 func withName(err error, name string) error {

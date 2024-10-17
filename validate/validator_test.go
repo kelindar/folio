@@ -36,8 +36,8 @@ type Engine struct {
 }
 
 type Car struct {
-	Type        string   `json:"type"`
-	Year        int      `json:"year"`
+	Type        string   `json:"type" is:"alphanum,!uuid"`
+	Year        int      `json:"year" is:"min(2000)"`
 	Model       string   `json:"model"`
 	Description string   `json:"description"`
 	Company     string   `json:"company"`
@@ -66,8 +66,8 @@ func TestValidate_Simple(t *testing.T) {
 
 func TestValidate_Errors(t *testing.T) {
 	car := &Car{
-		Type:        "car",
-		Year:        2018,
+		Type:        "car x",
+		Year:        1999,
 		Model:       "Mustang",
 		Description: "A car",
 		Company:     "Ford",
@@ -83,7 +83,7 @@ func TestValidate_Errors(t *testing.T) {
 	assert.False(t, ok)
 	assert.NotNil(t, err)
 	errs := err.(Errors).Errors()
-	assert.Len(t, errs, 2)
+	assert.Len(t, errs, 4)
 }
 
 func TestNestedStruct(t *testing.T) {
@@ -105,59 +105,83 @@ func TestNestedStruct(t *testing.T) {
 		expected    bool
 		expectedErr string
 	}{
-		{OuterStruct{
-			Nested: NestedStruct{
-				Foo: "",
-			},
-		}, false, "Nested.Foo: Foo is a required field"},
-		{OuterStruct{
-			Nested: NestedStruct{
-				Foo: "123",
-			},
-		}, true, ""},
-		{OuterStruct{
-			Nested: NestedStruct{
-				Foo: "123456",
-			},
-		}, false, "Nested.Foo: 123456 does not validate as length(3|5)"},
-		{OuterStruct{
-			Nested: NestedStruct{
-				Foo: "123",
-				EvenMoreNested: EvenMoreNestedStruct{
-					Bar: "123456",
+		{
+			param: &OuterStruct{
+				Nested: NestedStruct{
+					Foo: "",
 				},
 			},
-		}, false, "Nested.EvenMoreNested.Bar: 123456 does not validate as length(3|5)"},
-		{OuterStruct{
-			Nested: NestedStruct{
-				Foo: "123",
-				SliceEvenMoreNested: []EvenMoreNestedStruct{
-					{
+			expected:    false,
+			expectedErr: "Nested.Foo: Foo is a required field",
+		},
+		{
+			param: &OuterStruct{
+				Nested: NestedStruct{
+					Foo: "123",
+				},
+			},
+			expected:    true,
+			expectedErr: "",
+		},
+		{
+			param: &OuterStruct{
+				Nested: NestedStruct{
+					Foo: "123456",
+				},
+			},
+			expected:    false,
+			expectedErr: "Nested.Foo: 123456 does not validate as length(3|5)",
+		},
+		{
+			param: &OuterStruct{
+				Nested: NestedStruct{
+					Foo: "123",
+					EvenMoreNested: EvenMoreNestedStruct{
 						Bar: "123456",
 					},
 				},
 			},
-		}, false, "Nested.SliceEvenMoreNested.0.Bar: 123456 does not validate as length(3|5)"},
-		{OuterStruct{
-			Nested: NestedStruct{
-				Foo: "123",
-				MapEvenMoreNested: map[string]EvenMoreNestedStruct{
-					"Foo": {
-						Bar: "123456",
+			expected:    false,
+			expectedErr: "Nested.EvenMoreNested.Bar: 123456 does not validate as length(3|5)",
+		},
+		{
+			param: &OuterStruct{
+				Nested: NestedStruct{
+					Foo: "123",
+					SliceEvenMoreNested: []EvenMoreNestedStruct{
+						{
+							Bar: "123456",
+						},
 					},
 				},
 			},
-		}, false, "Nested.MapEvenMoreNested.Foo.Bar: 123456 does not validate as length(3|5)"},
+			expected:    false,
+			expectedErr: "Nested.SliceEvenMoreNested.0.Bar: 123456 does not validate as length(3|5)",
+		},
+		{
+			param: &OuterStruct{
+				Nested: NestedStruct{
+					Foo: "123",
+					MapEvenMoreNested: map[string]EvenMoreNestedStruct{
+						"Foo": {
+							Bar: "123456",
+						},
+					},
+				},
+			},
+			expected:    false,
+			expectedErr: "Nested.MapEvenMoreNested.Foo.Bar: 123456 does not validate as length(3|5)",
+		},
 	}
 
 	for _, test := range tests {
 		actual, err := Struct(test.param)
-		assert.Equal(t, test.expected, actual)
+		assert.Equal(t, test.expected, actual, "Validation result mismatch for input: %+v", test.param)
 		if test.expectedErr != "" {
-			assert.Error(t, err)
-			assert.EqualError(t, err, test.expectedErr)
+			assert.Error(t, err, "Expected error but got none for input: %+v", test.param)
+			assert.EqualError(t, err, test.expectedErr, "Error message mismatch for input: %+v", test.param)
 		} else {
-			assert.NoError(t, err)
+			assert.NoError(t, err, "Unexpected error for input: %+v", test.param)
 		}
 	}
 }
@@ -177,70 +201,13 @@ func TestRequired(t *testing.T) {
 	}{
 
 		{
-			struct {
-				TestByteMap testByteMap `is:"required"`
-			}{},
-			false,
-		},
-		{
-			struct {
-				Pointer *string `is:"required"`
-			}{
-				Pointer: &testEmptyString,
-			},
-			false,
-		},
-		{
-			struct {
-				Pointer *string `is:"required"`
-			}{},
-			false,
-		},
-
-		{
-			struct {
-				Pointer *string `is:"required"`
-			}{
-				Pointer: &testString,
-			},
-			true,
-		},
-		{
-			struct {
-				Addr Address `is:"required"`
-			}{},
-			false,
-		},
-		{
-			struct {
-				Addr Address `is:"required"`
-			}{
-				Addr: Address{"", "123"},
-			},
-			true,
-		},
-		{
-			struct {
-				Pointer *Address `is:"required"`
-			}{},
-			false,
-		},
-		{
-			struct {
-				Pointer *Address `is:"required"`
-			}{
-				Pointer: &Address{"", "123"},
-			},
-			true,
-		},
-		{
-			struct {
+			&struct {
 				TestByteArray testByteArray `is:"required"`
 			}{},
 			false,
 		},
 		{
-			struct {
+			&struct {
 				TestByteArray testByteArray `is:"required"`
 			}{
 				testByteArray{},
@@ -248,7 +215,64 @@ func TestRequired(t *testing.T) {
 			false,
 		},
 		{
-			struct {
+			&struct {
+				TestByteMap testByteMap `is:"required"`
+			}{},
+			false,
+		},
+		{
+			&struct {
+				Pointer *string `is:"required"`
+			}{
+				Pointer: &testEmptyString,
+			},
+			false,
+		},
+		{
+			&struct {
+				Pointer *string `is:"required"`
+			}{},
+			false,
+		},
+
+		{
+			&struct {
+				Pointer *string `is:"required"`
+			}{
+				Pointer: &testString,
+			},
+			true,
+		},
+		{
+			&struct {
+				Addr Address `is:"required"`
+			}{},
+			false,
+		},
+		{
+			&struct {
+				Addr Address `is:"required"`
+			}{
+				Addr: Address{"", "123"},
+			},
+			true,
+		},
+		{
+			&struct {
+				Pointer *Address `is:"required"`
+			}{},
+			false,
+		},
+		{
+			&struct {
+				Pointer *Address `is:"required"`
+			}{
+				Pointer: &Address{"", "123"},
+			},
+			true,
+		},
+		{
+			&struct {
 				TestByteArray testByteArray `is:"required"`
 			}{
 				testByteArray{'1', '2', '3', '4', '5', '6', '7', 'A'},
@@ -256,13 +280,13 @@ func TestRequired(t *testing.T) {
 			true,
 		},
 		{
-			struct {
+			&struct {
 				TestByteSlice testByteSlice `is:"required"`
 			}{},
 			false,
 		},
 		{
-			struct {
+			&struct {
 				TestStringStringMap testStringStringMap `is:"required"`
 			}{
 				testStringStringMap{"test": "test"},
@@ -270,7 +294,7 @@ func TestRequired(t *testing.T) {
 			true,
 		},
 		{
-			struct {
+			&struct {
 				TestIntMap testStringIntMap `is:"required"`
 			}{
 				testStringIntMap{"test": 42},
@@ -282,7 +306,6 @@ func TestRequired(t *testing.T) {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			actual, _ := Struct(test.param)
 			assert.Equal(t, test.expected, actual, fmt.Sprintf("case: %+v", test.param))
-
 		})
 	}
 }

@@ -8,8 +8,17 @@ import (
 // IsEmpty checks whether a value is empty or not.
 func IsEmpty(v reflect.Value) bool {
 	switch v.Kind() {
-	case reflect.String, reflect.Array, reflect.Slice, reflect.Map:
+	case reflect.Array:
+		for i := 0; i < v.Len(); i++ {
+			if !IsEmpty(v.Index(i)) {
+				return false
+			}
+		}
+		return true
+	case reflect.String:
 		return v.Len() == 0
+	case reflect.Map, reflect.Slice:
+		return v.Len() == 0 || v.IsNil()
 	case reflect.Bool:
 		return !v.Bool()
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
@@ -18,10 +27,11 @@ func IsEmpty(v reflect.Value) bool {
 		return v.Uint() == 0
 	case reflect.Float32, reflect.Float64:
 		return v.Float() == 0
-	case reflect.Interface, reflect.Pointer:
+	case reflect.Interface, reflect.Ptr:
 		return v.IsNil()
 	}
-	return false
+
+	return reflect.DeepEqual(v.Interface(), reflect.Zero(v.Type()).Interface())
 }
 
 // NewIfNil creates a new instance of a value if it is nil.

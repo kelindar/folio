@@ -134,9 +134,9 @@ func (t opts) orderedKeys() []string {
 }
 
 type tagOption struct {
-	name               string
-	customErrorMessage string
-	order              int
+	name    string
+	message string
+	order   int
 }
 
 // InterfaceParamTagMap is a map of functions accept variants parameters for an interface value
