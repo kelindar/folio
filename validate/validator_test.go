@@ -1,6 +1,8 @@
 package validate
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -154,5 +156,130 @@ func TestNestedStruct(t *testing.T) {
 		} else {
 			assert.NoError(t, err)
 		}
+	}
+}
+
+func TestRequired(t *testing.T) {
+	type testByteArray [8]byte
+	type testByteMap map[byte]byte
+	type testByteSlice []byte
+	type testStringStringMap map[string]string
+	type testStringIntMap map[string]int
+
+	testString := "foobar"
+	testEmptyString := ""
+	var tests = []struct {
+		param    any
+		expected bool
+	}{
+
+		{
+			struct {
+				TestByteMap testByteMap `is:"required"`
+			}{},
+			false,
+		},
+		{
+			struct {
+				Pointer *string `is:"required"`
+			}{
+				Pointer: &testEmptyString,
+			},
+			false,
+		},
+		{
+			struct {
+				Pointer *string `is:"required"`
+			}{},
+			false,
+		},
+
+		{
+			struct {
+				Pointer *string `is:"required"`
+			}{
+				Pointer: &testString,
+			},
+			true,
+		},
+		{
+			struct {
+				Addr Address `is:"required"`
+			}{},
+			false,
+		},
+		{
+			struct {
+				Addr Address `is:"required"`
+			}{
+				Addr: Address{"", "123"},
+			},
+			true,
+		},
+		{
+			struct {
+				Pointer *Address `is:"required"`
+			}{},
+			false,
+		},
+		{
+			struct {
+				Pointer *Address `is:"required"`
+			}{
+				Pointer: &Address{"", "123"},
+			},
+			true,
+		},
+		{
+			struct {
+				TestByteArray testByteArray `is:"required"`
+			}{},
+			false,
+		},
+		{
+			struct {
+				TestByteArray testByteArray `is:"required"`
+			}{
+				testByteArray{},
+			},
+			false,
+		},
+		{
+			struct {
+				TestByteArray testByteArray `is:"required"`
+			}{
+				testByteArray{'1', '2', '3', '4', '5', '6', '7', 'A'},
+			},
+			true,
+		},
+		{
+			struct {
+				TestByteSlice testByteSlice `is:"required"`
+			}{},
+			false,
+		},
+		{
+			struct {
+				TestStringStringMap testStringStringMap `is:"required"`
+			}{
+				testStringStringMap{"test": "test"},
+			},
+			true,
+		},
+		{
+			struct {
+				TestIntMap testStringIntMap `is:"required"`
+			}{
+				testStringIntMap{"test": 42},
+			},
+			true,
+		},
+	}
+	for i, test := range tests {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			actual, _ := Struct(test.param)
+			assert.Equal(t, test.expected, actual, fmt.Sprintf("case: %+v", test.param))
+
+		})
 	}
 }
