@@ -11,7 +11,7 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/convert"
+	"github.com/kelindar/folio/internal/convert"
 	"iter"
 	"math"
 	"strconv"

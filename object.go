@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kelindar/folio/convert"
+	"github.com/kelindar/folio/internal/convert"
 )
 
 // Object represents an object in the system.

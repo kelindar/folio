@@ -13,8 +13,8 @@ import (
 	"github.com/a-h/templ"
 	"github.com/angelofallars/htmx-go"
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/convert"
 	"github.com/kelindar/folio/errors"
+	"github.com/kelindar/folio/internal/convert"
 )
 
 // page handles a page request for a given kind, inferred from path.

@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/convert"
 	"github.com/kelindar/folio/errors"
+	"github.com/kelindar/folio/internal/convert"
 )
 
 func hxFormContent(rx *Context, value folio.Object) templ.Component {

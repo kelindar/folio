@@ -5,7 +5,7 @@ import (
 	"reflect"
 
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/convert"
+	"github.com/kelindar/folio/internal/convert"
 )
 
 // Lookup represents a lookup for a field.

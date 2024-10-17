@@ -9,7 +9,7 @@ import (
 
 	"github.com/a-h/templ"
 	"github.com/kelindar/folio"
-	"github.com/kelindar/folio/convert"
+	"github.com/kelindar/folio/internal/convert"
 )
 
 type Renderer interface {

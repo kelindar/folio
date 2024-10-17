@@ -10,7 +10,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/kelindar/folio/convert"
+	"github.com/kelindar/folio/internal/convert"
 )
 
 var (
