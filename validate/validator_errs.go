@@ -24,10 +24,10 @@ func (e *ErrUnsupported) Error() string {
 
 // ---------------------------------- Error ----------------------------------
 
-func errorf(name, validator, message string, args ...any) Error {
+func errorf(field *reflect.StructField, validator, message string, args ...any) Error {
 	return Error{
 		error:     fmt.Errorf(message, args...),
-		Name:      name,
+		Name:      nameOf(field),
 		Validator: stripParams(validator),
 	}
 }
