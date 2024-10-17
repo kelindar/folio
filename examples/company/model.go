@@ -11,9 +11,9 @@ import (
 
 type Person struct {
 	folio.Meta `kind:"person" json:",inline"`
-	Name       string    `json:"name" form:"rw" validate:"required"`
-	Age        int       `json:"age" form:"rw" validate:"gte=0,lte=130"`
-	Gender     string    `json:"gender" form:"rw" validate:"oneof=male female prefer_not_to"`
+	Name       string    `json:"name" form:"rw" is:"required"`
+	Age        int       `json:"age" form:"rw" is:"range(0|130)"`
+	Gender     string    `json:"gender" form:"rw" is:"in(male|female|prefer_not_to)"`
 	Country    string    `json:"country" form:"rw"`
 	Address    string    `json:"address" form:"rw"`
 	Phone      string    `json:"phone" form:"rw"`
@@ -64,9 +64,9 @@ func (p *Person) Status() string {
 
 type Company struct {
 	folio.Meta `kind:"company" json:",inline"`
-	Name       string `json:"name" form:"rw" validate:"required"`
-	Sector     string `json:"sector" form:"rw" validate:"required,oneof=tech finance health"`
-	Year       int    `json:"year" form:"rw" validate:"gte=1800,lte=2021"`
+	Name       string `json:"name" form:"rw" is:"required"`
+	Sector     string `json:"sector" form:"rw" is:"required,in(tech|finance|health)"`
+	Year       int    `json:"year" form:"rw" is:"range(1800|2021)"`
 }
 
 func (c *Company) Title() string {
@@ -94,31 +94,31 @@ func NewCompany() *Company {
 
 type Vehicle struct {
 	folio.Meta  `kind:"vehicle" json:",inline"`
-	Type        string    `json:"type" form:"rw" validate:"required,oneof=car bike truck"`
-	Year        int       `json:"year" form:"rw" validate:"gte=1800,lte=2021"`
-	Model       string    `json:"model" form:"rw" validate:"required"`
+	Type        string    `json:"type" form:"rw" is:"required,in(car|bike|truck)"`
+	Year        int       `json:"year" form:"rw" is:"range(1800|2021)"`
+	Model       string    `json:"model" form:"rw" is:"required"`
 	Description string    `json:"description" form:"rw"`
 	Company     folio.URN `json:"company" form:"rw" kind:"company"`
 	Engine      struct {
-		Type  string `json:"type" form:"rw" validate:"oneof=electric petrol diesel"`
-		Power int    `json:"power" form:"rw" validate:"gte=0"`
+		Type  string `json:"type" form:"rw" is:"oneof=electric petrol diesel"`
+		Power int    `json:"power" form:"rw" is:"min(0)"`
 	} `json:"engine" form:"rw"`
 	Insurance *struct {
-		Type string `json:"type" form:"rw" validate:"required,oneof=third_party comprehensive"`
-		Term int    `json:"term" form:"rw" validate:"gte=1"`
+		Type string `json:"type" form:"rw" is:"required,oneof=third_party comprehensive"`
+		Term int    `json:"term" form:"rw" is:"min(1)"`
 	} `json:"insurance" form:"rw"`
 	Owners []folio.URN `json:"owners" form:"rw" kind:"person"`
 	Extras []struct {
 		Coating *struct {
-			Type     string `json:"type" form:"rw" validate:"required,oneof=ceramic polymer"`
-			Warranty int    `json:"warranty" form:"rw" validate:"gte=0"`
+			Type     string `json:"type" form:"rw" is:"required,oneof=ceramic polymer"`
+			Warranty int    `json:"warranty" form:"rw" is:"min(0)"`
 		} `json:"coating" form:"rw"`
 		Upholstery *struct {
-			Type  string `json:"type" form:"rw" validate:"required,oneof=leather fabric"`
-			Color string `json:"color" form:"rw" validate:"required"`
+			Type  string `json:"type" form:"rw" is:"required,in(leather|fabric)"`
+			Color string `json:"color" form:"rw" is:"required"`
 		} `json:"upholstery" form:"rw"`
-		Price int `json:"price" form:"rw" validate:"required,gte=0"`
-	} `json:"extras" form:"rw" validate:"dive"`
+		Price int `json:"price" form:"rw" is:"required,min(0)"`
+	} `json:"extras" form:"rw" is:"dive"`
 }
 
 func (c *Vehicle) Title() string {

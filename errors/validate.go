@@ -40,9 +40,14 @@ func (v *validator) Validate(value any) ([]Validation, bool) {
 	var out []Validation
 	if errs, ok := err.(validate.Errors); ok {
 		for _, err := range errs.Errors() {
+			path := err.Path
+			if len(path) == 0 {
+				path = []string{err.Name}
+			}
+
 			out = append(out, Validation{
-				Path:    folio.Path(strings.Join(err.Path, ".")),
-				Message: err.Error(),
+				Path:    folio.Path(strings.Join(path, ".")),
+				Message: err.Message(),
 			})
 		}
 	}

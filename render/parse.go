@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"regexp"
 	"sort"
 	"strings"
 
@@ -12,18 +13,22 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+var (
+	exIn = regexp.MustCompile(`^in\((.*)\)`)
+)
+
 // ---------------------------------- Struct Fields ----------------------------------
 
 func isEnum(field reflect.StructField) bool {
-	return strings.Contains(field.Tag.Get("validate"), "oneof=")
+	return strings.Contains(field.Tag.Get("is"), "in(")
 }
 
 func isEmail(field reflect.StructField) bool {
-	return strings.Contains(field.Tag.Get("validate"), "email")
+	return strings.Contains(field.Tag.Get("is"), "email")
 }
 
 func isRequired(field reflect.StructField) bool {
-	return strings.Contains(field.Tag.Get("validate"), "required")
+	return strings.Contains(field.Tag.Get("is"), "required")
 }
 
 // Parses oneof tag from validator e.g.: "required,oneof=male female prefer_not_to"
@@ -32,10 +37,10 @@ func decodeOneOf(field reflect.StructField) ([]string, bool) {
 		return nil, false
 	}
 
-	fields := strings.Split(field.Tag.Get("validate"), ",")
+	fields := strings.Split(field.Tag.Get("is"), ",")
 	for _, field := range fields {
-		if strings.HasPrefix(field, "oneof=") {
-			return strings.Split(field[6:], " "), true
+		if out := exIn.FindAllStringSubmatch(field, -1); len(out) > 0 {
+			return strings.Split(out[0][1], "|"), true
 		}
 	}
 	return nil, false

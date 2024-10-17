@@ -8,8 +8,8 @@ import (
 
 // LocalizedText represents a text that is localized in multiple languages.
 type LocalizedText struct {
-	English string `json:"english" form:"rw" validate:"required"`
-	French  string `json:"french" form:"rw" validate:"required"`
+	English string `json:"english" form:"rw" is:"required"`
+	French  string `json:"french" form:"rw" is:"required"`
 }
 
 // ---------------------------------- Intent ----------------------------------
@@ -17,7 +17,7 @@ type LocalizedText struct {
 // Intent represents an intent (question) that the user has asked.
 type Intent struct {
 	folio.Meta `kind:"intent" json:",inline"`
-	Examples   []LocalizedText `json:"examples" form:"rw" validate:"required,min=1,dive"`
+	Examples   []LocalizedText `json:"examples" form:"rw" is:"required"`
 }
 
 func (v *Intent) Title() string {

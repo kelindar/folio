@@ -16,7 +16,7 @@ type Product struct {
 
 func TestEnum(t *testing.T) {
 	test := &struct {
-		Field string `validate:"oneof=one two three"`
+		Field string `is:"oneof=one two three"`
 	}{
 		Field: "one",
 	}
@@ -62,7 +62,7 @@ func TestUrn(t *testing.T) {
 
 		test := &struct {
 			folio.Meta `kind:"mock" json:",inline"`
-			Product    folio.URN `validate:"required" kind:"product"`
+			Product    folio.URN `is:"required" kind:"product"`
 		}{Product: phone.URN()}
 
 		// Find the product field

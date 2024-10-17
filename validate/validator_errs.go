@@ -24,6 +24,14 @@ func (e *ErrUnsupported) Error() string {
 
 // ---------------------------------- Error ----------------------------------
 
+func errorf(name, validator, message string, args ...any) Error {
+	return Error{
+		error:     fmt.Errorf(message, args...),
+		Name:      name,
+		Validator: stripParams(validator),
+	}
+}
+
 // Error encapsulates a name, an error and whether there's a custom error message or not.
 type Error struct {
 	error
@@ -34,15 +42,12 @@ type Error struct {
 
 // Error returns the string representation of the error.
 func (e Error) Error() string {
-	return strings.Join(e.Path, ".") + ": " + e.error.Error()
+	return strings.Join(e.Path, ".") + ": " + e.Message()
 }
 
-func errorf(name, validator, message string, args ...any) Error {
-	return Error{
-		error:     fmt.Errorf(message, args...),
-		Name:      name,
-		Validator: stripParams(validator),
-	}
+// Message returns the error message.
+func (e Error) Message() string {
+	return e.error.Error()
 }
 
 func stripParams(validatorString string) string {

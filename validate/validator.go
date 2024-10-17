@@ -437,7 +437,7 @@ func checkRequired(t reflect.StructField, options opts) (bool, error) {
 	_, isRequired := options["required"]
 	switch {
 	case isRequired:
-		return false, errorf(t.Name, "required", "non zero value required")
+		return false, errorf(t.Name, "required", "%s is a required field", nameOf(&t))
 	default:
 		return true, nil
 	}
