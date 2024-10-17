@@ -80,3 +80,78 @@ func TestValidate_Errors(t *testing.T) {
 	assert.False(t, ok)
 	assert.NotNil(t, err)
 }
+
+func TestNestedStruct(t *testing.T) {
+	type EvenMoreNestedStruct struct {
+		Bar string `is:"length(3|5)"`
+	}
+	type NestedStruct struct {
+		Foo                 string `is:"length(3|5),required"`
+		EvenMoreNested      EvenMoreNestedStruct
+		SliceEvenMoreNested []EvenMoreNestedStruct
+		MapEvenMoreNested   map[string]EvenMoreNestedStruct
+	}
+	type OuterStruct struct {
+		Nested NestedStruct
+	}
+
+	var tests = []struct {
+		param       interface{}
+		expected    bool
+		expectedErr string
+	}{
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "",
+			},
+		}, false, "Nested.Foo: non zero value required"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+			},
+		}, true, ""},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123456",
+			},
+		}, false, "Nested.Foo: 123456 does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+				EvenMoreNested: EvenMoreNestedStruct{
+					Bar: "123456",
+				},
+			},
+		}, false, "Nested.EvenMoreNested.Bar: 123456 does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+				SliceEvenMoreNested: []EvenMoreNestedStruct{
+					{
+						Bar: "123456",
+					},
+				},
+			},
+		}, false, "Nested.SliceEvenMoreNested.0.Bar: 123456 does not validate as length(3|5)"},
+		{OuterStruct{
+			Nested: NestedStruct{
+				Foo: "123",
+				MapEvenMoreNested: map[string]EvenMoreNestedStruct{
+					"Foo": {
+						Bar: "123456",
+					},
+				},
+			},
+		}, false, "Nested.MapEvenMoreNested.Foo.Bar: 123456 does not validate as length(3|5)"},
+	}
+
+	for _, test := range tests {
+		actual, err := Struct(test.param)
+		assert.Equal(t, test.expected, actual)
+		if test.expectedErr != "" {
+			assert.Error(t, err)
+		} else {
+			assert.NoError(t, err)
+		}
+	}
+}

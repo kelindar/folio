@@ -11,40 +11,6 @@ import (
 	"strings"
 )
 
-// ErrorByField returns error for specified field of the struct
-// validated by ValidateStruct or empty string if there are no errors
-// or this field doesn't exists or doesn't have any errors.
-func ErrorByField(e error, field string) string {
-	if e == nil {
-		return ""
-	}
-	return ErrorsByField(e)[field]
-}
-
-// ErrorsByField returns map of errors of the struct validated
-// by ValidateStruct or empty map if there are no errors.
-func ErrorsByField(e error) map[string]string {
-	m := make(map[string]string)
-	if e == nil {
-		return m
-	}
-	// prototype for ValidateStruct
-
-	switch e := e.(type) {
-	case Error:
-		m[e.Name] = e.Err.Error()
-	case Errors:
-		for _, item := range e.Errors() {
-			n := ErrorsByField(item)
-			for k, v := range n {
-				m[k] = v
-			}
-		}
-	}
-
-	return m
-}
-
 // Error returns string equivalent for reflect.Type
 func (e *UnsupportedTypeError) Error() string {
 	return "validator: unsupported type: " + e.Type.String()
@@ -74,24 +40,27 @@ func (es Errors) Error() string {
 
 // Error encapsulates a name, an error and whether there's a custom error message or not.
 type Error struct {
-	Name                     string
-	Err                      error
-	CustomErrorMessageExists bool
-	Validator                string
-	Path                     []string
+	Name      string
+	Err       error
+	Validator string
+	Path      []string
 }
 
 func (e Error) Error() string {
-	if e.CustomErrorMessageExists {
-		return e.Err.Error()
-	}
-
 	errName := e.Name
 	if len(e.Path) > 0 {
 		errName = strings.Join(append(e.Path, e.Name), ".")
 	}
 
 	return errName + ": " + e.Err.Error()
+}
+
+func errorf(name, validator, message string, args ...any) Error {
+	return Error{
+		Name:      name,
+		Err:       fmt.Errorf(message, args...),
+		Validator: stripParams(validator),
+	}
 }
 
 // TruncatingErrorf removes extra args from fmt.Errorf if not formatted in the str object

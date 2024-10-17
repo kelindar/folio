@@ -102,7 +102,8 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 			if !fieldsRequiredByDefault {
 				return true, nil
 			}
-			return false, Error{t.Name, fmt.Errorf("All fields are required to at least have one validation defined"), false, "required", []string{}}
+
+			return false, errorf(t.Name, "required", "all fields must have at least one validation defined")
 		}
 	case "-":
 		return true, nil
@@ -132,20 +133,11 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 
 			if result := validatefunc(v.Interface(), o.Interface()); !result {
 				if len(validatorStruct.customErrorMessage) > 0 {
-					customTypeErrors = append(customTypeErrors, Error{
-						Name: t.Name,
-						Err: TruncatingErrorf(validatorStruct.customErrorMessage, fmt.Sprint(v),
-							validatorName), CustomErrorMessageExists: true,
-						Validator: stripParams(validatorName),
-					})
+					customTypeErrors = append(customTypeErrors, errorf(t.Name, validatorName, validatorStruct.customErrorMessage, fmt.Sprint(v), validatorName))
 					continue
 				}
-				customTypeErrors = append(customTypeErrors, Error{
-					Name:                     t.Name,
-					Err:                      fmt.Errorf("%s does not validate as %s", fmt.Sprint(v), validatorName),
-					CustomErrorMessageExists: false,
-					Validator:                stripParams(validatorName),
-				})
+
+				customTypeErrors = append(customTypeErrors, errorf(t.Name, validatorName, "%s does not validate as %s", fmt.Sprint(v), validatorName))
 			}
 		}
 	}
@@ -164,8 +156,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 				optionsOrder := options.orderedKeys()
 				for _, validator := range optionsOrder {
 					isValid = false
-					resultErr = Error{t.Name, fmt.Errorf(
-						"The following validator is invalid or can't be applied to the field: %q", validator), false, stripParams(validator), []string{}}
+					resultErr = errorf(t.Name, validator, "validator is invalid or can't be applied to the field: %q", validator)
 					return
 				}
 			}
@@ -201,12 +192,13 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 			field := fmt.Sprint(v)
 			if result := validatefunc(v.Interface(), ps[1:]...); (!result && !negate) || (result && negate) {
 				if customMsgExists {
-					return false, Error{t.Name, TruncatingErrorf(validatorStruct.customErrorMessage, field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+					return false, errorf(t.Name, validator, validatorStruct.customErrorMessage, field, validator)
 				}
 				if negate {
-					return false, Error{t.Name, fmt.Errorf("%s does validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+					return false, errorf(t.Name, validatorSpec, "%s does validate as %s", field, validator)
 				}
-				return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+
+				return false, errorf(t.Name, validatorSpec, "%s does not validate as %s", field, validator)
 			}
 		}
 	}
@@ -253,16 +245,17 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 					field := fmt.Sprint(v) // make value into string, then validate with regex
 					if result := validatefunc(field, ps[1:]...); (!result && !negate) || (result && negate) {
 						if customMsgExists {
-							return false, Error{t.Name, TruncatingErrorf(validatorStruct.customErrorMessage, field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, errorf(t.Name, validatorSpec, validatorStruct.customErrorMessage, field, validator)
 						}
 						if negate {
-							return false, Error{t.Name, fmt.Errorf("%s does validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, errorf(t.Name, validatorSpec, "%s does validate as %s", field, validator)
 						}
-						return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+
+						return false, errorf(t.Name, validatorSpec, "%s does not validate as %s", field, validator)
 					}
 				default:
 					// type not yet supported, fail
-					return false, Error{t.Name, fmt.Errorf("Validator %s doesn't support kind %s", validator, v.Kind()), false, stripParams(validatorSpec), []string{}}
+					return false, errorf(t.Name, validatorSpec, "validator %s doesn't support kind %s for value %v", validator, v.Kind(), v)
 				}
 			}
 
@@ -277,17 +270,17 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 					field := fmt.Sprint(v) // make value into string, then validate with regex
 					if result := validatefunc(field); !result && !negate || result && negate {
 						if customMsgExists {
-							return false, Error{t.Name, TruncatingErrorf(validatorStruct.customErrorMessage, field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, errorf(t.Name, validatorSpec, validatorStruct.customErrorMessage, field, validator)
 						}
 						if negate {
-							return false, Error{t.Name, fmt.Errorf("%s does validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+							return false, errorf(t.Name, validatorSpec, "%s does validate as %s", field, validator)
 						}
-						return false, Error{t.Name, fmt.Errorf("%s does not validate as %s", field, validator), customMsgExists, stripParams(validatorSpec), []string{}}
+
+						return false, errorf(t.Name, validatorSpec, "%s does not validate as %s", field, validator)
 					}
 				default:
 					//Not Yet Supported Types (Fail here!)
-					err := fmt.Errorf("validator %s doesn't support kind %s for value %v", validator, v.Kind(), v)
-					return false, Error{t.Name, err, false, stripParams(validatorSpec), []string{}}
+					return false, errorf(t.Name, validatorSpec, "validator %s doesn't support kind %s for value %v", validator, v.Kind(), v)
 				}
 			}
 		}
@@ -458,7 +451,7 @@ func checkRequired(t reflect.StructField, options opts) (bool, error) {
 	_, isRequired := options["required"]
 	switch {
 	case isRequired:
-		return false, Error{t.Name, fmt.Errorf("non zero value required"), false, "required", []string{}}
+		return false, errorf(t.Name, "required", "non zero value required")
 	default:
 		return true, nil
 	}
