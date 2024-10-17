@@ -10,6 +10,7 @@ import (
 
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/errors"
+	"github.com/kelindar/folio/internal/walk"
 	"github.com/tidwall/gjson"
 )
 
@@ -67,6 +68,19 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 
 	lookup := make(map[Path]int, 16)
 	reverse := make(slicePath, 0, 16)
+
+	walk.Walk(dst, func(rv reflect.Value, field *reflect.StructField, path []string) error {
+		//fmt.Printf(" - %s of %s (%s)\n", strings.Join(path, "."), v.Kind(), v.Type().Name())
+
+		switch {
+
+		// If we have a non-empty slice, reset it
+		case rv.Kind() == reflect.Slice && rv.Len() > 0:
+			rv.Set(reflect.MakeSlice(rv.Type(), 0, 8))
+		}
+
+		return nil
+	})
 
 	// Reset slices, we need to do it only once to be able to overwrite
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
