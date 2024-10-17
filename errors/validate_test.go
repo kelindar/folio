@@ -9,9 +9,9 @@ import (
 func TestValidate(t *testing.T) {
 	vd := NewValidator()
 	errs, ok := vd.Validate(struct {
-		Name   string `validate:"required" json:"name"`
-		Age    int    `validate:"required" json:"age"`
-		Height int    `validate:"required,gte=0" json:"height"`
+		Name   string `is:"required" json:"name"`
+		Age    int    `is:"required" json:"age"`
+		Height int    `is:"required,min(0)" json:"height"`
 	}{
 		Name:   "John",
 		Height: -1,

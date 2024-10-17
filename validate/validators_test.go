@@ -2620,3 +2620,76 @@ func TestIsIPv6(t *testing.T) {
 		})
 	}
 }
+
+func TestMin(t *testing.T) {
+	tests := map[string]struct {
+		input    string
+		params   []string
+		expected bool
+	}{
+		"numeric > min":                   {input: "10", params: []string{"5"}, expected: true},
+		"numeric = min":                   {input: "5", params: []string{"5"}, expected: true},
+		"numeric < min":                   {input: "3", params: []string{"5"}, expected: false},
+		"non-numeric len > min":           {input: "hello", params: []string{"5"}, expected: true},
+		"non-numeric len = min":           {input: "hello", params: []string{"5"}, expected: true},
+		"non-numeric len < min":           {input: "hi", params: []string{"3"}, expected: false},
+		"empty string min=0":              {input: "", params: []string{"0"}, expected: true},
+		"empty string min=1":              {input: "", params: []string{"1"}, expected: false},
+		"multi-byte len >= min":           {input: "こんにちは", params: []string{"5"}, expected: true},
+		"multi-byte len < min":            {input: "こんにちは", params: []string{"6"}, expected: false},
+		"mixed chars len >= min":          {input: "hello世界", params: []string{"7"}, expected: true},
+		"mixed chars len < min":           {input: "hello世界", params: []string{"8"}, expected: false},
+		"invalid min param non-numeric":   {input: "10", params: []string{"five"}, expected: false},
+		"invalid min param non-numeric2":  {input: "hello", params: []string{"five"}, expected: false},
+		"missing min param":               {input: "10", params: []string{}, expected: false},
+		"multiple min params":             {input: "10", params: []string{"5", "6"}, expected: false},
+		"numeric negative min":            {input: "-5", params: []string{"-10"}, expected: true},
+		"numeric below negative min":      {input: "-15", params: []string{"-10"}, expected: false},
+		"numeric zero min":                {input: "0", params: []string{"-5"}, expected: true},
+		"non-numeric len >= negative min": {input: "a", params: []string{"-1"}, expected: true},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			result := Min(tc.input, tc.params...)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+func TestMax(t *testing.T) {
+	tests := map[string]struct {
+		input    string
+		params   []string
+		expected bool
+	}{
+		"numeric < max":                   {input: "5", params: []string{"10"}, expected: true},
+		"numeric = max":                   {input: "10", params: []string{"10"}, expected: true},
+		"numeric > max":                   {input: "15", params: []string{"10"}, expected: false},
+		"non-numeric len < max":           {input: "hi", params: []string{"5"}, expected: true},
+		"non-numeric len = max":           {input: "hello", params: []string{"5"}, expected: true},
+		"non-numeric len > max":           {input: "hello world", params: []string{"5"}, expected: false},
+		"empty string max=0":              {input: "a", params: []string{"0"}, expected: false},
+		"empty string max=1":              {input: "", params: []string{"1"}, expected: true},
+		"multi-byte len <= max":           {input: "こんにちは", params: []string{"5"}, expected: true},
+		"multi-byte len > max":            {input: "こんにちは", params: []string{"4"}, expected: false},
+		"mixed chars len <= max":          {input: "hello世界", params: []string{"7"}, expected: true},
+		"mixed chars len > max":           {input: "hello世界", params: []string{"6"}, expected: false},
+		"invalid max param non-numeric":   {input: "10", params: []string{"ten"}, expected: false},
+		"invalid max param non-numeric2":  {input: "hello", params: []string{"ten"}, expected: false},
+		"missing max param":               {input: "10", params: []string{}, expected: false},
+		"multiple max params":             {input: "10", params: []string{"15", "20"}, expected: false},
+		"numeric negative max":            {input: "-5", params: []string{"-10"}, expected: false},
+		"numeric above negative max":      {input: "-15", params: []string{"-10"}, expected: true},
+		"numeric zero max":                {input: "0", params: []string{"-5"}, expected: false},
+		"non-numeric len <= max":          {input: "a", params: []string{"0"}, expected: false},
+		"non-numeric len <= negative max": {input: "a", params: []string{"-1"}, expected: false},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			result := Max(tc.input, tc.params...)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}

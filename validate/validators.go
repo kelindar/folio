@@ -1017,6 +1017,46 @@ func IsNatural(value float64) bool {
 	return IsWhole(value) && value > 0
 }
 
+// Min checks whether the value is greater than or equal to the minimum value. If
+// the value is not a number, it will be converted to a number before comparison.
+func Min(str string, params ...string) bool {
+	if len(params) != 1 {
+		return false
+	}
+
+	// The value should be numerical, if we can't convert it, we'll use its length
+	val, err := convert.Float64(str)
+	if err != nil {
+		val = float64(utf8.RuneCountInString(str))
+	}
+
+	// Convert and compare
+	if min, err := convert.Float64(params[0]); err == nil {
+		return val >= min
+	}
+	return false
+}
+
+// Max checks whether the value is less than or equal to the maximum value. If
+// the value is not a number, it will be converted to a number before comparison.
+func Max(str string, params ...string) bool {
+	if len(params) != 1 {
+		return false
+	}
+
+	// The value should be numerical, if we can't convert it, we'll use its length
+	val, err := convert.Float64(str)
+	if err != nil {
+		val = float64(utf8.RuneCountInString(str))
+	}
+
+	// Convert and compare
+	if max, err := convert.Float64(params[0]); err == nil {
+		return val <= max
+	}
+	return false
+}
+
 // Matches checks if string matches the pattern (pattern is regular expression)
 // In case of error return false
 func Matches(str, pattern string) bool {

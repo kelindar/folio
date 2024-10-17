@@ -81,6 +81,8 @@ func TestValidate_Errors(t *testing.T) {
 	ok, err := Struct(car)
 	assert.False(t, ok)
 	assert.NotNil(t, err)
+	errs := err.(Errors).Errors()
+	assert.Len(t, errs, 1)
 }
 
 func TestNestedStruct(t *testing.T) {

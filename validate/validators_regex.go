@@ -149,63 +149,33 @@ var InterfaceParamTagRegexMap = map[string]*regexp.Regexp{
 	"type": regexp.MustCompile(`^type\((.*)\)$`),
 }
 
-// ParamTagMap is a map of functions accept variants parameters
-var ParamTagMap = map[string]ParamValidator{
-	"length":          ByteLength,
-	"range":           Range,
-	"runelength":      RuneLength,
-	"stringlength":    StringLength,
-	"matches":         StringMatches,
-	"in":              IsInRaw,
-	"minstringlength": MinStringLength,
-	"maxstringlength": MaxStringLength,
-}
-
 // ParamTagRegexMap maps param tags to their respective regexes.
 var ParamTagRegexMap = map[string]*regexp.Regexp{
-	"range":           regexp.MustCompile("^range\\((\\d+)\\|(\\d+)\\)$"),
-	"length":          regexp.MustCompile("^length\\((\\d+)\\|(\\d+)\\)$"),
-	"runelength":      regexp.MustCompile("^runelength\\((\\d+)\\|(\\d+)\\)$"),
-	"stringlength":    regexp.MustCompile("^stringlength\\((\\d+)\\|(\\d+)\\)$"),
-	"in":              regexp.MustCompile(`^in\((.*)\)`),
-	"matches":         regexp.MustCompile(`^matches\((.+)\)$`),
-	"rsapub":          regexp.MustCompile("^rsapub\\((\\d+)\\)$"),
-	"minstringlength": regexp.MustCompile("^minstringlength\\((\\d+)\\)$"),
-	"maxstringlength": regexp.MustCompile("^maxstringlength\\((\\d+)\\)$"),
+	"range":        regexp.MustCompile(`^range\((\d+)\|(\d+)\)$`),
+	"length":       regexp.MustCompile(`^length\((\d+)\|(\d+)\)$`),
+	"runelength":   regexp.MustCompile(`^runelength\((\d+)\|(\d+)\)$`),
+	"stringlength": regexp.MustCompile(`^stringlength\((\d+)\|(\d+)\)$`),
+	"matches":      regexp.MustCompile(`^matches\((.+)\)$`),
+	"in":           regexp.MustCompile(`^in\((.*)\)`),
+	"minlen":       regexp.MustCompile(`^minlen\((\d+)\)$`),
+	"maxlen":       regexp.MustCompile(`^maxlen\((\d+)\)`),
+	"min":          regexp.MustCompile(`^min\((\d+)\)`),
+	"max":          regexp.MustCompile(`^max\((\d+)\)`),
 }
 
-type customTypeTagMap struct {
-	validators map[string]CustomTypeValidator
-
-	sync.RWMutex
+// ParamTagMap is a map of functions accept variants parameters
+var ParamTagMap = map[string]ParamValidator{
+	"range":        Range,
+	"length":       ByteLength,
+	"runelength":   RuneLength,
+	"stringlength": StringLength,
+	"matches":      StringMatches,
+	"in":           IsInRaw,
+	"minlen":       MinStringLength,
+	"maxlen":       MaxStringLength,
+	"min":          Min,
+	"max":          Max,
 }
-
-func (tm *customTypeTagMap) Get(name string) (CustomTypeValidator, bool) {
-	tm.RLock()
-	defer tm.RUnlock()
-	v, ok := tm.validators[name]
-	return v, ok
-}
-
-func (tm *customTypeTagMap) Set(name string, ctv CustomTypeValidator) {
-	tm.Lock()
-	defer tm.Unlock()
-	tm.validators[name] = ctv
-}
-
-// stringValues is a slice of reflect.Value holding *reflect.StringValue.
-// It implements the methods to sort by string.
-type stringValues []reflect.Value
-
-func (sv stringValues) Len() int           { return len(sv) }
-func (sv stringValues) Swap(i, j int)      { sv[i], sv[j] = sv[j], sv[i] }
-func (sv stringValues) Less(i, j int) bool { return sv.get(i) < sv.get(j) }
-func (sv stringValues) get(i int) string   { return sv[i].String() }
-
-// CustomTypeTagMap is a map of functions that can be used as tags for ValidateStruct function.
-// Use this to validate compound or custom types that need to be handled as a whole, e.g.
-// `type UUID [16]byte` (this would be handled as an array of bytes).
-var CustomTypeTagMap = &customTypeTagMap{validators: make(map[string]CustomTypeValidator)}
 
 // TagMap is a map of functions, that can be used as tags for ValidateStruct function.
 var TagMap = map[string]Validator{
@@ -259,6 +229,39 @@ var TagMap = map[string]Validator{
 	"ISO4217":            IsISO4217,
 	"IMEI":               IsIMEI,
 }
+
+type customTypeTagMap struct {
+	validators map[string]CustomTypeValidator
+
+	sync.RWMutex
+}
+
+func (tm *customTypeTagMap) Get(name string) (CustomTypeValidator, bool) {
+	tm.RLock()
+	defer tm.RUnlock()
+	v, ok := tm.validators[name]
+	return v, ok
+}
+
+func (tm *customTypeTagMap) Set(name string, ctv CustomTypeValidator) {
+	tm.Lock()
+	defer tm.Unlock()
+	tm.validators[name] = ctv
+}
+
+// stringValues is a slice of reflect.Value holding *reflect.StringValue.
+// It implements the methods to sort by string.
+type stringValues []reflect.Value
+
+func (sv stringValues) Len() int           { return len(sv) }
+func (sv stringValues) Swap(i, j int)      { sv[i], sv[j] = sv[j], sv[i] }
+func (sv stringValues) Less(i, j int) bool { return sv.get(i) < sv.get(j) }
+func (sv stringValues) get(i int) string   { return sv[i].String() }
+
+// CustomTypeTagMap is a map of functions that can be used as tags for ValidateStruct function.
+// Use this to validate compound or custom types that need to be handled as a whole, e.g.
+// `type UUID [16]byte` (this would be handled as an array of bytes).
+var CustomTypeTagMap = &customTypeTagMap{validators: make(map[string]CustomTypeValidator)}
 
 // iso3166 stores country codes
 type iso3166 struct {

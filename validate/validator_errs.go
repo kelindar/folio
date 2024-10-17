@@ -32,6 +32,7 @@ type Error struct {
 	Path      []string
 }
 
+// Error returns the string representation of the error.
 func (e Error) Error() string {
 	return strings.Join(e.Path, ".") + ": " + e.error.Error()
 }
