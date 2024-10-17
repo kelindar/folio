@@ -24,6 +24,19 @@ func IsEmpty(v reflect.Value) bool {
 	return false
 }
 
+// NewIfNil creates a new instance of a value if it is nil.
+func NewIfNil(v reflect.Value) reflect.Value {
+	switch {
+	case v.Kind() == reflect.Pointer && v.IsNil():
+		v.Set(reflect.New(v.Type().Elem()))
+	case v.Kind() == reflect.Slice && v.IsNil():
+		v.Set(reflect.MakeSlice(v.Type(), 0, 0))
+	case v.Kind() == reflect.Map && v.IsNil():
+		v.Set(reflect.MakeMap(v.Type()))
+	}
+	return v
+}
+
 // nameOf returns the JSON name of a field
 func nameOf(field *reflect.StructField) string {
 	name := field.Tag.Get("json")

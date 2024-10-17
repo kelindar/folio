@@ -69,39 +69,15 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 	lookup := make(map[Path]int, 16)
 	reverse := make(slicePath, 0, 16)
 
+	// Reset all nested slices and maps that exist, so we can overwrite them
 	walk.Walk(dst, func(rv reflect.Value, field *reflect.StructField, path []string) error {
-		//fmt.Printf(" - %s of %s (%s)\n", strings.Join(path, "."), v.Kind(), v.Type().Name())
-
 		switch {
-
-		// If we have a non-empty slice, reset it
+		case rv.Kind() == reflect.Map && rv.Len() > 0:
+			rv.Set(reflect.MakeMap(rv.Type()))
 		case rv.Kind() == reflect.Slice && rv.Len() > 0:
 			rv.Set(reflect.MakeSlice(rv.Type(), 0, 8))
 		}
-
 		return nil
-	})
-
-	// Reset slices, we need to do it only once to be able to overwrite
-	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
-		rv := reflect.Indirect(reflect.ValueOf(dst))
-		for subpath := range Path(key.String()).Walk() {
-			fd, ok := typ.Field(subpath)
-			if !ok {
-				errDecode = fmt.Errorf("unable to find path %s", key.String())
-				return false
-			}
-
-			switch {
-			case rv.Kind() == reflect.Struct:
-				rv = newOrDefault(rv.FieldByIndex(fd.Index))
-
-			// If we have a non-empty slice, reset it
-			case rv.Kind() == reflect.Slice && rv.Len() > 0:
-				rv.Set(reflect.MakeSlice(rv.Type(), 0, 8))
-			}
-		}
-		return true
 	})
 
 	gjson.ParseBytes(input).ForEach(func(key, value gjson.Result) bool {
