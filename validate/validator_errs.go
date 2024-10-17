@@ -7,36 +7,22 @@ package validate
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 	"strings"
 )
 
+// ErrUnsupported is a wrapper for reflect.Type
+type ErrUnsupported struct {
+	Type reflect.Type
+}
+
 // Error returns string equivalent for reflect.Type
-func (e *UnsupportedTypeError) Error() string {
+func (e *ErrUnsupported) Error() string {
 	return "validator: unsupported type: " + e.Type.String()
 }
 
-func (sv stringValues) Len() int           { return len(sv) }
-func (sv stringValues) Swap(i, j int)      { sv[i], sv[j] = sv[j], sv[i] }
-func (sv stringValues) Less(i, j int) bool { return sv.get(i) < sv.get(j) }
-func (sv stringValues) get(i int) string   { return sv[i].String() }
-
-// Errors is an array of multiple errors and conforms to the error interface.
-type Errors []error
-
-// Errors returns itself.
-func (es Errors) Errors() []error {
-	return es
-}
-
-func (es Errors) Error() string {
-	var errs []string
-	for _, e := range es {
-		errs = append(errs, e.Error())
-	}
-	sort.Strings(errs)
-	return strings.Join(errs, ";")
-}
+// ---------------------------------- Error ----------------------------------
 
 // Error encapsulates a name, an error and whether there's a custom error message or not.
 type Error struct {
@@ -62,6 +48,37 @@ func stripParams(validatorString string) string {
 	return rxParams.ReplaceAllString(validatorString, "")
 }
 
+// ---------------------------------- Errors ----------------------------------
+
+// Errors is an array of multiple errors and conforms to the error interface.
+type Errors []error
+
+// Errors returns all contained errors, recursively.
+func (e Errors) Errors() []Error {
+	var errs []Error
+	for _, e := range e {
+		switch ex := e.(type) {
+		case Error:
+			errs = append(errs, ex)
+		case Errors:
+			errs = append(errs, ex.Errors()...)
+		}
+	}
+	return errs
+}
+
+// Error returns a string representation of the errors.
+func (es Errors) Error() string {
+	var errs []string
+	for _, e := range es {
+		errs = append(errs, e.Error())
+	}
+	sort.Strings(errs)
+	return strings.Join(errs, ";")
+}
+
+// ---------------------------------- Path & Name ----------------------------------
+
 func withPath(ex error, path ...string) error {
 	switch err := ex.(type) {
 	case Error:
@@ -72,7 +89,7 @@ func withPath(ex error, path ...string) error {
 		err.Path = path
 		return err
 	case Errors:
-		errors := err.Errors()
+		errors := err
 		for i, e := range errors {
 			errors[i] = withPath(e, path...)
 		}

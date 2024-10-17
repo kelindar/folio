@@ -132,7 +132,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 		}
 	}
 
-	if len(customTypeErrors.Errors()) > 0 {
+	if len(customTypeErrors) > 0 {
 		return false, customTypeErrors
 	}
 
@@ -277,7 +277,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 		return true, nil
 	case reflect.Map:
 		if v.Type().Key().Kind() != reflect.String {
-			return false, &UnsupportedTypeError{v.Type()}
+			return false, &ErrUnsupported{v.Type()}
 		}
 		var sv stringValues
 		sv = v.MapKeys()
@@ -340,7 +340,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 	case reflect.Struct:
 		return true, nil
 	default:
-		return false, &UnsupportedTypeError{v.Type()}
+		return false, &ErrUnsupported{v.Type()}
 	}
 }
 

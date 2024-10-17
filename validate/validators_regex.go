@@ -139,15 +139,6 @@ type tagOption struct {
 	order              int
 }
 
-// UnsupportedTypeError is a wrapper for reflect.Type
-type UnsupportedTypeError struct {
-	Type reflect.Type
-}
-
-// stringValues is a slice of reflect.Value holding *reflect.StringValue.
-// It implements the methods to sort by string.
-type stringValues []reflect.Value
-
 // InterfaceParamTagMap is a map of functions accept variants parameters for an interface value
 var InterfaceParamTagMap = map[string]InterfaceParamValidator{
 	"type": IsType,
@@ -201,6 +192,15 @@ func (tm *customTypeTagMap) Set(name string, ctv CustomTypeValidator) {
 	defer tm.Unlock()
 	tm.validators[name] = ctv
 }
+
+// stringValues is a slice of reflect.Value holding *reflect.StringValue.
+// It implements the methods to sort by string.
+type stringValues []reflect.Value
+
+func (sv stringValues) Len() int           { return len(sv) }
+func (sv stringValues) Swap(i, j int)      { sv[i], sv[j] = sv[j], sv[i] }
+func (sv stringValues) Less(i, j int) bool { return sv.get(i) < sv.get(j) }
+func (sv stringValues) get(i int) string   { return sv[i].String() }
 
 // CustomTypeTagMap is a map of functions that can be used as tags for ValidateStruct function.
 // Use this to validate compound or custom types that need to be handled as a whole, e.g.
