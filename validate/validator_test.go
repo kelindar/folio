@@ -73,6 +73,7 @@ func TestValidate_Errors(t *testing.T) {
 		Company:     "Ford",
 		Engines: []Engine{
 			{Type: "V8", Power: 500},
+			{Type: "V1", Power: 100},
 			{Type: "V2", Power: 100},
 		},
 	}
@@ -82,7 +83,7 @@ func TestValidate_Errors(t *testing.T) {
 	assert.False(t, ok)
 	assert.NotNil(t, err)
 	errs := err.(Errors).Errors()
-	assert.Len(t, errs, 1)
+	assert.Len(t, errs, 2)
 }
 
 func TestNestedStruct(t *testing.T) {
@@ -108,7 +109,7 @@ func TestNestedStruct(t *testing.T) {
 			Nested: NestedStruct{
 				Foo: "",
 			},
-		}, false, "Nested.Foo: non zero value required"},
+		}, false, "Nested.Foo: Foo is a required field"},
 		{OuterStruct{
 			Nested: NestedStruct{
 				Foo: "123",

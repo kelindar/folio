@@ -89,11 +89,7 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 	switch tag {
 	case "":
 		if v.Kind() != reflect.Slice && v.Kind() != reflect.Map {
-			if !fieldsRequiredByDefault {
-				return true, nil
-			}
-
-			return false, errorf(&t, "required", "all fields must have at least one validation defined")
+			return true, nil
 		}
 	case "-":
 		return true, nil
@@ -294,7 +290,6 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 			} else {
 				resultItem, err = Struct(v.MapIndex(k).Interface())
 				if err != nil {
-					//err = withPath(err, t.Name+"."+sv[i].Interface().(string))
 					err = withPath(err, nameOf(&t), sv[i].Interface().(string))
 					return false, err
 				}
@@ -305,34 +300,30 @@ func typeCheck(v reflect.Value, t reflect.StructField, o reflect.Value, options 
 
 	// If the value is a slice then check its elements
 	case reflect.Slice, reflect.Array:
-		result := true
+		var errs Errors
 		for i := 0; i < v.Len(); i++ {
-			var resultItem bool
-			var err error
-			if v.Index(i).Kind() != reflect.Struct {
-				resultItem, err = typeCheck(v.Index(i), t, o, options)
-				if err != nil {
+			switch {
+			case v.Index(i).Kind() != reflect.Struct:
+				if ok, err := typeCheck(v.Index(i), t, o, options); err != nil || !ok {
 					return false, err
 				}
-			} else {
-				resultItem, err = Struct(v.Index(i).Interface())
-				if err != nil {
-					//err = withPath(err, t.Name+"."+strconv.Itoa(i))
-					err = withPath(err, nameOf(&t), strconv.Itoa(i))
-					return false, err
+			default:
+				if ok, err := Struct(v.Index(i).Interface()); err != nil || !ok {
+					errs = append(errs, withPath(err, nameOf(&t), strconv.Itoa(i)))
 				}
 			}
-			result = result && resultItem
 		}
-		return result, nil
+		return len(errs) == 0, errs
+
+	// If the value is an interface then encode its element
 	case reflect.Interface:
-		// If the value is an interface then encode its element
 		if v.IsNil() {
 			return true, nil
 		}
 		return Struct(v.Interface())
-	case reflect.Ptr:
-		// If the value is a pointer then checks its element
+
+	// If the value is a pointer then checks its element
+	case reflect.Pointer:
 		if v.IsNil() {
 			return true, nil
 		}
