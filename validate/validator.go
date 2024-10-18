@@ -212,15 +212,15 @@ func nameOf(field *reflect.StructField) string {
 
 var validators sync.Map
 
-// Register registers a new validator function
-func Register(name, format string, fn Func) {
-	RegisterN(name, format, func(str string, _ ...string) bool {
+// variadic returns a variadic function by currying the given function
+func variadic(fn func(string) bool) func(str string, _ ...string) bool {
+	return func(str string, _ ...string) bool {
 		return fn(str)
-	})
+	}
 }
 
-// RegisterN registers a new validator function with additional parameters
-func RegisterN(name, format string, fn FuncN) {
+// Register registers a new validator function with additional parameters
+func Register(name, format string, fn Func) {
 	validators.Store(name, &validator{
 		name:   name,
 		format: format,
@@ -239,7 +239,7 @@ func RegisterN(name, format string, fn FuncN) {
 type validator struct {
 	name   string // Name of the validator
 	format string // Format of the error message
-	fn     FuncN  // The function to call
+	fn     Func   // The function to call
 }
 
 func (v *validator) Validate(str string, params ...string) bool {
