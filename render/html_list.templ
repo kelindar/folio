@@ -15,6 +15,9 @@ templ hxList(rx *Context, content templ.Component) {
 			<div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 p-4">
 				<!-- Grouped Namespace and Search Components -->
 				<div class="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-4 w-full md:w-auto flex-1">
+					<div class="pl-3">
+						<uk-icon icon={ rx.Type.Icon } class="w-10 h-10 text-gray-400 dark:text-gray-300"></uk-icon>
+					</div>
 					<div class="w-full md:w-auto">
 						@hxSearchBar(rx)
 					</div>
@@ -26,9 +29,6 @@ templ hxList(rx *Context, content templ.Component) {
 			</div>
 			<!-- Content Section -->
 			<div class="overflow-x-auto">
-				<h2 class="text-3xl font-extrabold leading-none tracking-tight text-gray-900 dark:text-white p-4">
-					<span class="underline underline-offset-3 decoration-6 decoration-blue-400">Manage { rx.Type.Plural }</span>
-				</h2>
 				@content
 			</div>
 		</div>
@@ -51,7 +51,7 @@ templ hxSearchBar(rx *Context) {
 				name="search_match"
 				class="uk-search-input"
 				type="search"
-				placeholder="Search ..."
+				placeholder={ "Search " + rx.Type.Plural }
 				aria-label="Search"
 			/>
 			<input type="hidden" name="search_kind" id="search_kind" value={ rx.Kind.String() }/>
@@ -133,7 +133,9 @@ templ hxListElementRow(v folio.Object) {
 }
 
 templ hxState(value string) {
-	<span class={ "bg-" + convert.Color(value) + "-100 text-" + convert.Color(value) + "-800 text-sm font-medium me-2 px-2 py-0.5 rounded" }>{ value }</span>
+	if len(value) > 0 {
+		<span class={ "bg-" + convert.Color(value) + "-100 text-" + convert.Color(value) + "-800 text-sm font-medium me-2 px-2 py-0.5 rounded" }>{ value }</span>
+	}
 }
 
 templ hxCreateButton(rx *Context) {

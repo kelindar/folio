@@ -26,7 +26,9 @@ func page(registry folio.Registry, db folio.Storage) http.Handler {
 		}
 
 		ns := namespaces(db)
-		list, err := renderList(ctx, r, folio.Query{})
+		list, err := renderList(ctx, r, folio.Query{
+			Namespace: ctx.Namespace,
+		})
 		if err != nil {
 			return err
 		}
@@ -67,7 +69,9 @@ func content(registry folio.Registry, db folio.Storage) http.Handler {
 			return err
 		}
 
-		return w.Render(hxNavigate(rx, ns, list))
+		return w.RenderWith(hxNavigate(rx, ns, list), func(r htmx.Response) htmx.Response {
+			return r.PushURL(fmt.Sprintf("/%s?ns=%s", rx.Kind, rx.Namespace))
+		})
 	})
 }
 

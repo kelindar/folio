@@ -26,6 +26,7 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	http.Handle("GET /assets/", serveStatic(http.FS(assets)))
 
 	// Handle page view
+	http.Handle("GET /", page(registry, db))
 	http.Handle("GET /{kind}", page(registry, db))
 	http.Handle("POST /content/{kind}", content(registry, db))
 	http.Handle("GET /content/{kind}", content(registry, db))
