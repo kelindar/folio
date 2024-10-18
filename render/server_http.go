@@ -20,22 +20,22 @@ import (
 // page handles a page request for a given kind, inferred from path.
 func page(registry folio.Registry, db folio.Storage) http.Handler {
 	return handle(func(r *http.Request, w *Response) error {
-		ctx, err := newContext(ModeView, r, registry, db)
+		rx, err := newContext(ModeView, r, registry, db)
 		if err != nil {
 			return err
 		}
 
 		ns := namespaces(db)
-		list, err := renderList(ctx, r, folio.Query{
-			Namespace: ctx.Namespace,
+		list, err := renderList(rx, r, folio.Query{
+			Namespace: rx.Namespace,
 		})
 		if err != nil {
 			return err
 		}
 
 		return w.Render(hxLayout(
-			fmt.Sprintf("Folio - %s", ctx.Type.Plural),
-			contentList(ctx, list, ns),
+			fmt.Sprintf("Folio - %s", rx.Type.Plural),
+			contentList(rx, list, ns),
 		))
 	})
 }
@@ -132,11 +132,6 @@ func pageOf(kind folio.Kind, query folio.Query, page, size int) string {
 }
 
 func renderList(rx *Context, r *http.Request, defaultQuery folio.Query) (templ.Component, error) {
-	typ, err := rx.Registry.Resolve(folio.Kind(r.PathValue("kind")))
-	if err != nil {
-		return nil, errors.BadRequest("invalid kind, %v", err)
-	}
-
 	page := convert.Int(r.URL.Query().Get("page"), 0)
 	size := convert.Int(r.URL.Query().Get("size"), 20)
 	text, err := base64.URLEncoding.DecodeString(r.URL.Query().Get("filter"))
@@ -150,7 +145,7 @@ func renderList(rx *Context, r *http.Request, defaultQuery folio.Query) (templ.C
 	}
 
 	// Count the number of objects
-	count, err := rx.Store.Count(typ.Kind, query)
+	count, err := rx.Store.Count(rx.Kind, query)
 	if err != nil {
 		return nil, errors.Internal("unable to count, %v", err)
 	}
@@ -161,7 +156,7 @@ func renderList(rx *Context, r *http.Request, defaultQuery folio.Query) (templ.C
 	rx.Query = query
 
 	// Search for the objects
-	found, err := rx.Store.Search(typ.Kind, query)
+	found, err := rx.Store.Search(rx.Kind, query)
 	if err != nil {
 		return nil, errors.Internal("unable to search, %v", err)
 	}
@@ -334,6 +329,11 @@ func newContext(mode Mode, r *http.Request, reg folio.Registry, db folio.Storage
 	if err == nil {
 		ns = urn.Namespace
 		kind = urn.Kind
+	}
+
+	// Default to namespace if no kind is provided
+	if strings.TrimSpace(string(kind)) == "" {
+		kind = folio.Kind("namespace")
 	}
 
 	// Resolve the metadata for the kind
