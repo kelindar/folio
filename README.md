@@ -7,7 +7,7 @@
 <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License"></a>
 </p>
 
-# Folio: Effortless Internal Tool Development
+## Folio: Effortless Internal Tool Development
 
 Folio is a tool I built to save time on the boring stuff. After years of building internal tools and getting stuck on UI work, I created Folio to automatically generate UIs from Go structs, letting me skip the front-end hassle and focus on the fun parts of development.
 
