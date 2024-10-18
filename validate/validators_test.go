@@ -1085,26 +1085,6 @@ func TestIsPrintableASCII(t *testing.T) {
 	}
 }
 
-func TestIsFilePath(t *testing.T) {
-	tests := map[string]struct {
-		input    string
-		expected bool
-		fileType int
-	}{
-		"empty string":                {input: "", expected: false, fileType: Unknown},
-		"valid Windows absolute path": {input: `C:\Program Files\Example`, expected: true, fileType: Win},
-		"valid Unix absolute path":    {input: `/usr/local/bin`, expected: true, fileType: Unix},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			result, fileType := IsFilePath(tc.input)
-			assert.Equal(t, tc.expected, result)
-			assert.Equal(t, tc.fileType, fileType)
-		})
-	}
-}
-
 func TestIsWinFilePath(t *testing.T) {
 	tests := map[string]struct {
 		input    string

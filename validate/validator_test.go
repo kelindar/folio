@@ -130,7 +130,7 @@ func TestNestedStruct(t *testing.T) {
 				},
 			},
 			expected:    false,
-			expectedErr: "Nested.Foo: 123456 does not validate as length(3|5)",
+			expectedErr: "Nested.Foo: Foo must be between 3 and 5",
 		},
 		{
 			param: &OuterStruct{
@@ -142,7 +142,7 @@ func TestNestedStruct(t *testing.T) {
 				},
 			},
 			expected:    false,
-			expectedErr: "Nested.EvenMoreNested.Bar: 123456 does not validate as length(3|5)",
+			expectedErr: "Nested.EvenMoreNested.Bar: Bar must be between 3 and 5",
 		},
 		{
 			param: &OuterStruct{
@@ -156,7 +156,7 @@ func TestNestedStruct(t *testing.T) {
 				},
 			},
 			expected:    false,
-			expectedErr: "Nested.SliceEvenMoreNested.0.Bar: 123456 does not validate as length(3|5)",
+			expectedErr: "Nested.SliceEvenMoreNested.0.Bar: Bar must be between 3 and 5",
 		},
 		{
 			param: &OuterStruct{
@@ -170,7 +170,7 @@ func TestNestedStruct(t *testing.T) {
 				},
 			},
 			expected:    false,
-			expectedErr: "Nested.MapEvenMoreNested.Foo.Bar: 123456 does not validate as length(3|5)",
+			expectedErr: "Nested.MapEvenMoreNested.Foo.Bar: Bar must be between 3 and 5",
 		},
 	}
 

@@ -6,118 +6,137 @@
 package validate
 
 import (
-	"reflect"
 	"regexp"
 	"sort"
-	"sync"
 )
 
-// Used by IsFilePath func
-const (
-	Unknown = iota // Unknown is unresolved OS type
-	Win            // Win is Windows type
-	Unix           // Unix is *nix OS types
-)
+func init() {
+
+	// Variadic validators
+	RegisterN("range", "%s must be between %v and %v", Range)
+	RegisterN("length", "%s must be between %v and %v", ByteLength)
+	RegisterN("runelength", "%s must be between %v and %v", RuneLength)
+	RegisterN("stringlength", "%s must be between %v and %v", StringLength)
+	RegisterN("matches", "%s must match %v", StringMatches)
+	RegisterN("in", "%s must be one of allowed values", IsIn)
+	RegisterN("minlen", "%s must be at least %v characters long", MinStringLength)
+	RegisterN("maxlen", "%s must be at most %v characters long", MaxStringLength)
+	RegisterN("min", "%s must be at least %v", Min)
+	RegisterN("max", "%s must be at most %v", Max)
+
+	// Standard validators
+	Register("email", "%s must be a valid email address", IsEmail)
+	Register("url", "%s must be a valid URL", IsURL)
+	Register("dialstring", "%s must be a valid dial string", IsDialString)
+	Register("requrl", "%s must be a valid request URL", IsRequestURL)
+	Register("requri", "%s must be a valid request URI", IsRequestURI)
+	Register("alpha", "%s must contain only letters", IsAlpha)
+	Register("utfletter", "%s must contain only letters", IsUTFLetter)
+	Register("alphanum", "%s must contain only letters and numbers", IsAlphanumeric)
+	Register("utfletternum", "%s must contain only letters and numbers", IsUTFLetterNumeric)
+	Register("numeric", "%s must contain only numbers", IsNumeric)
+	Register("utfnumeric", "%s must contain only numbers", IsUTFNumeric)
+	Register("utfdigit", "%s must contain only digits", IsUTFDigit)
+	Register("hexadecimal", "%s must be a hexadecimal number", IsHexadecimal)
+	Register("hexcolor", "%s must be a valid hex color", IsHexcolor)
+	Register("rgbcolor", "%s must be a valid RGB color", IsRGBcolor)
+	Register("lowercase", "%s must be lowercase", IsLowerCase)
+	Register("uppercase", "%s must be uppercase", IsUpperCase)
+	Register("int", "%s must be an integer", IsInt)
+	Register("float", "%s must be a float", IsFloat)
+	Register("null", "%s must be null", IsNull)
+	Register("notnull", "%s must not be null", IsNotNull)
+	Register("uuid", "%s must be a valid UUID", IsUUID)
+	Register("uuidv3", "%s must be a valid UUIDv3", IsUUIDv3)
+	Register("uuidv4", "%s must be a valid UUIDv4", IsUUIDv4)
+	Register("uuidv5", "%s must be a valid UUIDv5", IsUUIDv5)
+	Register("creditcard", "%s must be a valid credit card number", IsCreditCard)
+	Register("json", "%s must be a valid JSON", IsJSON)
+	Register("multibyte", "%s must contain multibyte characters", IsMultibyte)
+	Register("ascii", "%s must contain only ASCII characters", IsASCII)
+	Register("printascii", "%s must contain only printable ASCII characters", IsPrintableASCII)
+	Register("base64", "%s must be a valid base64 string", IsBase64)
+	Register("datauri", "%s must be a valid data URI", IsDataURI)
+	Register("ip", "%s must be a valid IP address", IsIP)
+	Register("port", "%s must be a valid port", IsPort)
+	Register("ipv4", "%s must be a valid IPv4 address", IsIPv4)
+	Register("ipv6", "%s must be a valid IPv6 address", IsIPv6)
+	Register("dns", "%s must be a valid DNS name", IsDNSName)
+	Register("host", "%s must be a valid host", IsHost)
+	Register("mac", "%s must be a valid MAC address", IsMAC)
+	Register("latitude", "%s must be a valid latitude", IsLatitude)
+	Register("longitude", "%s must be a valid longitude", IsLongitude)
+	Register("ssn", "%s must be a valid SSN", IsSSN)
+	Register("semver", "%s must be a valid semantic version", IsSemver)
+	Register("rfc3339", "%s must be a valid RFC-3339 date", IsRFC3339)
+	Register("rfc3339nozone", "%s must be a valid RFC-3339 date without time zone", IsRFC3339WithoutZone)
+	Register("country2", "%s must be a valid ISO-3166 Alpha 2 country code", IsISO3166Alpha2)
+	Register("country3", "%s must be a valid ISO-3166 Alpha 3 country code", IsISO3166Alpha3)
+	Register("currency", "%s must be a valid ISO-4217 currency code", IsISO4217)
+	Register("imei", "%s must be a valid IMEI number", IsIMEI)
+}
 
 // Basic regular expressions for validating strings
 const (
-	rsTagName         string = "is"
-	rsEmail           string = "^(((([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+(\\.([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+)*)|((\\x22)((((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]|\\x21|[\\x23-\\x5b]|[\\x5d-\\x7e]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(\\([\\x01-\\x09\\x0b\\x0c\\x0d-\\x7f]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}]))))*(((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(\\x22)))@((([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|\\.|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.)+(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.?$"
-	rsCreditCard      string = "^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11}|6[27][0-9]{14})$"
-	rsUUID3           string = `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-3[0-9a-fA-F]{3}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`
-	rsUUID4           string = `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`
-	rsUUID5           string = `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-5[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`
-	rsUUID            string = `^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`
-	rsAlpha           string = `^[a-zA-Z]+$`
-	rsAlphanumeric    string = `^[a-zA-Z0-9]+$`
-	rsNumeric         string = `^[0-9]+$`
-	rsInt             string = `^(?:[-+]?(?:0|[1-9][0-9]*))$`
-	rsFloat           string = "^(?:[-+]?(?:[0-9]+))?(?:\\.[0-9]*)?(?:[eE][\\+\\-]?(?:[0-9]+))?$"
-	rsHexadecimal     string = `^[0-9a-fA-F]+$`
-	rsHexcolor        string = `^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$`
-	rsRGBcolor        string = "^rgb\\(\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])\\s*,\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])\\s*,\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])\\s*\\)$"
-	rsASCII           string = "^[\x00-\x7F]+$"
-	rsMultibyte       string = "[^\x00-\x7F]"
-	rsFullWidth       string = "[^\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]"
-	rsHalfWidth       string = "[\u0020-\u007E\uFF61-\uFF9F\uFFA0-\uFFDC\uFFE8-\uFFEE0-9a-zA-Z]"
-	rsBase64          string = "^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{4})$"
-	rsPrintableASCII  string = "^[\x20-\x7E]+$"
-	rsDataURI         string = "^data:.+\\/(.+);base64$"
-	rsLatitude        string = "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$"
-	rsLongitude       string = "^[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$"
-	rsDNSName         string = `^([a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62}){1}(\.[a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62})*[\._]?$`
-	rsIP              string = `(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))`
-	rsURLSchema       string = `((ftp|tcp|udp|wss?|https?):\/\/)`
-	rsURLUsername     string = `(\S+(:\S*)?@)`
-	rsURLPath         string = `((\/|\?|#)[^\s]*)`
-	rsURLPort         string = `(:(\d{1,5}))`
-	rsURLIP           string = `([1-9]\d?|1\d\d|2[01]\d|22[0-3]|24\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){2}(?:\.([0-9]\d?|1\d\d|2[0-4]\d|25[0-5]))`
-	rsURLSubdomain    string = `((www\.)|([a-zA-Z0-9]+([-_\.]?[a-zA-Z0-9])*[a-zA-Z0-9]\.[a-zA-Z0-9]+))`
-	rsURL                    = `^` + rsURLSchema + `?` + rsURLUsername + `?` + `((` + rsURLIP + `|(\[` + rsIP + `\])|(([a-zA-Z0-9]([a-zA-Z0-9-_]+)?[a-zA-Z0-9]([-\.][a-zA-Z0-9]+)*)|(` + rsURLSubdomain + `?))?(([a-zA-Z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-zA-Z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-zA-Z\x{00a1}-\x{ffff}]{1,}))?))\.?` + rsURLPort + `?` + rsURLPath + `?$`
-	rsSSN             string = `^\d{3}[- ]?\d{2}[- ]?\d{4}$`
-	rsWinARPath       string = `^(?:(?:[A-Za-z]:\\|\\\\[^\\/:*?"<>|]+\\[^\\/:*?"<>|]+\\|\\\\\?\\[A-Za-z]:\\)|(?:\.\.?\\|[^\\/:*?"<>|\r\n]+\\))(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$`
-	rsUnixARPath      string = `^(\/)?([^/\0]+\/)*([^/\0]+)?\/?$`
-	rsSemver          string = "^v?(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)(-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\\+[0-9a-zA-Z-]+(\\.[0-9a-zA-Z-]+)*)?$"
-	rsWhitespace      string = ".*[[:space:]]"
-	hasWhitespaceOnly string = "^[[:space:]]+$"
-	rsIMEI            string = "^[0-9a-f]{14}$|^\\d{15}$|^\\d{18}$"
-	rsIMSI            string = "^\\d{14,15}$"
-	rsE164            string = `^\+?[1-9]\d{1,14}$`
+	rsTagName      string = "is"
+	rsIP           string = `(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))`
+	rsURLSchema    string = `((ftp|tcp|udp|wss?|https?):\/\/)`
+	rsURLUsername  string = `(\S+(:\S*)?@)`
+	rsURLPath      string = `((\/|\?|#)[^\s]*)`
+	rsURLPort      string = `(:(\d{1,5}))`
+	rsURLIP        string = `([1-9]\d?|1\d\d|2[01]\d|22[0-3]|24\d|25[0-5])(\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])){2}(?:\.([0-9]\d?|1\d\d|2[0-4]\d|25[0-5]))`
+	rsURLSubdomain string = `((www\.)|([a-zA-Z0-9]+([-_\.]?[a-zA-Z0-9])*[a-zA-Z0-9]\.[a-zA-Z0-9]+))`
+	rsURL                 = `^` + rsURLSchema + `?` + rsURLUsername + `?` + `((` + rsURLIP + `|(\[` + rsIP + `\])|(([a-zA-Z0-9]([a-zA-Z0-9-_]+)?[a-zA-Z0-9]([-\.][a-zA-Z0-9]+)*)|(` + rsURLSubdomain + `?))?(([a-zA-Z\x{00a1}-\x{ffff}0-9]+-?-?)*[a-zA-Z\x{00a1}-\x{ffff}0-9]+)(?:\.([a-zA-Z\x{00a1}-\x{ffff}]{1,}))?))\.?` + rsURLPort + `?` + rsURLPath + `?$`
 )
 
 var (
+	rxValidator           = regexp.MustCompile(`^(!?\w+)(?:\(([^)]+)\))?$`)
+	rxURL                 = regexp.MustCompile(rsURL)
 	rxNotNumber           = regexp.MustCompile("[^0-9]+")
 	rxWhiteSpacesAndMinus = regexp.MustCompile(`[\s-]+`)
 	rxParams              = regexp.MustCompile(`\(.*\)$`)
 	rxUser                = regexp.MustCompile("^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~.-]+$")
 	rxHost                = regexp.MustCompile("^[^\\s]+\\.[^\\s]+$")
 	rxUserDot             = regexp.MustCompile("(^[.]{1})|([.]{1}$)|([.]{2,})")
-	rxEmail               = regexp.MustCompile(rsEmail)
-	rxCreditCard          = regexp.MustCompile(rsCreditCard)
-	rxUUID3               = regexp.MustCompile(rsUUID3)
-	rxUUID4               = regexp.MustCompile(rsUUID4)
-	rxUUID5               = regexp.MustCompile(rsUUID5)
-	rxUUID                = regexp.MustCompile(rsUUID)
-	rxAlpha               = regexp.MustCompile(rsAlpha)
-	rxAlphanumeric        = regexp.MustCompile(rsAlphanumeric)
-	rxNumeric             = regexp.MustCompile(rsNumeric)
-	rxInt                 = regexp.MustCompile(rsInt)
-	rxFloat               = regexp.MustCompile(rsFloat)
-	rxHexadecimal         = regexp.MustCompile(rsHexadecimal)
-	rxHexcolor            = regexp.MustCompile(rsHexcolor)
-	rxRGBcolor            = regexp.MustCompile(rsRGBcolor)
-	rxASCII               = regexp.MustCompile(rsASCII)
-	rxPrintableASCII      = regexp.MustCompile(rsPrintableASCII)
-	rxMultibyte           = regexp.MustCompile(rsMultibyte)
-	rxBase64              = regexp.MustCompile(rsBase64)
-	rxDataURI             = regexp.MustCompile(rsDataURI)
-	rxLatitude            = regexp.MustCompile(rsLatitude)
-	rxLongitude           = regexp.MustCompile(rsLongitude)
-	rxDNSName             = regexp.MustCompile(rsDNSName)
-	rxURL                 = regexp.MustCompile(rsURL)
-	rxSSN                 = regexp.MustCompile(rsSSN)
-	rxWinPath             = regexp.MustCompile(rsWinARPath)
-	rxUnixPath            = regexp.MustCompile(rsUnixARPath)
-	rxSemver              = regexp.MustCompile(rsSemver)
-	rxHasWhitespace       = regexp.MustCompile(rsWhitespace)
-	rxHasWhitespaceOnly   = regexp.MustCompile(hasWhitespaceOnly)
-	rxIMEI                = regexp.MustCompile(rsIMEI)
-	rxIMSI                = regexp.MustCompile(rsIMSI)
-	rxE164                = regexp.MustCompile(rsE164)
+	rxEmail               = regexp.MustCompile("^(((([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+(\\.([a-zA-Z]|\\d|[!#\\$%&'\\*\\+\\-\\/=\\?\\^_`{\\|}~]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])+)*)|((\\x22)((((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(([\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x7f]|\\x21|[\\x23-\\x5b]|[\\x5d-\\x7e]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(\\([\\x01-\\x09\\x0b\\x0c\\x0d-\\x7f]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}]))))*(((\\x20|\\x09)*(\\x0d\\x0a))?(\\x20|\\x09)+)?(\\x22)))@((([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|\\.|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|\\d|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.)+(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])|(([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])([a-zA-Z]|\\d|-|_|~|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])*([a-zA-Z]|[\\x{00A0}-\\x{D7FF}\\x{F900}-\\x{FDCF}\\x{FDF0}-\\x{FFEF}])))\\.?$")
+	rxCreditCard          = regexp.MustCompile("^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|(222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)[0-9]{12}|6(?:011|5[0-9][0-9])[0-9]{12}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|(?:2131|1800|35\\d{3})\\d{11}|6[27][0-9]{14})$")
+	rxUUID3               = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-3[0-9a-fA-F]{3}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+	rxUUID4               = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
+	rxUUID5               = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-5[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
+	rxUUID                = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
+	rxAlpha               = regexp.MustCompile(`^[a-zA-Z]+$`)
+	rxAlphanumeric        = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
+	rxNumeric             = regexp.MustCompile(`^[0-9]+$`)
+	rxInt                 = regexp.MustCompile(`^(?:[-+]?(?:0|[1-9][0-9]*))$`)
+	rxFloat               = regexp.MustCompile("^(?:[-+]?(?:[0-9]+))?(?:\\.[0-9]*)?(?:[eE][\\+\\-]?(?:[0-9]+))?$")
+	rxHexadecimal         = regexp.MustCompile(`^[0-9a-fA-F]+$`)
+	rxHexcolor            = regexp.MustCompile(`^#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$`)
+	rxRGBcolor            = regexp.MustCompile("^rgb\\(\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])\\s*,\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])\\s*,\\s*(0|[1-9]\\d?|1\\d\\d?|2[0-4]\\d|25[0-5])\\s*\\)$")
+	rxASCII               = regexp.MustCompile("^[\x00-\x7F]+$")
+	rxPrintableASCII      = regexp.MustCompile("^[\x20-\x7E]+$")
+	rxMultibyte           = regexp.MustCompile("[^\x00-\x7F]")
+	rxBase64              = regexp.MustCompile("^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{4})$")
+	rxDataURI             = regexp.MustCompile("^data:.+\\/(.+);base64$")
+	rxLatitude            = regexp.MustCompile("^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?)$")
+	rxLongitude           = regexp.MustCompile("^[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$")
+	rxDNSName             = regexp.MustCompile(`^([a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62}){1}(\.[a-zA-Z0-9_]{1}[a-zA-Z0-9_-]{0,62})*[\._]?$`)
+	rxSSN                 = regexp.MustCompile(`^\d{3}[- ]?\d{2}[- ]?\d{4}$`)
+	rxWinPath             = regexp.MustCompile(`^(?:(?:[A-Za-z]:\\|\\\\[^\\/:*?"<>|]+\\[^\\/:*?"<>|]+\\|\\\\\?\\[A-Za-z]:\\)|(?:\.\.?\\|[^\\/:*?"<>|\r\n]+\\))(?:[^\\/:*?"<>|\r\n]+\\)*[^\\/:*?"<>|\r\n]*$`)
+	rxUnixPath            = regexp.MustCompile(`^(\/)?([^/\0]+\/)*([^/\0]+)?\/?$`)
+	rxSemver              = regexp.MustCompile(`^v?(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$`)
+	rxHasWhitespace       = regexp.MustCompile(`.*[[:space:]]`)
+	rxHasWhitespaceOnly   = regexp.MustCompile(`^[[:space:]]+$`)
+	rxIMEI                = regexp.MustCompile(`^[0-9a-f]{14}$|^\d{15}$|^\d{18}$`)
+	rxIMSI                = regexp.MustCompile(`^\d{14,15}$`)
+	rxE164                = regexp.MustCompile(`^\+?[1-9]\d{1,14}$`)
 )
 
-// Validator is a wrapper for a validator function that returns bool and accepts string.
-type Validator func(str string) bool
+// Func is a wrapper for a validator function that returns bool and accepts string.
+type Func func(str string) bool
 
-// CustomTypeValidator is a wrapper for validator functions that returns bool and accepts any type.
-// The second parameter should be the context (in the case of validating a struct: the whole object being validated).
-type CustomTypeValidator func(i interface{}, o interface{}) bool
+// FuncN is a wrapper for validator functions that accept additional parameters.
+type FuncN func(str string, params ...string) bool
 
-// ParamValidator is a wrapper for validator functions that accept additional parameters.
-type ParamValidator func(str string, params ...string) bool
-
-// InterfaceParamValidator is a wrapper for functions that accept variants parameters for an interface value
-type InterfaceParamValidator func(in interface{}, params ...string) bool
 type opts map[string]tagOption
 
 func (t opts) orderedKeys() []string {
@@ -138,130 +157,6 @@ type tagOption struct {
 	message string
 	order   int
 }
-
-// InterfaceParamTagMap is a map of functions accept variants parameters for an interface value
-var InterfaceParamTagMap = map[string]InterfaceParamValidator{
-	"type": IsType,
-}
-
-// InterfaceParamTagRegexMap maps interface param tags to their respective regexes.
-var InterfaceParamTagRegexMap = map[string]*regexp.Regexp{
-	"type": regexp.MustCompile(`^type\((.*)\)$`),
-}
-
-// ParamTagRegexMap maps param tags to their respective regexes.
-var ParamTagRegexMap = map[string]*regexp.Regexp{
-	"range":        regexp.MustCompile(`^range\((\d+)\|(\d+)\)$`),
-	"length":       regexp.MustCompile(`^length\((\d+)\|(\d+)\)$`),
-	"runelength":   regexp.MustCompile(`^runelength\((\d+)\|(\d+)\)$`),
-	"stringlength": regexp.MustCompile(`^stringlength\((\d+)\|(\d+)\)$`),
-	"matches":      regexp.MustCompile(`^matches\((.+)\)$`),
-	"in":           regexp.MustCompile(`^in\((.*)\)`),
-	"minlen":       regexp.MustCompile(`^minlen\((\d+)\)$`),
-	"maxlen":       regexp.MustCompile(`^maxlen\((\d+)\)`),
-	"min":          regexp.MustCompile(`^min\((\d+)\)`),
-	"max":          regexp.MustCompile(`^max\((\d+)\)`),
-}
-
-// ParamTagMap is a map of functions accept variants parameters
-var ParamTagMap = map[string]ParamValidator{
-	"range":        Range,
-	"length":       ByteLength,
-	"runelength":   RuneLength,
-	"stringlength": StringLength,
-	"matches":      StringMatches,
-	"in":           IsInRaw,
-	"minlen":       MinStringLength,
-	"maxlen":       MaxStringLength,
-	"min":          Min,
-	"max":          Max,
-}
-
-// TagMap is a map of functions, that can be used as tags for ValidateStruct function.
-var TagMap = map[string]Validator{
-	"email":              IsEmail,
-	"url":                IsURL,
-	"dialstring":         IsDialString,
-	"requrl":             IsRequestURL,
-	"requri":             IsRequestURI,
-	"alpha":              IsAlpha,
-	"utfletter":          IsUTFLetter,
-	"alphanum":           IsAlphanumeric,
-	"utfletternum":       IsUTFLetterNumeric,
-	"numeric":            IsNumeric,
-	"utfnumeric":         IsUTFNumeric,
-	"utfdigit":           IsUTFDigit,
-	"hexadecimal":        IsHexadecimal,
-	"hexcolor":           IsHexcolor,
-	"rgbcolor":           IsRGBcolor,
-	"lowercase":          IsLowerCase,
-	"uppercase":          IsUpperCase,
-	"int":                IsInt,
-	"float":              IsFloat,
-	"null":               IsNull,
-	"notnull":            IsNotNull,
-	"uuid":               IsUUID,
-	"uuidv3":             IsUUIDv3,
-	"uuidv4":             IsUUIDv4,
-	"uuidv5":             IsUUIDv5,
-	"creditcard":         IsCreditCard,
-	"json":               IsJSON,
-	"multibyte":          IsMultibyte,
-	"ascii":              IsASCII,
-	"printableascii":     IsPrintableASCII,
-	"base64":             IsBase64,
-	"datauri":            IsDataURI,
-	"ip":                 IsIP,
-	"port":               IsPort,
-	"ipv4":               IsIPv4,
-	"ipv6":               IsIPv6,
-	"dns":                IsDNSName,
-	"host":               IsHost,
-	"mac":                IsMAC,
-	"latitude":           IsLatitude,
-	"longitude":          IsLongitude,
-	"ssn":                IsSSN,
-	"semver":             IsSemver,
-	"rfc3339":            IsRFC3339,
-	"rfc3339WithoutZone": IsRFC3339WithoutZone,
-	"ISO3166Alpha2":      IsISO3166Alpha2,
-	"ISO3166Alpha3":      IsISO3166Alpha3,
-	"ISO4217":            IsISO4217,
-	"IMEI":               IsIMEI,
-}
-
-type customTypeTagMap struct {
-	validators map[string]CustomTypeValidator
-
-	sync.RWMutex
-}
-
-func (tm *customTypeTagMap) Get(name string) (CustomTypeValidator, bool) {
-	tm.RLock()
-	defer tm.RUnlock()
-	v, ok := tm.validators[name]
-	return v, ok
-}
-
-func (tm *customTypeTagMap) Set(name string, ctv CustomTypeValidator) {
-	tm.Lock()
-	defer tm.Unlock()
-	tm.validators[name] = ctv
-}
-
-// stringValues is a slice of reflect.Value holding *reflect.StringValue.
-// It implements the methods to sort by string.
-type stringValues []reflect.Value
-
-func (sv stringValues) Len() int           { return len(sv) }
-func (sv stringValues) Swap(i, j int)      { sv[i], sv[j] = sv[j], sv[i] }
-func (sv stringValues) Less(i, j int) bool { return sv.get(i) < sv.get(j) }
-func (sv stringValues) get(i int) string   { return sv[i].String() }
-
-// CustomTypeTagMap is a map of functions that can be used as tags for ValidateStruct function.
-// Use this to validate compound or custom types that need to be handled as a whole, e.g.
-// `type UUID [16]byte` (this would be handled as an array of bytes).
-var CustomTypeTagMap = &customTypeTagMap{validators: make(map[string]CustomTypeValidator)}
 
 // iso3166 stores country codes
 type iso3166 struct {

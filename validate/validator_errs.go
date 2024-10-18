@@ -6,6 +6,7 @@
 package validate
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"sort"
@@ -25,8 +26,13 @@ func (e *ErrUnsupported) Error() string {
 // ---------------------------------- Error ----------------------------------
 
 func errorf(field *reflect.StructField, path []string, validator, message string, args ...any) Error {
+	msg := fmt.Sprintf(message, args...)
+	if index := strings.Index(msg, "%!(EXTRA"); index > 0 {
+		msg = msg[:index]
+	}
+
 	return Error{
-		error:     fmt.Errorf(message, args...),
+		error:     errors.New(msg),
 		Name:      nameOf(field),
 		Path:      path,
 		Validator: stripParams(validator),

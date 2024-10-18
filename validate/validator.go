@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 	"unicode"
 
 	"github.com/kelindar/folio/internal/walk"
@@ -46,19 +47,6 @@ func Struct(s interface{}) (bool, error) {
 
 		// Parse options from the tag
 		options := parseOpts(tag)
-
-		/*
-
-			if isEmptyValue(v) {
-				// an empty value is not validated, checks only required
-				isValid, resultErr = checkRequired(t, options)
-				for key := range options {
-					delete(options, key)
-				}
-				return isValid, resultErr
-			}
-
-		*/
 
 		// Check for empty values and required fields
 		if walk.IsEmpty(v) {
@@ -100,74 +88,32 @@ func Struct(s interface{}) (bool, error) {
 // typeCheck performs validation on a single field value
 func typeCheck(v reflect.Value, field *reflect.StructField, options opts, path []string) (bool, error) {
 	optionsOrder := options.orderedKeys()
-	for _, validatorSpec := range optionsOrder {
-		validatorStruct := options[validatorSpec]
-		var negate bool
-		validator := validatorSpec
-		withCustomMessage := len(validatorStruct.message) > 0
+	for _, validator := range optionsOrder {
 
-		// Check for negation
-		if validator[0] == '!' {
-			validator = validator[1:]
-			negate = true
+		// Parse the validator and parameters
+		matches := rxValidator.FindStringSubmatch(validator)
+		if len(matches) == 0 {
+			err := errorf(field, path, validator, "validator is invalid or can't be applied to the field: %q", validator)
+			return false, err
 		}
 
-		// Check for param validators
-		matched := false
-		for key, value := range ParamTagRegexMap {
-			ps := value.FindStringSubmatch(validator)
-			if len(ps) == 0 {
-				continue
-			}
-			matched = true
-			validatefunc, ok := ParamTagMap[key]
-			if !ok {
-				continue
-			}
+		// Find an appropriate validator by its name
+		if vd, ok := lookup(matches[1]); ok {
+			delete(options, validator)
 
-			delete(options, validatorSpec)
-
-			fieldStr := fmt.Sprint(v.Interface())
-			if result := validatefunc(fieldStr, ps[1:]...); (!result && !negate) || (result && negate) {
-				var err error
-				if withCustomMessage {
-					err = errorf(field, path, validatorSpec, validatorStruct.message, fieldStr, validator)
-				} else {
-					if negate {
-						err = errorf(field, path, validatorSpec, "%s does validate as %s", fieldStr, validator)
-					} else {
-						err = errorf(field, path, validatorSpec, "%s does not validate as %s", fieldStr, validator)
-					}
+			// Perform the validation
+			params := strings.Split(matches[2], "|")
+			if v := fmt.Sprint(v.Interface()); !vd.Validate(v, params...) {
+				args := make([]any, 0, len(params)+1)
+				args = append(args, nameOf(field))
+				for _, param := range params {
+					args = append(args, param)
 				}
-				return false, err
-			}
-		}
 
-		if matched {
-			continue
-		}
-
-		// Check for standard validators
-		if validatefunc, ok := TagMap[validator]; ok {
-			delete(options, validatorSpec)
-
-			fieldStr := fmt.Sprint(v.Interface())
-			if result := validatefunc(fieldStr); !result && !negate || result && negate {
-				var err error
-				if withCustomMessage {
-					err = errorf(field, path, validatorSpec, validatorStruct.message, fieldStr, validator)
-				} else {
-					if negate {
-						err = errorf(field, path, validatorSpec, "%s does validate as %s", fieldStr, validator)
-					} else {
-						err = errorf(field, path, validatorSpec, "%s does not validate as %s", fieldStr, validator)
-					}
-				}
-				return false, err
+				return false, errorf(field, path, validator, vd.format, args...)
 			}
 		} else {
-			// Unknown validator
-			err := errorf(field, path, validatorSpec, "unknown validator %q for field %s", validator, field.Name)
+			err := errorf(field, path, validator, "unknown validator %q for field %s", validator, field.Name)
 			return false, err
 		}
 	}
@@ -260,4 +206,49 @@ func nameOf(field *reflect.StructField) string {
 		return ""
 	}
 	return name
+}
+
+// ---------------------------------- Validators API ----------------------------------
+
+var validators sync.Map
+
+// Register registers a new validator function
+func Register(name, format string, fn Func) {
+	RegisterN(name, format, func(str string, _ ...string) bool {
+		return fn(str)
+	})
+}
+
+// RegisterN registers a new validator function with additional parameters
+func RegisterN(name, format string, fn FuncN) {
+	validators.Store(name, &validator{
+		name:   name,
+		format: format,
+		fn:     fn,
+	})
+
+	// Register the negated version of the validator
+	negated := fmt.Sprintf("!%s", name)
+	validators.Store(negated, &validator{
+		name:   negated,
+		format: strings.ReplaceAll(format, "must ", "must not "),
+		fn:     func(str string, params ...string) bool { return !fn(str, params...) },
+	})
+}
+
+type validator struct {
+	name   string // Name of the validator
+	format string // Format of the error message
+	fn     FuncN  // The function to call
+}
+
+func (v *validator) Validate(str string, params ...string) bool {
+	return v.fn(str, params...)
+}
+
+func lookup(name string) (*validator, bool) {
+	if v, ok := validators.Load(name); ok {
+		return v.(*validator), true
+	}
+	return nil, false
 }

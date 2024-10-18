@@ -450,18 +450,6 @@ func IsBase64(str string) bool {
 	return rxBase64.MatchString(str)
 }
 
-// IsFilePath checks is a string is Win or Unix file path and returns it's type.
-func IsFilePath(str string) (bool, int) {
-	switch {
-	case IsWinFilePath(str):
-		return true, Win
-	case IsUnixFilePath(str):
-		return true, Unix
-	default:
-		return false, Unknown
-	}
-}
-
 // IsWinFilePath checks both relative & absolute paths in Windows
 func IsWinFilePath(str string) bool {
 	return len(str) > 0 && len(str) < 32767 && rxWinPath.MatchString(str)
