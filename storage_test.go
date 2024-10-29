@@ -8,6 +8,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestCreate(t *testing.T) {
+	testStorage(func(db folio.Storage, _ folio.Registry) {
+		app, err := folio.Create[*App](db, func(obj *App) error {
+			obj.State = "created"
+			return nil
+		}, "my_project", "test")
+		assert.NoError(t, err)
+		assert.NotNil(t, app)
+	})
+}
+
 func TestInsert(t *testing.T) {
 	testStorage(func(db folio.Storage, _ folio.Registry) {
 		app, err := folio.New[*App]("my_project")

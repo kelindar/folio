@@ -4,6 +4,16 @@ import "iter"
 
 // ---------------------------------- Generic ----------------------------------
 
+// Create creates a new resource and inserts it into the storage.
+func Create[T Object](db Storage, constructor func(obj T) error, namespace, createdBy string) (T, error) {
+	instance, err := New(namespace, constructor)
+	if err != nil {
+		return defaultOf[T](), err
+	}
+
+	return Insert(db, instance, createdBy)
+}
+
 // Insert inserts a new resource into the storage.
 func Insert[T Object](db Storage, v T, createdBy string) (T, error) {
 	out, err := db.Insert(v, createdBy)
