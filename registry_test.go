@@ -175,7 +175,7 @@ func TestField_Slice(t *testing.T) {
 	{ // Test the elem type
 		f, ok := typ.Field("engines.41354")
 		assert.True(t, ok)
-		assert.Equal(t, reflect.Struct, f.Type.Kind())
+		assert.Equal(t, reflect.Slice, f.Type.Kind())
 	}
 
 	{ // Test the slice itself

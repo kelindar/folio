@@ -10,6 +10,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestIsSnakeCase(t *testing.T) {
+	tests := map[string]struct {
+		input    string
+		expected bool
+	}{
+		"snake case":                       {input: "snake_case", expected: true},
+		"uppercase snake":                  {input: "SNAKE_CASE", expected: false},
+		"camelCase":                        {input: "camelCase", expected: false},
+		"kebab-case":                       {input: "kebab-case", expected: false},
+		"contains spaces":                  {input: "snake case", expected: false},
+		"contains symbols":                 {input: "snake_case!", expected: false},
+		"empty string":                     {input: "", expected: false},
+		"starts with number":               {input: "1snake_case", expected: false},
+		"starts with symbol":               {input: "_snake_case", expected: false},
+		"starts with uppercase":            {input: "Snake_case", expected: false},
+		"starts with uppercase and symbol": {input: "_Snake_case", expected: false},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			result := IsSnakeCase(tc.input)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
 func TestIsEmail(t *testing.T) {
 	tests := map[string]struct {
 		input    string

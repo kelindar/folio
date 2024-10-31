@@ -13,16 +13,6 @@ import (
 	"strings"
 )
 
-// ErrUnsupported is a wrapper for reflect.Type
-type ErrUnsupported struct {
-	Type reflect.Type
-}
-
-// Error returns string equivalent for reflect.Type
-func (e *ErrUnsupported) Error() string {
-	return "validator: unsupported type: " + e.Type.String()
-}
-
 // ---------------------------------- Error ----------------------------------
 
 func errorf(field *reflect.StructField, path []string, validator, message string, args ...any) Error {

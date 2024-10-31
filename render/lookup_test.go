@@ -47,6 +47,32 @@ func TestEnum(t *testing.T) {
 
 }
 
+func TestLongEnum(t *testing.T) {
+	test := &struct {
+		Field string `is:"required,in(one_handed|two_handed|shoes|pants|shirt|helm|gloves|ring|talisman|neck|hair|waist|inner_torso|bracelet|face|facial_hair|middle_torso|earrings|arms|cloak|backpack|outer_torso|outer_legs|inner_legs|mount|shop_buy|shop_resale|shop_sell|bank|secure_trade)"`
+	}{
+		Field: "one_handed",
+	}
+
+	rv := reflect.Indirect(reflect.ValueOf(test))
+	field, _ := rv.Type().FieldByName("Field")
+	fv := rv.FieldByName("Field")
+
+	enum := lookupForEnum(fv)
+	assert.True(t, enum.Init(&Props{
+		Field: field,
+	}))
+	assert.NotNil(t, enum)
+
+	var keys, values []string
+	for k, v := range enum.Choices() {
+		keys = append(keys, k)
+		values = append(values, v)
+	}
+
+	assert.Equal(t, 30, len(keys))
+}
+
 func TestUrn(t *testing.T) {
 	testStorage(func(db folio.Storage, registry folio.Registry) {
 		phone, err := folio.New("default", func(obj *Product) error {

@@ -86,6 +86,7 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 		// Ensure that the field is settable and the path can be reached. If not, allocate
 		// everything along the way (analogous to MkDirAll)
 		for subpath := range Path(key.String()).Walk() {
+			subpath = folio.Path(strings.TrimSuffix(string(subpath), "[]"))
 			fd, ok := typ.Field(subpath)
 			if !ok {
 				errDecode = fmt.Errorf("unable to find path %s", key.String())
@@ -134,8 +135,12 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 			rv.SetBool(value.Bool())
 		case reflect.Float64:
 			rv.SetFloat(value.Float())
+		case reflect.Slice:
+			if rv.Type().Elem().Kind() == reflect.String {
+				rv.Set(reflect.ValueOf(asSlice[string](value)))
+			}
 		default:
-			errDecode = fmt.Errorf("unable to decode %s: unsupported type %v", key.String(), rv.Kind())
+			errDecode = fmt.Errorf("unable to decode %s, unsupported type %v", key.String(), rv.Kind())
 		}
 
 		return true
@@ -220,4 +225,12 @@ func remap(mappings slicePath, subpath Path, index int) slicePath {
 // errorPath generates an error path by replacing the Key with the Prefix.
 func errorPath(mappings slicePath, path Path) Path {
 	return swap(mappings, path, 0, 1)
+}
+
+func asSlice[T any](v gjson.Result) []T {
+	var out []T
+	for _, e := range v.Array() {
+		out = append(out, e.Value().(T))
+	}
+	return out
 }
