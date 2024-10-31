@@ -31,6 +31,10 @@ const (
 	rfc3339WithoutZone = "2006-01-02T15:04:05"
 )
 
+func IsSnakeCase(str string) bool {
+	return rxSnakeCase.MatchString(str)
+}
+
 // IsEmail checks if the string is an email.
 func IsEmail(str string) bool {
 	return rxEmail.MatchString(str)

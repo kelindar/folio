@@ -25,7 +25,7 @@ func TestObject_View(t *testing.T) {
 		Mode: ModeView,
 	}, newPerson())
 
-	assert.Len(t, components, 10)
+	assert.Len(t, components, 9)
 }
 
 func TestObject_Edit(t *testing.T) {
@@ -33,7 +33,7 @@ func TestObject_Edit(t *testing.T) {
 		Mode: ModeEdit,
 	}, newPerson())
 
-	assert.Len(t, components, 10)
+	assert.Len(t, components, 9)
 }
 
 func TestInspect_StringOf(t *testing.T) {

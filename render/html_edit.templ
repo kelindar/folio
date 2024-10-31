@@ -1,6 +1,9 @@
 package render
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 templ String(props *Props) {
 	switch props.Mode {
@@ -84,6 +87,23 @@ templ Select(props *Props, lookup Lookup) {
 					}
 				}
 			</uk-select>
+	}
+}
+
+templ Strings(props *Props) {
+	switch props.Mode {
+		case ModeView :
+			for _, v := range props.Value.Interface().([]string) {
+				<span class="uk-tag uk-tag-secondary m-px">{ v }</span>
+			}
+		case ModeEdit, ModeCreate:
+			<uk-input-tag
+				name={ props.Name.String() }
+				placeholder={ props.Desc }
+				value={ strings.Join(props.Value.Interface().([]string), ",") }
+				maxlength="300"
+				uk-cloak
+			></uk-input-tag>
 	}
 }
 

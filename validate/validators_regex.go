@@ -25,6 +25,7 @@ func init() {
 	Register("max", "%s must be at most %v", Max)
 
 	// Standard validators
+	Register("snake", "%s must be in snake case", variadic(IsSnakeCase))
 	Register("email", "%s must be a valid email address", variadic(IsEmail))
 	Register("url", "%s must be a valid URL", variadic(IsURL))
 	Register("dialstring", "%s must be a valid dial string", variadic(IsDialString))
@@ -129,6 +130,7 @@ var (
 	rxIMEI                = regexp.MustCompile(`^[0-9a-f]{14}$|^\d{15}$|^\d{18}$`)
 	rxIMSI                = regexp.MustCompile(`^\d{14,15}$`)
 	rxE164                = regexp.MustCompile(`^\+?[1-9]\d{1,14}$`)
+	rxSnakeCase           = regexp.MustCompile(`^[a-z][a-z0-9_]+$`)
 )
 
 // Func is a wrapper for validator functions that accept additional parameters.

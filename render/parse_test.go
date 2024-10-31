@@ -16,8 +16,9 @@ type Engine struct {
 }
 
 type Employee struct {
-	Name string `json:"name"`
-	Role string `json:"role"`
+	Name    string   `json:"name"`
+	Role    string   `json:"role"`
+	Aliases []string `json:"aliases"`
 }
 
 type Department struct {
@@ -71,9 +72,11 @@ func TestUnmarshalForm(t *testing.T) {
 		"companyInfo.departments.0.name": "Research and Development",
 		"companyInfo.departments.0.employees.0.name": "Alice Smith",
 		"companyInfo.departments.0.employees.0.role": "Engineer",
+		"companyInfo.departments.0.employees.0.aliases[]": "Al",
 		"companyInfo.departments.1.name": "Marketing",
 		"companyInfo.departments.1.employees.0.name": "Sam Jackson",
 		"companyInfo.departments.1.employees.0.role": "Manager",
+		"companyInfo.departments.1.employees.0.aliases[]": ["Sammy", "Samuel"],
 	}`
 
 	registry := folio.NewRegistry()

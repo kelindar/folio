@@ -64,9 +64,10 @@ func (p *Person) Status() string {
 
 type Company struct {
 	folio.Meta `kind:"company" json:",inline"`
-	Name       string `json:"name" form:"rw" is:"required"`
-	Sector     string `json:"sector" form:"rw" is:"required,in(tech|finance|health)"`
-	Year       int    `json:"year" form:"rw" is:"range(1800|2021)"`
+	Name       string   `json:"name" form:"rw" is:"required"`
+	Sector     string   `json:"sector" form:"rw" is:"required,in(tech|finance|health)"`
+	Year       int      `json:"year" form:"rw" is:"range(1800|2021)"`
+	Tags       []string `json:"tags" form:"rw" is:"min(1)"`
 }
 
 func (c *Company) Title() string {

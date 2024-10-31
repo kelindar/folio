@@ -142,7 +142,7 @@ func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 	// If the struct has no visible fields, render the value directly
 	fields := reflect.VisibleFields(rv.Type())
 	switch {
-	case len(fields) == 0 || rv.Type() == reflect.TypeOf(folio.URN{}):
+	case len(fields) == 0 && rv.Type() == reflect.TypeOf(folio.URN{}):
 		if _, component := renderValue(parent); component != nil {
 			out = append(out, component)
 		}
@@ -242,7 +242,12 @@ func renderValue(props *Props) (string, templ.Component) {
 	case reflect.Struct:
 		return "", Struct(props, renderStruct(props, value))
 	case reflect.Slice:
-		return "", Slice(props)
+		switch value.Type().Elem().Kind() {
+		case reflect.Struct:
+			return "", Slice(props)
+		case reflect.String:
+			return label, Strings(props)
+		}
 	case reflect.Pointer:
 		ptrKind := value.Type().Elem().Kind()
 		switch {
