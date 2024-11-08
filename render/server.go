@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"net/http/pprof"
 	"strings"
 	"time"
 
@@ -22,8 +23,19 @@ var assets embed.FS
 func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 	vd := errors.NewValidator()
 
-	// Handle static files from the embed FS (with a custom handler).
+	// Handle static assets & pprof
 	http.Handle("GET /assets/", serveStatic(http.FS(assets)))
+	http.Handle("GET /pprof/", http.HandlerFunc(pprof.Index))
+	http.Handle("GET /pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+	http.Handle("GET /pprof/profile", http.HandlerFunc(pprof.Profile))
+	http.Handle("GET /pprof/symbol", http.HandlerFunc(pprof.Symbol))
+	http.Handle("GET /pprof/trace", http.HandlerFunc(pprof.Trace))
+	http.Handle("GET /pprof/allocs", pprof.Handler("allocs"))
+	http.Handle("GET /pprof/block", pprof.Handler("block"))
+	http.Handle("GET /pprof/goroutine", pprof.Handler("goroutine"))
+	http.Handle("GET /pprof/heap", pprof.Handler("heap"))
+	http.Handle("GET /pprof/mutex", pprof.Handler("mutex"))
+	http.Handle("GET /pprof/threadcreate", pprof.Handler("threadcreate"))
 
 	// Handle page view
 	http.Handle("GET /", page(registry, db))
@@ -51,9 +63,6 @@ func ListenAndServe(port int, registry folio.Registry, db folio.Storage) error {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-
-	// Send log message.
-	slog.Info("Starting server...", "port", port)
 
 	return server.ListenAndServe()
 }
