@@ -78,14 +78,22 @@ templ Select(props *Props, lookup Lookup) {
 		case ModeView :
 			<p>{ currentValue(lookup) }</p>
 		case ModeEdit, ModeCreate:
-			<uk-select name={ props.Name.String() } id={ props.Name.String() } searchable?={ lookup.Len() > 10 || lookup.Len() < 0 } uk-cloak>
-				for key, label := range lookup.Choices() {
-					if currentKey(lookup) == key {
-						<option value={ key } selected>{ label }</option>
-					} else {
-						<option value={ key }>{ label }</option>
+			<uk-select
+				name={ props.Name.String() }
+				id={ props.Name.String() }
+				searchable?={ lookup.Len() > 10 || lookup.Len() < 0 }
+				uk-cloak
+				cls-custom="button: uk-input-fake w-full; dropdown: w-full"
+			>
+				<select hidden>
+					for key, label := range lookup.Choices() {
+						if currentKey(lookup) == key {
+							<option value={ key } selected>{ label }</option>
+						} else {
+							<option value={ key }>{ label }</option>
+						}
 					}
-				}
+				</select>
 			</uk-select>
 	}
 }
@@ -100,6 +108,7 @@ templ Strings(props *Props) {
 			<uk-input-tag
 				name={ props.Name.String() }
 				placeholder={ props.Desc }
+				class="uk-form-sm"
 				value={ strings.Join(props.Value.Interface().([]string), ",") }
 				maxlength="300"
 				uk-cloak
@@ -139,7 +148,7 @@ templ StructPtr(props *Props) {
 			<div class="divider">
 				<button
 					id={ props.ID("add") }
-					class="uk-button uk-button-ghost text-xs"
+					class="uk-btn uk-btn-ghost text-xs"
 					uk-tooltip={ "pos: top; title: Add " + props.Name.Label() }
 					uk-toggle={ "target: #" + props.ID("add") }
 					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Context.Namespace, props.Name) }
@@ -163,7 +172,7 @@ templ Slice(props *Props) {
 			case ModeEdit, ModeCreate :
 				<button
 					type="button"
-					class="uk-button uk-button-ghost text-xs"
+					class="uk-btn uk-btn-ghost text-xs"
 					uk-tooltip="title: Add new item; pos: top"
 					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
 					hx-target={ "#" + props.Name.String() }
@@ -177,7 +186,7 @@ templ Slice(props *Props) {
 		<span>{ props.Name.Label() }</span>
 		<button
 			type="button"
-			class="uk-button uk-button-ghost text-xs"
+			class="uk-btn uk-btn-ghost text-xs"
 			uk-tooltip="title: Collapse/Expand; pos: top"
 			uk-toggle={ "animation: uk-animation-fade; target: ." + props.ID("toggle") }
 		>

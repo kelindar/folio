@@ -45,11 +45,10 @@ templ hxSearchBar(rx *Context) {
 	>
 		<label for="simple-search" class="sr-only">Search</label>
 		<div class="relative w-full border rounded-md">
-			<span uk-search-icon></span>
 			<input
 				id="search_match"
 				name="search_match"
-				class="uk-search-input"
+				class="uk-input uk-form-sm"
 				type="search"
 				placeholder={ "Search " + rx.Type.Plural }
 				aria-label="Search"
@@ -141,7 +140,7 @@ templ hxState(value string) {
 templ hxCreateButton(rx *Context) {
 	if len(rx.Query.Namespace) > 1 {
 		<button
-			class="uk-button uk-button-primary"
+			class="uk-btn uk-btn-primary"
 			uk-toggle="target: #drawer-toggle"
 			hx-target="#drawer"
 			hx-get={ fmt.Sprintf("/make/%s?ns=%s", rx.Kind, rx.Query.Namespace) }
@@ -155,11 +154,11 @@ const pageGap = 2
 
 templ hxPagination(rx *Context, page, size, count, last int) {
 	<nav aria-label="Pagination">
-		<ul class="uk-pagination justify-center pt-6" uk-margin>
+		<ul class="uk-pgn justify-center uk-pgn-ghost pt-6" uk-margin>
 			if page > 0 {
-				<li><a hx-get={ pageOf(rx.Kind, rx.Query, page-1, size) } hx-target="#list-content"><span uk-pagination-previous></span></a></li>
+				<li><a hx-get={ pageOf(rx.Kind, rx.Query, page-1, size) } hx-target="#list-content"><span data-uk-pgn-previous></span></a></li>
 			} else {
-				<li class="uk-disabled"><span uk-pagination-previous></span></li>
+				<li class="uk-disabled"><span data-uk-pgn-previous></span></li>
 			}
 			if max(page-pageGap, 0) > 0 {
 				<li><a hx-get={ pageOf(rx.Kind, rx.Query, 0, size) } hx-target="#list-content">1</a> </li>
@@ -181,9 +180,9 @@ templ hxPagination(rx *Context, page, size, count, last int) {
 				<li><a hx-get={ pageOf(rx.Kind, rx.Query, last, size) } hx-target="#list-content">{ strconv.Itoa(last+1) }</a></li>
 			}
 			if page < last {
-				<li><a hx-get={ pageOf(rx.Kind, rx.Query, page+1, size) } hx-target="#list-content"><span uk-pagination-next></span></a></li>
+				<li><a hx-get={ pageOf(rx.Kind, rx.Query, page+1, size) } hx-target="#list-content"><span data-uk-pgn-next></span></a></li>
 			} else {
-				<li class="uk-disabled"><span uk-pagination-next></span> </li>
+				<li class="uk-disabled"><span data-uk-pgn-next></span> </li>
 			}
 		</ul>
 		<span class="flex justify-center text-xs pt-2 text-slate-400">

@@ -42,14 +42,14 @@ templ hxSliceItem(rx *Context, value any, path Path) {
 				case ModeEdit, ModeCreate:
 					<div class="list-controls">
 						<div
-							class="uk-sortable-handle uk-button uk-button-ghost w-8 h-8"
+							class="uk-sortable-handle uk-btn uk-btn-ghost w-8 h-8"
 							uk-tooltip="title: Move; pos: left"
 						>
 							<uk-icon icon="arrow-down-up" class="px-2"></uk-icon>
 						</div>
 						<button
 							type="button"
-							class="uk-button uk-button-ghost w-8 h-8"
+							class="uk-btn uk-btn-ghost w-8 h-8"
 							uk-tooltip="title: Remove; pos: left"
 							hx-trigger="click"
 							hx-on:click="removeClosest(this, 'li')"
@@ -88,7 +88,7 @@ templ hxFormRow(label string, path Path, editor templ.Component, required bool) 
 				<p class="text-slate-300 font-thin text-xxs">required</p>
 			}
 		</label>
-		<div class="uk-form-controls">
+		<div class="uk-form-controls uk-form-sm">
 			@editor
 		</div>
 		<div id={ path.ID("err") } class="uk-form-help text-destructive"></div>
@@ -96,7 +96,7 @@ templ hxFormRow(label string, path Path, editor templ.Component, required bool) 
 }
 
 templ hxFormHeader(rx *Context, v folio.Object) {
-	<div class="px-4 py-6 mb-6 border-b bg-gray-50 sm:px-6">
+	<div class="pl-4 py-6 mb-6 border-b bg-gray-50">
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
 				<h2 class="text-lg font-medium text-gray-900" id="slide-over-title">
@@ -121,23 +121,23 @@ templ hxFormActions(rx *Context, value folio.Object) {
 					@hxButtonDropdown("drawer-actions", hxFormEditButton(value.URN()), hxFormExtraActions(value.URN()))
 				case ModeEdit:
 					<button
-						class="uk-button uk-button-ghost"
+						class="uk-btn uk-btn-ghost uk-btn-sm"
 						hx-target="#drawer"
 						hx-get={ "/view/" + value.URN().String() }
 					>
 						Cancel
 					</button>
-					<button class="uk-button uk-button-primary">
+					<button class="uk-btn uk-btn-primary uk-btn-sm">
 						<uk-icon icon="save" class="pr-2"></uk-icon>Save
 					</button>
 				case ModeCreate:
 					<button
-						class="uk-button uk-button-ghost"
+						class="uk-btn uk-btn-ghost uk-btn-sm"
 						uk-toggle="target: #drawer-toggle"
 					>
 						Cancel
 					</button>
-					<button class="uk-button uk-button-primary">
+					<button class="uk-btn uk-btn-primary uk-btn-sm">
 						<uk-icon icon="save" class="pr-2"></uk-icon>Save
 					</button>
 			}
@@ -148,7 +148,7 @@ templ hxFormActions(rx *Context, value folio.Object) {
 templ hxFormEditButton(urn folio.URN) {
 	<button
 		type="button"
-		class="uk-button uk-button-ghost"
+		class="uk-btn uk-btn-ghost uk-btn-sm ml-1"
 		hx-target="#drawer"
 		hx-get={ "/edit/" + urn.String() }
 	>Edit</button>
@@ -175,7 +175,7 @@ type ButtonDropdownProps struct {
 templ hxButtonDropdown(id string, primary templ.Component, options ...templ.Component) {
 	<div class="flex-none">
 		<div
-			class="flex items-center px-0 uk-button border border-slate-200 bg-white text-secondary-foreground"
+			class="flex items-center px-0 uk-btn border border-slate-200 bg-white text-secondary-foreground"
 		>
 			@primary
 			<div
