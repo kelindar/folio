@@ -54,11 +54,14 @@ templ hxNamespace(rx *Context, namespaces []folio.Object) {
 				id="search_namespace"
 				searchable?={ len(namespaces) > 5 }
 				uk-cloak
+				cls-custom="button: uk-input-fake w-full; dropdown: w-full"
 			>
-				<option value="" selected?={ rx.Namespace == "" }>All Namespaces</option>
-				for _, ns := range namespaces {
-					<option value={ StringOf(ns, "Name") } selected?={ rx.Namespace == StringOf(ns, "Name") }>{ TitleOf(ns) }</option>
-				}
+				<select hidden>
+					<option value="" selected?={ rx.Namespace == "" }>All Namespaces</option>
+					for _, ns := range namespaces {
+						<option value={ StringOf(ns, "Name") } selected?={ rx.Namespace == StringOf(ns, "Name") }>{ TitleOf(ns) }</option>
+					}
+				</select>
 			</uk-select>
 		</form>
 	</div>
