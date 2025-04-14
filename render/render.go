@@ -242,6 +242,10 @@ func renderValue(props *Props) (string, templ.Component) {
 	case reflect.Struct:
 		return "", Struct(props, renderStruct(props, value))
 	case reflect.Slice:
+		if lookup := lookupForUrnSlice(); lookup.Init(props) {
+			return label, UrnSlice(props, lookup)
+		}
+
 		switch value.Type().Elem().Kind() {
 		case reflect.Struct:
 			return "", Slice(props)

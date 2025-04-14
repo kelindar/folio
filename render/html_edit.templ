@@ -207,3 +207,30 @@ templ Slice(props *Props) {
 		}
 	</ul>
 }
+
+templ UrnSlice(props *Props, lookup *lookupUrnSlice) {
+	switch props.Mode {
+		case ModeView :
+			for i := 0; i < len(lookup.objects); i++ {
+				<span class="uk-tag uk-tag-primary m-px">{ TitleOf(lookup.objects[i]) }</span>
+			}
+		case ModeEdit, ModeCreate:
+			<uk-select
+				name={ props.Name.String() }
+				id={ props.Name.String() }
+				searchable?={ lookup.Len() > 10 || lookup.Len() < 0 }
+				cls-custom="button: uk-input-fake w-full; dropdown: w-full"
+				multiple
+			>
+				<select hidden multiple>
+					for key, label := range lookup.Choices() {
+						if lookup.Contains(key) {
+							<option value={ key } selected>{ label }</option>
+						} else {
+							<option value={ key }>{ label }</option>
+						}
+					}
+				</select>
+			</uk-select>
+	}
+}

@@ -37,10 +37,6 @@ func main() {
 		panic(err)
 	}
 
-	/*for i := 0; i < 100; i++ {
-		folio.Insert(db, docs.NewPerson(), "sys")
-	}*/
-
 	if err := render.ListenAndServe(7000, reg, db); err != nil {
 		slog.Error("Failed to start server!", "details", err.Error())
 		os.Exit(1)
