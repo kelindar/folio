@@ -88,9 +88,9 @@ templ Select(props *Props, lookup Lookup) {
 				<select hidden>
 					for key, label := range lookup.Choices() {
 						if currentKey(lookup) == key {
-							<option value={ key } selected>{ label }</option>
+							<option data-keywords={ label } value={ key } selected>{ label }</option>
 						} else {
-							<option value={ key }>{ label }</option>
+							<option data-keywords={ label } value={ key }>{ label }</option>
 						}
 					}
 				</select>
@@ -225,9 +225,9 @@ templ UrnSlice(props *Props, lookup *lookupUrnSlice) {
 				<select hidden multiple>
 					for key, label := range lookup.Choices() {
 						if lookup.Contains(key) {
-							<option value={ key } selected>{ label }</option>
+							<option data-keywords={ label } value={ key } selected>{ label }</option>
 						} else {
-							<option value={ key }>{ label }</option>
+							<option data-keywords={ label } value={ key }>{ label }</option>
 						}
 					}
 				</select>
