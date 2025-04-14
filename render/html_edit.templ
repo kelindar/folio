@@ -83,7 +83,8 @@ templ Select(props *Props, lookup Lookup) {
 				id={ props.Name.String() }
 				searchable?={ lookup.Len() > 10 || lookup.Len() < 0 }
 				uk-cloak
-				cls-custom="button: uk-input-fake w-full; dropdown: w-full"
+				cls-custom="button: uk-input-fake justify-between w-full; dropdown: w-full"
+				icon="chevron-down"
 			>
 				<select hidden>
 					for key, label := range lookup.Choices() {
@@ -219,7 +220,8 @@ templ UrnSlice(props *Props, lookup *lookupUrnSlice) {
 				name={ props.Name.String() }
 				id={ props.Name.String() }
 				searchable?={ lookup.Len() > 10 || lookup.Len() < 0 }
-				cls-custom="button: uk-input-fake w-full; dropdown: w-full"
+				cls-custom="button: uk-input-fake justify-between w-full; dropdown: w-full"
+				icon="chevron-down"
 				multiple
 			>
 				<select hidden multiple>

@@ -162,7 +162,7 @@
 
 .list-card {
   border: dashed 1px #c8c8c8;
-  border-radius: 15px;
+  border-radius: 10px;
   margin-bottom: 10px !important;
 }
 
@@ -170,9 +170,9 @@
   align-content: center;
   width: 42px;
   margin-left: 10px;
-  padding: 5px;
+  padding: 2px;
   background: #f4f4f49c;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .uk-sortable-drag .list-controls {

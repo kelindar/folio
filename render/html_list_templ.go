@@ -600,7 +600,7 @@ func hxCreateButton(rx *Context) templ.Component {
 		}
 		ctx = templ.ClearChildren(ctx)
 		if len(rx.Query.Namespace) > 1 {
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<button class=\"uk-btn uk-btn-primary\" uk-toggle=\"target: #drawer-toggle\" hx-target=\"#drawer\" hx-get=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 39, "<button class=\"uk-btn uk-btn-primary uk-btn-sm\" uk-toggle=\"target: #drawer-toggle\" hx-target=\"#drawer\" hx-get=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
