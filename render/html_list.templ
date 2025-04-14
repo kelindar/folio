@@ -140,7 +140,7 @@ templ hxState(value string) {
 templ hxCreateButton(rx *Context) {
 	if len(rx.Query.Namespace) > 1 {
 		<button
-			class="uk-btn uk-btn-primary"
+			class="uk-btn uk-btn-primary uk-btn-sm"
 			uk-toggle="target: #drawer-toggle"
 			hx-target="#drawer"
 			hx-get={ fmt.Sprintf("/make/%s?ns=%s", rx.Kind, rx.Query.Namespace) }

@@ -48,13 +48,14 @@ templ hxNamespace(rx *Context, namespaces []folio.Object) {
 			hx-target="#page-content"
 			hx-swap="innerHTML"
 			hx-ext="obj-enc"
+			class="uk-form-sm"
 		>
 			<uk-select
 				name="search_namespace"
 				id="search_namespace"
 				searchable?={ len(namespaces) > 5 }
-				uk-cloak
-				cls-custom="button: uk-input-fake w-full; dropdown: w-full"
+				cls-custom="button: uk-input-fake justify-between w-full; dropdown: w-full"
+				icon="chevron-down"
 			>
 				<select hidden>
 					<option value="" selected?={ rx.Namespace == "" }>All Namespaces</option>
