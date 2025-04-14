@@ -93,7 +93,7 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 				return false
 			}
 
-			// fmt.Printf(" - %s of %s, field: %s, type: %v\n", subpath, rv.Kind(), fd.Name, fd.Type.Kind())
+			//fmt.Printf(" - %s of %s, field: %s, type: %v\n", subpath, rv.Kind(), fd.Name, fd.Type.Kind())
 
 			switch rv.Kind() {
 			case reflect.Struct:
@@ -138,6 +138,15 @@ func hydrate(reader io.Reader, typ folio.Type, dst folio.Object, vd errors.Valid
 		case reflect.Slice:
 			if rv.Type().Elem().Kind() == reflect.String {
 				rv.Set(reflect.ValueOf(asSlice[string](value)))
+			} else if rv.Type().Elem().Name() == "URN" {
+				// Handle slices of URNs
+				var urns []folio.URN
+				for _, e := range value.Array() {
+					if urn, err := folio.ParseURN(e.String()); err == nil {
+						urns = append(urns, urn)
+					}
+				}
+				rv.Set(reflect.ValueOf(urns))
 			}
 		default:
 			errDecode = fmt.Errorf("unable to decode %s, unsupported type %v", key.String(), rv.Kind())

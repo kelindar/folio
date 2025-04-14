@@ -136,6 +136,118 @@ func (o *lookupUrn) Len() int {
 	return count
 }
 
+// ---------------------------------- URN Slice Reference ----------------------------------
+
+// lookupUrnSlice represents a lookup for a slice of URNs
+type lookupUrnSlice struct {
+	objects []folio.Object
+	storage folio.Storage
+	kind    folio.Type
+	query   folio.Query
+	value   reflect.Value
+}
+
+// lookupForUrnSlice creates a new lookup for a slice of URNs
+func lookupForUrnSlice() *lookupUrnSlice {
+	return &lookupUrnSlice{}
+}
+
+// Init initializes the URN slice lookup
+func (o *lookupUrnSlice) Init(props *Props) bool {
+	kind := props.Field.Tag.Get("kind")
+
+	// Ensure it's a slice of URNs
+	if props.Value.Kind() != reflect.Slice || props.Value.Type().Elem().Name() != "URN" || kind == "" {
+		return false
+	}
+
+	// The kind must be resolved
+	typ, err := props.Registry.Resolve(folio.Kind(kind))
+	if err != nil {
+		return false
+	}
+
+	// Load up all referenced objects
+	o.objects = make([]folio.Object, 0, props.Value.Len())
+	for i := 0; i < props.Value.Len(); i++ {
+		item := props.Value.Index(i)
+		if urn, ok := item.Interface().(folio.URN); ok {
+			if value, err := props.Store.Fetch(urn); err == nil {
+				o.objects = append(o.objects, value)
+			}
+		}
+	}
+
+	// Parse the query
+	query, err := folio.ParseQuery(props.Field.Tag.Get("query"), props.Parent, folio.Query{
+		Namespace: props.Context.Namespace,
+	})
+	if err != nil {
+		return false // Invalid query
+	}
+
+	o.value = props.Value
+	o.storage = props.Store
+	o.kind = typ
+	o.query = query
+	return true
+}
+
+// Current returns the currently selected value (empty for slices, as multiple values are selected)
+func (o *lookupUrnSlice) Current() (string, string) {
+	return "", "" // Multiple values selected
+}
+
+// Choices returns all available choices for the URN selector
+func (o *lookupUrnSlice) Choices() iter.Seq2[string, string] {
+	seq, err := o.storage.Search(o.kind.Kind, o.query)
+	if err != nil {
+		return func(yield func(string, string) bool) {}
+	}
+
+	// Create a map of already selected URNs for quick lookup
+	selected := make(map[string]bool)
+	for i := 0; i < o.value.Len(); i++ {
+		item := o.value.Index(i)
+		if urn, ok := item.Interface().(folio.URN); ok {
+			selected[urn.String()] = true
+		}
+	}
+
+	return func(yield func(string, string) bool) {
+		for obj := range seq {
+			urn := obj.URN().String()
+			isSelected := selected[urn]
+			if !yield(urn, TitleOf(obj)+" "+displaySelectedState(isSelected)) {
+				break
+			}
+		}
+	}
+}
+
+func (o *lookupUrnSlice) Contains(urn string) bool {
+	for _, obj := range o.objects {
+		if obj.URN().String() == urn {
+			return true
+		}
+	}
+	return false
+}
+
+// Helper to display if an item is already selected
+func displaySelectedState(selected bool) string {
+	if selected {
+		return "(Selected)"
+	}
+	return ""
+}
+
+// Len returns the number of choices
+func (o *lookupUrnSlice) Len() int {
+	count, _ := o.storage.Count(o.kind.Kind, o.query)
+	return count
+}
+
 // ---------------------------------- Lookup Functions ----------------------------------
 
 // currentKey returns the current key from the lookup.
