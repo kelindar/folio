@@ -100,6 +100,7 @@ type Vehicle struct {
 	Model       string    `json:"model" form:"rw" is:"required"`
 	Description string    `json:"description" form:"rw"`
 	Company     folio.URN `json:"company" form:"rw" kind:"company"`
+	Usage       []string  `json:"usage" form:"rw" is:"flags(personal|commercial|public)"`
 	Engine      struct {
 		Type  string `json:"type" form:"rw" is:"in(electric|petrol|diesel)"`
 		Power int    `json:"power" form:"rw" is:"min(0)"`

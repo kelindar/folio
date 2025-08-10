@@ -3,6 +3,7 @@ package render
 import (
 	"iter"
 	"reflect"
+	"strings"
 
 	"github.com/kelindar/folio"
 	"github.com/kelindar/folio/internal/convert"
@@ -59,6 +60,84 @@ func (o *lookupEnum) Choices() iter.Seq2[string, string] {
 // Len returns the number of choices.
 func (o *lookupEnum) Len() int {
 	return len(o.choices)
+}
+
+// ---------------------------------- Flags ----------------------------------
+
+// lookupFlags represents a flags lookup parsed from flags tag for multiple selection.
+type lookupFlags struct {
+	current reflect.Value // slice of strings
+	choices []string
+}
+
+// lookupForFlags creates a new lookup for a flags field.
+func lookupForFlags(rv reflect.Value) *lookupFlags {
+	return &lookupFlags{
+		current: rv,
+	}
+}
+
+// Init initializes the lookup it returns false if the field is not valid.
+func (f *lookupFlags) Init(props *Props) bool {
+	if choices, ok := decodeFlags(props.Field); ok {
+		f.choices = choices
+		return true
+	}
+	return false
+}
+
+// Current returns the currently selected values as a comma-separated string.
+func (f *lookupFlags) Current() (string, string) {
+	if f.current.Kind() != reflect.Slice {
+		return "", ""
+	}
+
+	var selected []string
+	for i := 0; i < f.current.Len(); i++ {
+		selected = append(selected, f.current.Index(i).String())
+	}
+
+	if len(selected) == 0 {
+		return "", "None selected"
+	}
+
+	// Convert to title case for display
+	var displayValues []string
+	for _, val := range selected {
+		displayValues = append(displayValues, convert.TitleCase(val))
+	}
+
+	return strings.Join(selected, ","), strings.Join(displayValues, ", ")
+}
+
+// Choices returns the choices for the given state.
+func (f *lookupFlags) Choices() iter.Seq2[string, string] {
+	return func(yield func(string, string) bool) {
+		for _, choice := range f.choices {
+			if !yield(choice, convert.TitleCase(choice)) {
+				break
+			}
+		}
+	}
+}
+
+// Len returns the number of choices.
+func (f *lookupFlags) Len() int {
+	return len(f.choices)
+}
+
+// Contains checks if a value is currently selected.
+func (f *lookupFlags) Contains(value string) bool {
+	if f.current.Kind() != reflect.Slice {
+		return false
+	}
+
+	for i := 0; i < f.current.Len(); i++ {
+		if f.current.Index(i).String() == value {
+			return true
+		}
+	}
+	return false
 }
 
 // ---------------------------------- Reference ----------------------------------

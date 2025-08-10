@@ -2699,3 +2699,39 @@ func TestMax(t *testing.T) {
 		})
 	}
 }
+
+func TestIsFlags(t *testing.T) {
+	tests := []struct {
+		name     string
+		value    string
+		params   []string
+		expected bool
+	}{
+		// String format tests
+		{"empty string", "", []string{"red", "blue", "green"}, true},
+		{"single valid value", "red", []string{"red", "blue", "green"}, true},
+		{"multiple valid values", "red,blue", []string{"red", "blue", "green"}, true},
+		{"all valid values", "red,blue,green", []string{"red", "blue", "green"}, true},
+		{"single invalid value", "yellow", []string{"red", "blue", "green"}, false},
+		{"mixed valid and invalid", "red,yellow", []string{"red", "blue", "green"}, false},
+		{"values with spaces", "red, blue", []string{"red", "blue", "green"}, true},
+		{"empty value in list", "red,,blue", []string{"red", "blue", "green"}, true},
+		{"only commas", ",,", []string{"red", "blue", "green"}, true},
+		{"single comma", ",", []string{"red", "blue", "green"}, true},
+
+		// Slice format tests (how Go represents []string when fmt.Sprint is used)
+		{"empty slice", "[]", []string{"red", "blue", "green"}, true},
+		{"single value slice", "[red]", []string{"red", "blue", "green"}, true},
+		{"multiple value slice", "[red blue]", []string{"red", "blue", "green"}, true},
+		{"all values slice", "[red blue green]", []string{"red", "blue", "green"}, true},
+		{"invalid value slice", "[yellow]", []string{"red", "blue", "green"}, false},
+		{"mixed valid invalid slice", "[red yellow]", []string{"red", "blue", "green"}, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := IsFlags(tt.value, tt.params...)
+			assert.Equal(t, tt.expected, result, "IsFlags(%q, %v) = %v, want %v", tt.value, tt.params, result, tt.expected)
+		})
+	}
+}

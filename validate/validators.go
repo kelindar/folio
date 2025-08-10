@@ -929,6 +929,52 @@ func IsIn(str string, params ...string) bool {
 	return false
 }
 
+// IsFlags checks if all values are members of the allowed set
+// This validator is used for multiple selection fields (flags)
+// It accepts either a comma-separated string or a slice representation
+func IsFlags(input string, params ...string) bool {
+	if input == "" {
+		return true // Empty string is valid (no selections)
+	}
+
+	var values []string
+
+	// Handle slice representation like "[value1 value2]"
+	if strings.HasPrefix(input, "[") && strings.HasSuffix(input, "]") {
+		// Remove brackets and split by spaces
+		content := strings.Trim(input, "[]")
+		if content == "" {
+			return true // Empty slice is valid
+		}
+		values = strings.Fields(content)
+	} else {
+		// Handle comma-separated string
+		values = strings.Split(input, ",")
+	}
+
+	for _, value := range values {
+		value = strings.TrimSpace(value)
+		if value == "" {
+			continue // Skip empty values
+		}
+
+		// Check if this value is in the allowed set
+		found := false
+		for _, param := range params {
+			if value == param {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return false // Value not in allowed set
+		}
+	}
+
+	return true
+}
+
 func IsE164(str string) bool {
 	return rxE164.MatchString(str)
 }

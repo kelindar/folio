@@ -15,13 +15,18 @@ import (
 )
 
 var (
-	exIn = regexp.MustCompile(`^in\((.*)\)`)
+	exIn    = regexp.MustCompile(`^in\((.*)\)`)
+	exFlags = regexp.MustCompile(`^flags\((.*)\)`)
 )
 
 // ---------------------------------- Struct Fields ----------------------------------
 
 func isEnum(field reflect.StructField) bool {
 	return strings.Contains(field.Tag.Get("is"), "in(")
+}
+
+func isFlags(field reflect.StructField) bool {
+	return strings.Contains(field.Tag.Get("is"), "flags(")
 }
 
 func isEmail(field reflect.StructField) bool {
@@ -41,6 +46,21 @@ func decodeOneOf(field reflect.StructField) ([]string, bool) {
 	fields := strings.Split(field.Tag.Get("is"), ",")
 	for _, field := range fields {
 		if out := exIn.FindAllStringSubmatch(field, -1); len(out) > 0 {
+			return strings.Split(out[0][1], "|"), true
+		}
+	}
+	return nil, false
+}
+
+// Parses flags tag from validator e.g.: "required,flags(electric|petrol|diesel)"
+func decodeFlags(field reflect.StructField) ([]string, bool) {
+	if !isFlags(field) {
+		return nil, false
+	}
+
+	fields := strings.Split(field.Tag.Get("is"), ",")
+	for _, field := range fields {
+		if out := exFlags.FindAllStringSubmatch(field, -1); len(out) > 0 {
 			return strings.Split(out[0][1], "|"), true
 		}
 	}

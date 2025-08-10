@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"github.com/kelindar/folio/internal/convert"
 	"strings"
 )
 
@@ -89,6 +90,38 @@ templ Select(props *Props, lookup Lookup) {
 				<select hidden>
 					for key, label := range lookup.Choices() {
 						if currentKey(lookup) == key {
+							<option data-keywords={ label } value={ key } selected>{ label }</option>
+						} else {
+							<option data-keywords={ label } value={ key }>{ label }</option>
+						}
+					}
+				</select>
+			</uk-select>
+	}
+}
+
+templ Flags(props *Props, lookup *lookupFlags) {
+	switch props.Mode {
+		case ModeView :
+			if lookup.current.Len() == 0 {
+				<span class="text-gray-500 italic">None selected</span>
+			} else {
+				for i := 0; i < lookup.current.Len(); i++ {
+					<span class="uk-tag uk-tag-secondary m-px">{ convert.TitleCase(lookup.current.Index(i).String()) }</span>
+				}
+			}
+		case ModeEdit, ModeCreate:
+			<uk-select
+				name={ props.Name.String() }
+				id={ props.Name.String() }
+				searchable?={ lookup.Len() > 10 || lookup.Len() < 0 }
+				cls-custom="button: uk-input-fake justify-between w-full; dropdown: w-full"
+				icon="chevron-down"
+				multiple
+			>
+				<select hidden multiple>
+					for key, label := range lookup.Choices() {
+						if lookup.Contains(key) {
 							<option data-keywords={ label } value={ key } selected>{ label }</option>
 						} else {
 							<option data-keywords={ label } value={ key }>{ label }</option>
