@@ -19,6 +19,7 @@ func init() {
 	Register("stringlength", "%s must be between %v and %v", StringLength)
 	Register("matches", "%s must match %v", StringMatches)
 	Register("in", "%s must be one of allowed values", IsIn)
+	Register("flags", "%s must contain only allowed values", IsFlags)
 	Register("minlen", "%s must be at least %v characters long", MinStringLength)
 	Register("maxlen", "%s must be at most %v characters long", MaxStringLength)
 	Register("min", "%s must be at least %v", Min)

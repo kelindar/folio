@@ -267,11 +267,17 @@ func renderValue(props *Props) (string, templ.Component) {
 			return label, UrnSlice(props, lookup)
 		}
 
+		// Check if this is a flags field (slice of strings with flags() tag)
+		if value.Type().Elem().Kind() == reflect.String {
+			if lookup := lookupForFlags(value); lookup.Init(props) {
+				return label, Flags(props, lookup)
+			}
+			return label, Strings(props)
+		}
+
 		switch value.Type().Elem().Kind() {
 		case reflect.Struct:
 			return "", Slice(props)
-		case reflect.String:
-			return label, Strings(props)
 		}
 	case reflect.Pointer:
 		ptrKind := value.Type().Elem().Kind()
