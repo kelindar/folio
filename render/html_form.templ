@@ -12,7 +12,7 @@ import (
 templ hxFormContent(rx *Context, value folio.Object) {
 	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" class="uk-form-horizontal" hx-ext="obj-enc">
 		@hxFormHeader(rx, value)
-		<div class="grid gap-4 px-6">
+		<div class="grid gap-2 px-6">
 			@hxDivider(rx.Type.Title)
 			for _, edit := range Object(rx, value) {
 				@edit

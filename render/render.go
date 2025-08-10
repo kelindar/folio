@@ -76,7 +76,14 @@ const (
 )
 
 func levelOf(tag string) string {
-	switch strings.ToLower(tag) {
+	// Parse comma-separated values and extract the access level
+	parts := strings.Split(strings.ToLower(tag), ",")
+	if len(parts) == 0 {
+		return levelHidden
+	}
+
+	level := strings.TrimSpace(parts[0])
+	switch level {
 	case levelReadOnly: // read-only
 		return levelReadOnly
 	case levelReadWrite: // read-write
@@ -86,6 +93,17 @@ func levelOf(tag string) string {
 	default:
 		return levelHidden
 	}
+}
+
+// isInline checks if the form tag contains the 'inline' modifier
+func isInline(tag string) bool {
+	parts := strings.Split(strings.ToLower(tag), ",")
+	for _, part := range parts {
+		if strings.TrimSpace(part) == "inline" {
+			return true
+		}
+	}
+	return false
 }
 
 // Object renders the object into a list of components for each field.
@@ -240,6 +258,9 @@ func renderValue(props *Props) (string, templ.Component) {
 	case reflect.Bool:
 		return label, Bool(props)
 	case reflect.Struct:
+		if isInline(props.Field.Tag.Get("form")) {
+			return "", StructInline(props, renderStruct(props, value))
+		}
 		return "", Struct(props, renderStruct(props, value))
 	case reflect.Slice:
 		if lookup := lookupForUrnSlice(); lookup.Init(props) {

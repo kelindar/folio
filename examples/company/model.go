@@ -103,13 +103,14 @@ type Vehicle struct {
 	Engine      struct {
 		Type  string `json:"type" form:"rw" is:"in(electric|petrol|diesel)"`
 		Power int    `json:"power" form:"rw" is:"min(0)"`
-	} `json:"engine" form:"rw"`
+	} `json:"engine" form:"rw,inline"`
 	Insurance *struct {
 		Type string `json:"type" form:"rw" is:"required,in(third_party|comprehensive)"`
 		Term int    `json:"term" form:"rw" is:"min(1)"`
 	} `json:"insurance" form:"rw"`
 	Owners []folio.URN `json:"owners" form:"rw" kind:"person"`
 	Extras []struct {
+		Price   int `json:"price" form:"rw" is:"required,min(0)"`
 		Coating *struct {
 			Type     string `json:"type" form:"rw" is:"required,in(ceramic|polymer)"`
 			Warranty int    `json:"warranty" form:"rw" is:"min(0)"`
@@ -118,7 +119,6 @@ type Vehicle struct {
 			Type  string `json:"type" form:"rw" is:"required,in(leather|fabric)"`
 			Color string `json:"color" form:"rw" is:"required"`
 		} `json:"upholstery" form:"rw"`
-		Price int `json:"price" form:"rw" is:"required,min(0)"`
 	} `json:"extras" form:"rw"`
 }
 

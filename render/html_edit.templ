@@ -143,6 +143,12 @@ templ Struct(props *Props, children []templ.Component) {
 	}
 }
 
+templ StructInline(props *Props, children []templ.Component) {
+	for _, child := range children {
+		@child
+	}
+}
+
 templ StructPtr(props *Props) {
 	switch props.Mode {
 		case ModeEdit, ModeCreate :
