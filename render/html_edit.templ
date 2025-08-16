@@ -88,6 +88,13 @@ templ Select(props *Props, lookup Lookup) {
 				icon="chevron-down"
 			>
 				<select hidden>
+					if !isRequired(props.Field) {
+						if currentKey(lookup) == "" {
+							<option value="" selected>None</option>
+						} else {
+							<option value="">None</option>
+						}
+					}
 					for key, label := range lookup.Choices() {
 						if currentKey(lookup) == key {
 							<option data-keywords={ label } value={ key } selected>{ label }</option>
