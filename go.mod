@@ -1,8 +1,6 @@
 module github.com/kelindar/folio
 
-go 1.23.0
-
-toolchain go1.23.1
+go 1.25.0
 
 require (
 	github.com/a-h/templ v0.3.924
