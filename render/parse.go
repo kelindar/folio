@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/kelindar/folio"
@@ -17,6 +18,7 @@ import (
 var (
 	exIn    = regexp.MustCompile(`^in\((.*)\)`)
 	exFlags = regexp.MustCompile(`^flags\((.*)\)`)
+	exRange = regexp.MustCompile(`^range\((.*)\)`)
 )
 
 // ---------------------------------- Struct Fields ----------------------------------
@@ -35,6 +37,10 @@ func isEmail(field reflect.StructField) bool {
 
 func isRequired(field reflect.StructField) bool {
 	return strings.Contains(field.Tag.Get("is"), "required")
+}
+
+func isRange(field reflect.StructField) bool {
+	return strings.Contains(field.Tag.Get("is"), "range(")
 }
 
 // Parses oneof tag from validator e.g.: "required,oneof=male female prefer_not_to"
@@ -65,6 +71,37 @@ func decodeFlags(field reflect.StructField) ([]string, bool) {
 		}
 	}
 	return nil, false
+}
+
+// Parses range tag from validator e.g.: "required,range(0|100|1)"
+func decodeRange(field reflect.StructField) (min, max, step float64, hasStep bool) {
+	if !isRange(field) {
+		return 0, 0, 0, false
+	}
+
+	fields := strings.Split(field.Tag.Get("is"), ",")
+	for _, field := range fields {
+		if out := exRange.FindAllStringSubmatch(field, -1); len(out) > 0 {
+			params := strings.Split(out[0][1], "|")
+			if len(params) >= 2 {
+				minVal, err1 := strconv.ParseFloat(params[0], 64)
+				maxVal, err2 := strconv.ParseFloat(params[1], 64)
+				if err1 != nil || err2 != nil {
+					return 0, 0, 0, false
+				}
+
+				if len(params) == 3 {
+					stepVal, err3 := strconv.ParseFloat(params[2], 64)
+					if err3 != nil || stepVal <= 0 {
+						return 0, 0, 0, false
+					}
+					return minVal, maxVal, stepVal, true
+				}
+				return minVal, maxVal, 1, false
+			}
+		}
+	}
+	return 0, 0, 0, false
 }
 
 func decodeKind(field reflect.StructField, registry folio.Registry) (folio.Type, bool) {

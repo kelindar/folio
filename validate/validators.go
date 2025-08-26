@@ -887,7 +887,7 @@ func MaxStringLength(str string, params ...string) bool {
 
 // Range checks string's length
 func Range(str string, params ...string) bool {
-	if len(params) != 2 {
+	if len(params) != 2 && len(params) != 3 {
 		return false
 	}
 
@@ -899,6 +899,13 @@ func Range(str string, params ...string) bool {
 	// Check if all conversions are successful
 	if err1 != nil || err2 != nil || err3 != nil {
 		return false
+	}
+
+	// If step is provided, validate it's a positive number
+	if len(params) == 3 {
+		if step, err := convert.Float64(params[2]); err != nil || step <= 0 {
+			return false
+		}
 	}
 
 	if lo > hi {

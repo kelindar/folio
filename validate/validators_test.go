@@ -2165,6 +2165,17 @@ func TestRange(t *testing.T) {
 		"invalid params length":              {input: "5", params: []string{"1"}, expected: false},
 		"range with left greater than right": {input: "5", params: []string{"10", "1"}, expected: true},
 		"string":                             {input: "apple", params: []string{"banana", "zebra"}, expected: false},
+		"within range with step":             {input: "5", params: []string{"1", "10", "0.5"}, expected: true},
+		"below range with step":              {input: "0", params: []string{"1", "10", "0.5"}, expected: false},
+		"above range with step":              {input: "11", params: []string{"1", "10", "0.5"}, expected: false},
+		"exactly min with step":              {input: "1", params: []string{"1", "10", "0.5"}, expected: true},
+		"exactly max with step":              {input: "10", params: []string{"1", "10", "0.5"}, expected: true},
+		"float within range with step":       {input: "5.5", params: []string{"1", "10", "0.5"}, expected: true},
+		"invalid step zero":                  {input: "5", params: []string{"1", "10", "0"}, expected: false},
+		"invalid step negative":              {input: "5", params: []string{"1", "10", "-0.5"}, expected: false},
+		"invalid step non-numeric":           {input: "5", params: []string{"1", "10", "step"}, expected: false},
+		"valid step integer":                 {input: "5", params: []string{"1", "10", "1"}, expected: true},
+		"step larger than range":             {input: "5", params: []string{"1", "10", "20"}, expected: true},
 	}
 
 	for name, tc := range tests {

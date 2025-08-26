@@ -254,6 +254,9 @@ func renderValue(props *Props) (string, templ.Component) {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Float32, reflect.Float64:
+		if min, max, step, hasStep := decodeRange(props.Field); hasStep && (max-min)/step <= 100 {
+			return label, Range(props, min, max, step)
+		}
 		return label, Number(props)
 	case reflect.Bool:
 		return label, Bool(props)

@@ -12,7 +12,8 @@ import (
 type Person struct {
 	folio.Meta `kind:"person" json:",inline"`
 	Name       string    `json:"name" form:"rw" is:"required"`
-	Age        int       `json:"age" form:"rw" is:"range(0|130)"`
+	Age        int       `json:"age" form:"rw" is:"range(0|130|1)" desc:"Age in years"`
+	Rating     float64   `json:"rating" form:"rw" is:"range(0|10|0.1)" desc:"Performance rating (0-10)"`
 	Gender     string    `json:"gender" form:"rw" is:"required,in(male|female|prefer_not_to)"`
 	Country    string    `json:"country" form:"rw"`
 	Address    string    `json:"address" form:"rw"`
@@ -28,6 +29,7 @@ func NewPerson() *Person {
 		p.Name = gofakeit.Name()
 		p.Address = gofakeit.Address().Address
 		p.Age = gofakeit.Number(18, 65)
+		p.Rating = float64(gofakeit.Number(0, 100)) / 10.0 // Rating between 0.0 and 10.0
 		p.Phone = gofakeit.Phone()
 		p.JobTitle = gofakeit.JobTitle()
 		p.Country = gofakeit.Country()
@@ -63,11 +65,14 @@ func (p *Person) Status() string {
 // ---------------------------------- Company ----------------------------------
 
 type Company struct {
-	folio.Meta `kind:"company" json:",inline"`
-	Name       string   `json:"name" form:"rw" is:"required"`
-	Sector     string   `json:"sector" form:"rw" is:"required,in(tech|finance|health)"`
-	Year       int      `json:"year" form:"rw" is:"range(1800|2021)"`
-	Tags       []string `json:"tags" form:"rw" is:"min(1)"`
+	folio.Meta   `kind:"company" json:",inline"`
+	Name         string   `json:"name" form:"rw" is:"required"`
+	Sector       string   `json:"sector" form:"rw" is:"required,in(tech|finance|health)"`
+	Year         int      `json:"year" form:"rw" is:"range(1800|2025|5)" desc:"Founded year (in 5-year increments)"`
+	ValuationM   float64  `json:"valuationM" form:"rw" is:"range(0|1000|10)" desc:"Valuation in millions USD"`
+	EmployeeSize int      `json:"employeeSize" form:"rw" is:"range(1|10000|10)" desc:"Number of employees"`
+	Revenue      int      `json:"revenue" form:"rw" is:"range(0|1000000|1)" desc:"Annual revenue (too many steps, shows input)"`
+	Tags         []string `json:"tags" form:"rw" is:"min(1)"`
 }
 
 func (c *Company) Title() string {
@@ -82,7 +87,10 @@ func NewCompany() *Company {
 	c, err := folio.New("default", func(c *Company) error {
 		c.Name = gofakeit.Company()
 		c.Sector = gofakeit.RandomString([]string{"tech", "finance", "health"})
-		c.Year = gofakeit.Number(1800, 2021)
+		c.Year = gofakeit.Number(1800, 2025)
+		c.ValuationM = float64(gofakeit.Number(1, 100)) * 10.0 // Valuation between 10M and 1000M
+		c.EmployeeSize = gofakeit.Number(1, 1000) * 10         // Employee size in multiples of 10
+		c.Revenue = gofakeit.Number(10000, 500000)             // Revenue with too many steps for slider
 		return nil
 	})
 	if err != nil {

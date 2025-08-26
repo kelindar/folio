@@ -162,17 +162,16 @@ templ Range(props *Props, min, max, step float64) {
 		case ModeView :
 			<p>{ fmt.Sprintf("%v", props.Value.Interface()) }</p>
 		case ModeEdit, ModeCreate:
-			<input
-				type="range"
-				id={ props.Name.String() }
+			<uk-input-range
 				name={ props.Name.String() }
-				class="uk-range"
-				placeholder={ props.Desc }
-				value={ fmt.Sprintf("%v", props.Value.Interface()) }
 				min={ fmt.Sprintf("%v", min) }
 				max={ fmt.Sprintf("%v", max) }
 				step={ fmt.Sprintf("%v", step) }
-			/>
+				value={ fmt.Sprintf("%v", props.Value.Interface()) }
+				label=""
+				label-position="top"
+				class="w-full"
+			></uk-input-range>
 	}
 }
 

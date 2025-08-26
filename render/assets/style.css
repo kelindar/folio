@@ -2,8 +2,10 @@
 
 :root {
   font-family: "Rubik", Inter, sans-serif;
-  font-feature-settings: "liga" 1, "calt" 1; /* fix for Chrome */
+  font-feature-settings: "liga" 1, "calt" 1;
+  /* fix for Chrome */
 }
+
 @supports (font-variation-settings: normal) {
   :root {
     font-family: "Rubik", InterVariable, sans-serif;
@@ -20,7 +22,8 @@
 /* Set the drawer width to 600px */
 .uk-offcanvas-bar {
   width: 600px !important;
-  left: -600px !important; /* Hide the drawer off-screen */
+  left: -600px !important;
+  /* Hide the drawer off-screen */
   padding: 0 !important;
   overflow-y: scroll !important;
 }
@@ -32,11 +35,11 @@
 }
 
 /* When the drawer is open, position it correctly */
-.uk-open > .uk-offcanvas-bar {
+.uk-open>.uk-offcanvas-bar {
   left: 0 !important;
 }
 
-.uk-offcanvas-flip .uk-open > .uk-offcanvas-bar {
+.uk-offcanvas-flip .uk-open>.uk-offcanvas-bar {
   right: 0 !important;
   left: auto !important;
 }
@@ -44,10 +47,11 @@
 /* Adjust reveal styles */
 .uk-offcanvas-reveal {
   width: 0 !important;
-  transition: width 0.3s ease-out !important; /* Ensure smooth transition */
+  transition: width 0.3s ease-out !important;
+  /* Ensure smooth transition */
 }
 
-.uk-open > .uk-offcanvas-reveal {
+.uk-open>.uk-offcanvas-reveal {
   width: 600px !important;
 }
 
@@ -93,6 +97,14 @@
   }
 }
 
+.uk-input-range-label {
+  font-size: 0.65rem;
+}
+
+.uk-input-range-label.top {
+  top: -1rem;
+}
+
 /* ---------------- Notification ---------------- */
 
 @keyframes anim-notify {
@@ -101,16 +113,19 @@
     transform: translateY(2rem);
     visibility: hidden;
   }
+
   10% {
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
   }
+
   80% {
     opacity: 1;
     transform: translateY(0);
     visibility: visible;
   }
+
   100% {
     opacity: 0;
     transform: translateY(2rem);
@@ -141,7 +156,7 @@
   margin: 5px;
 }
 
-.divider > button {
+.divider>button {
   padding: 0;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -180,7 +195,7 @@
   visibility: hidden;
 }
 
-.list-ul.uk-list-divider > :nth-child(n + 2) {
+.list-ul.uk-list-divider> :nth-child(n + 2) {
   margin-top: 1rem;
   border-top-width: 1px;
   border-color: hsl(var(--border));
