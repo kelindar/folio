@@ -3,7 +3,7 @@ module github.com/kelindar/folio
 go 1.25.0
 
 require (
-	github.com/a-h/templ v0.3.924
+	github.com/a-h/templ v0.3.943
 	github.com/angelofallars/htmx-go v0.5.0
 	github.com/ncruces/go-sqlite3 v0.27.1
 	github.com/rs/xid v1.6.0
