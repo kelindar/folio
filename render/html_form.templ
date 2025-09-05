@@ -10,7 +10,7 @@ import (
 )
 
 templ hxFormContent(rx *Context, value folio.Object) {
-	<form hx-put={ "/obj/" + value.URN().String() } hx-target="#drawer" class="uk-form-horizontal" hx-ext="obj-enc">
+	<form hx-put={ "/obj/" + value.URN().String() + "?tab=" + rx.Tab } hx-target="#drawer" class="uk-form-horizontal" hx-ext="obj-enc">
 		@hxFormHeader(rx, value)
 		<div class="grid gap-2 px-4">
 			for _, edit := range Object(rx, value) {
@@ -122,13 +122,18 @@ templ hxFormActions(rx *Context, value folio.Object) {
 					@hxButtonDropdown("drawer-actions", hxFormEditButton(value.URN()), hxFormExtraActions(value.URN()))
 				case ModeEdit:
 					<button
+						type="button"
 						class="uk-btn uk-btn-ghost uk-btn-sm"
 						hx-target="#drawer"
 						hx-get={ "/view/" + value.URN().String() }
+						hx-vals="js:{tab: currentTab()}"
 					>
 						Cancel
 					</button>
-					<button class="uk-btn uk-btn-primary uk-btn-sm">
+					<button
+						type="submit"
+						class="uk-btn uk-btn-primary uk-btn-sm"
+					>
 						<uk-icon icon="save" class="pr-2"></uk-icon>Save
 					</button>
 				case ModeCreate:
@@ -152,6 +157,7 @@ templ hxFormEditButton(urn folio.URN) {
 		class="uk-btn uk-btn-ghost uk-btn-sm ml-1"
 		hx-target="#drawer"
 		hx-get={ "/edit/" + urn.String() }
+		hx-vals="js:{tab: currentTab()}"
 	>Edit</button>
 }
 

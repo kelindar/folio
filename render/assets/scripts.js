@@ -87,3 +87,10 @@ function removeClosest(target, selector) {
     li.remove();
   }
 }
+
+function currentTab() {
+  const activeTab = document.querySelector(
+    '#drawer .uk-tab-alt .uk-active a, .uk-tab-alt .uk-active a, .uk-tab-alt li.uk-active a, .uk-tab .uk-active a'
+  );
+  return activeTab?.getAttribute('data-tab-index') || '0';
+}

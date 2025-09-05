@@ -182,6 +182,13 @@ func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handl
 			return errors.Internal("Unable to fetch object, %v", err)
 		}
 
+		// Get active tab from query parameter and store in context
+		activeTab := r.URL.Query().Get("tab")
+		if activeTab == "" {
+			activeTab = "0"
+		}
+		rx.Tab = activeTab
+
 		return w.Render(hxFormContent(rx, document))
 	})
 
@@ -281,6 +288,12 @@ func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) 
 			return errors.Internal("unable to save %T, %v", instance, err)
 		}
 
+		// Get active tab from query parameter for save response
+		activeTab := r.URL.Query().Get("tab")
+		if activeTab == "" {
+			activeTab = "0"
+		}
+
 		switch {
 		case isCreated(updated):
 			return w.Render(hxListElementCreate(&Context{
@@ -289,6 +302,7 @@ func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) 
 				Type:     typ,
 				Store:    db,
 				Registry: registry,
+				Tab:      activeTab,
 			}, updated))
 		default:
 			return w.Render(hxListElementUpdate(&Context{
@@ -297,6 +311,7 @@ func saveObject(registry folio.Registry, db folio.Storage, vd errors.Validator) 
 				Type:     typ,
 				Store:    db,
 				Registry: registry,
+				Tab:      activeTab,
 			}, updated))
 		}
 	})

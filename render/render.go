@@ -49,6 +49,7 @@ type Context struct {
 	Store     folio.Storage
 	Registry  folio.Registry
 	Query     folio.Query
+	Tab       string
 	Namespace string
 }
 
@@ -65,17 +66,6 @@ type Props struct {
 
 func (p *Props) ID(prefix string) string {
 	return p.Name.ID(prefix)
-}
-
-// makeURL creates the URL for adding new items to a slice, handling cases where Parent might be nil
-func makeURL(props *Props) string {
-	var namespace string
-	if props.Parent != nil {
-		namespace = props.Parent.URN().Namespace
-	} else {
-		namespace = props.Namespace
-	}
-	return fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, namespace, props.Name)
 }
 
 // ---------------------------------- Object Rendering ----------------------------------
