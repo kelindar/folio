@@ -117,7 +117,7 @@ type Vehicle struct {
 		Type   string `json:"type" form:"rw" is:"required,in(third_party|comprehensive)"`
 		Term   int    `json:"term" form:"rw" is:"min(1)"`
 		Extras []struct {
-			Person folio.URN `json:"person" form:"rw" is:"required" kind:"person"`
+			Person folio.URN `json:"person" form:"rw" is:"required" kind:"person" query:"namespace=*"`
 			Age    int       `json:"age" form:"rw" is:"min(0)"`
 		} `json:"drivers" form:"rw"`
 	} `json:"insurance" form:"rw" tab:"Insurance"`
