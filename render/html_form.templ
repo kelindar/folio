@@ -16,11 +16,6 @@ templ hxFormContent(rx *Context, value folio.Object) {
 			for _, edit := range Object(rx, value) {
 				@edit
 			}
-			if rx.Mode == ModeView {
-				@hxDivider("Governance")
-				@hxFormRow("Created", "createdAt", timedAt(value.Created()), false)
-				@hxFormRow("Updated", "updatedAt", timedAt(value.Updated()), false)
-			}
 		</div>
 	</form>
 }
@@ -95,17 +90,24 @@ templ hxFormRow(label string, path Path, editor templ.Component, required bool) 
 }
 
 templ hxFormHeader(rx *Context, v folio.Object) {
-	<div class="pl-4 py-6 mb-6 border-b bg-gray-50">
+	<div class="pl-4 pt-6 pb-4 mb-4 border-b bg-gray-50">
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
 				<h2 class="text-lg font-medium text-gray-900" id="slide-over-title">
 					{ TitleOf(v) }
 				</h2>
 				<p class="text-sm text-gray-500">
-					{ StringOf(v, "Subtitle") }
+					<span class="flex items-center gap-1 mb-1">
+						<uk-icon icon="info" class="w-4 h-4"></uk-icon>
+						{ StringOf(v, "Subtitle") }
+					</span>
+					<span class="flex items-center gap-1">
+						<uk-icon icon="calendar-sync" class="w-4 h-4"></uk-icon>
+						@timedAt(v.Updated())
+					</span>
 				</p>
 			</div>
-			<div class="mt-5 flex items-center">
+			<div class="mt-8 flex items-center">
 				@hxFormActions(rx, v)
 			</div>
 		</div>
@@ -259,5 +261,5 @@ templ hxNotification(title, subtitle string) {
 }
 
 templ timedAt(user string, at time.Time) {
-	<p>{ fmt.Sprintf("%v, %v", convert.TitleCase(user), convert.Since(at)) }</p>
+	<span>{ fmt.Sprintf("%v, %v", convert.TitleCase(user), convert.Since(at)) }</span>
 }

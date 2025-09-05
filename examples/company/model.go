@@ -121,7 +121,7 @@ type Vehicle struct {
 			Age    int       `json:"age" form:"rw" is:"min(0)"`
 		} `json:"drivers" form:"rw"`
 	} `json:"insurance" form:"rw" tab:"Insurance"`
-	Owners []folio.URN `json:"owners" form:"rw" kind:"person" tab:"Ownership"`
+	Owners []folio.URN `json:"owners" form:"rw" kind:"person" tab:"Insurance"`
 	Extras []struct {
 		Price   int `json:"price" form:"rw" is:"required,min(0)"`
 		Coating *struct {
@@ -132,7 +132,7 @@ type Vehicle struct {
 			Type  string `json:"type" form:"rw" is:"required,in(leather|fabric)"`
 			Color string `json:"color" form:"rw" is:"required"`
 		} `json:"upholstery" form:"rw"`
-	} `json:"extras" form:"rw" tab:"Ownership"`
+	} `json:"extras" form:"rw" tab:"Extras"`
 }
 
 func NewVehicle() *Vehicle {
