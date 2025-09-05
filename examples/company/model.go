@@ -114,8 +114,12 @@ type Vehicle struct {
 		Power int    `json:"power" form:"rw" is:"min(0)"`
 	} `json:"engine" form:"rw,inline"`
 	Insurance *struct {
-		Type string `json:"type" form:"rw" is:"required,in(third_party|comprehensive)"`
-		Term int    `json:"term" form:"rw" is:"min(1)"`
+		Type   string `json:"type" form:"rw" is:"required,in(third_party|comprehensive)"`
+		Term   int    `json:"term" form:"rw" is:"min(1)"`
+		Extras []struct {
+			Person folio.URN `json:"person" form:"rw" is:"required" kind:"person"`
+			Age    int       `json:"age" form:"rw" is:"min(0)"`
+		} `json:"drivers" form:"rw"`
 	} `json:"insurance" form:"rw"`
 	Owners []folio.URN `json:"owners" form:"rw" kind:"person"`
 	Extras []struct {

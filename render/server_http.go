@@ -209,7 +209,7 @@ func makeObject(registry folio.Registry, db folio.Storage) http.Handler {
 		default:
 			field, ok := rx.Type.Field(rx.Path)
 			if !ok {
-				return errors.BadRequest("unable to find path, %v", err)
+				return errors.BadRequest("unable to find path '%s' in type '%s'", rx.Path, rx.Type.Kind)
 			}
 
 			fv := reflect.New(field.Type.Elem()).Interface()

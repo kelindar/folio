@@ -221,7 +221,7 @@ templ Slice(props *Props) {
 					class="uk-btn uk-btn-ghost text-xs"
 					uk-tooltip="title: Add new item; pos: top"
 					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
-					hx-target={ "#" + props.Name.String() }
+					hx-target={ "#" + props.ID("list") }
 					hx-swap="beforeend"
 				>
 					<uk-icon icon="list-plus"></uk-icon>
@@ -241,7 +241,7 @@ templ Slice(props *Props) {
 		</button>
 	</div>
 	<ul
-		id={ props.Name.String() }
+		id={ props.ID("list") }
 		uk-sortable="handle: .uk-sortable-handle"
 		class={ "uk-list list-ul " + props.ID("toggle") }
 	>
