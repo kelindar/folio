@@ -1022,7 +1022,7 @@ func StructTabs(props *Props, tabs map[string][]templ.Component, tabOrder []stri
 			templ_7745c5c3_Var53 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "<div class=\"uk-margin\"><ul class=\"uk-subnav uk-subnav-primary pb-5\" data-uk-switcher>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "<div class=\"uk-margin\"><ul class=\"uk-tab-alt text-xs mb-5\" data-uk-switcher>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

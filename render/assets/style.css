@@ -3,13 +3,18 @@
 :root {
   font-family: "Rubik", Inter, sans-serif;
   font-feature-settings: "liga" 1, "calt" 1;
-  /* fix for Chrome */
 }
 
 @supports (font-variation-settings: normal) {
   :root {
     font-family: "Rubik", InterVariable, sans-serif;
   }
+}
+
+.bg-pattern {
+  background-color: #f4f4f4;
+  background-image: radial-gradient(#5a5a5a 0.5px, #f4f4f4 0.5px);
+  background-size: 10px 10px;
 }
 
 .text-xxs {

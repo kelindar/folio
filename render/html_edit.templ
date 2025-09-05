@@ -190,7 +190,7 @@ templ StructInline(props *Props, children []templ.Component) {
 
 templ StructTabs(props *Props, tabs map[string][]templ.Component, tabOrder []string) {
 	<div class="uk-margin">
-		<ul class="uk-subnav uk-subnav-primary pb-5" data-uk-switcher>
+		<ul class="uk-tab-alt text-xs mb-5" data-uk-switcher>
 			for _, tabName := range tabOrder {
 				<li><a href="#">{ tabName }</a></li>
 			}

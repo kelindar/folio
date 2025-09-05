@@ -52,7 +52,7 @@ func hxLayout(title string, bodyContent templ.Component) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@2.0.2\" crossorigin=\"anonymous\"></script><script type=\"module\" src=\"https://cdn.jsdelivr.net/npm/franken-ui@2.0.0/dist/js/core.iife.js\"></script><script type=\"module\" src=\"https://cdn.jsdelivr.net/npm/franken-ui@2.0.0/dist/js/icon.iife.js\"></script><script src=\"/assets/scripts.js\"></script></head><body class=\"bg-gray-100 dark:bg-gray-900\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<script src=\"https://cdn.tailwindcss.com\"></script><script src=\"https://unpkg.com/htmx.org@2.0.2\" crossorigin=\"anonymous\"></script><script type=\"module\" src=\"https://cdn.jsdelivr.net/npm/franken-ui@2.0.0/dist/js/core.iife.js\"></script><script type=\"module\" src=\"https://cdn.jsdelivr.net/npm/franken-ui@2.0.0/dist/js/icon.iife.js\"></script><script src=\"/assets/scripts.js\"></script></head><body class=\" bg-pattern bg-gray-100 dark:bg-gray-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -217,7 +217,7 @@ func contentList(rx *Context, content templ.Component, namespaces []folio.Object
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div id=\"page-content\" class=\"container mx-auto\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div id=\"page-content\" class=\"container mx-auto mb-10\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
