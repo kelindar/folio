@@ -23,7 +23,7 @@ templ hxLayout(title string, bodyContent templ.Component) {
 			<script type="module" src="https://cdn.jsdelivr.net/npm/franken-ui@2.0.0/dist/js/icon.iife.js"></script>
 			<script src="/assets/scripts.js"></script>
 		</head>
-		<body class="bg-gray-100 dark:bg-gray-900">
+		<body class=" bg-pattern bg-gray-100 dark:bg-gray-900">
 			@bodyContent
 		</body>
 	</html>
@@ -54,7 +54,7 @@ templ contentList(rx *Context, content templ.Component, namespaces []folio.Objec
 	@hxDrawer()
 	<div>
 		@hxNavigation(rx, namespaces)
-		<div id="page-content" class="container mx-auto">
+		<div id="page-content" class="container mx-auto mb-10">
 			@hxList(rx, content)
 		</div>
 	</div>

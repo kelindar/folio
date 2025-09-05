@@ -35,6 +35,34 @@ func isEmail(field reflect.StructField) bool {
 	return strings.Contains(field.Tag.Get("is"), "email")
 }
 
+func hasTab(field reflect.StructField) bool {
+	return field.Tag.Get("tab") != ""
+}
+
+// TabInfo represents tab information with name and optional icon
+type TabInfo struct {
+	Name string
+	Icon string
+}
+
+// decodeTab extracts the tab name and optional icon from a struct field tag
+// Supports formats: tab:"Name" or tab:"Name,icon"
+func decodeTab(field reflect.StructField) TabInfo {
+	tabTag := field.Tag.Get("tab")
+	if tabTag == "" {
+		return TabInfo{}
+	}
+
+	parts := strings.Split(tabTag, ",")
+	info := TabInfo{Name: strings.TrimSpace(parts[0])}
+
+	if len(parts) > 1 {
+		info.Icon = strings.TrimSpace(parts[1])
+	}
+
+	return info
+}
+
 func isRequired(field reflect.StructField) bool {
 	return strings.Contains(field.Tag.Get("is"), "required")
 }
