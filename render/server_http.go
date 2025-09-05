@@ -183,11 +183,9 @@ func editObject(mode Mode, registry folio.Registry, db folio.Storage) http.Handl
 		}
 
 		// Get active tab from query parameter and store in context
-		activeTab := r.URL.Query().Get("tab")
-		if activeTab == "" {
-			activeTab = "0"
+		if rx.Tab = r.URL.Query().Get("tab"); rx.Tab == "" {
+			rx.Tab = "0"
 		}
-		rx.Tab = activeTab
 
 		return w.Render(hxFormContent(rx, document))
 	})
