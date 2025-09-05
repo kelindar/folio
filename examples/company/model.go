@@ -112,7 +112,7 @@ type Vehicle struct {
 	Engine      struct {
 		Type  string `json:"type" form:"rw" is:"in(electric|petrol|diesel)"`
 		Power int    `json:"power" form:"rw" is:"min(0)"`
-	} `json:"engine" form:"rw,inline" tab:"Engine"`
+	} `json:"engine" form:"rw,inline" tab:"Engine,cog"`
 	Insurance *struct {
 		Type   string `json:"type" form:"rw" is:"required,in(third_party|comprehensive)"`
 		Term   int    `json:"term" form:"rw" is:"min(1)"`
@@ -120,8 +120,8 @@ type Vehicle struct {
 			Person folio.URN `json:"person" form:"rw" is:"required" kind:"person" query:"namespace=*"`
 			Age    int       `json:"age" form:"rw" is:"min(0)"`
 		} `json:"drivers" form:"rw"`
-	} `json:"insurance" form:"rw" tab:"Insurance"`
-	Owners []folio.URN `json:"owners" form:"rw" kind:"person" tab:"Insurance"`
+	} `json:"insurance" form:"rw" tab:"Insurance,shield"`
+	Owners []folio.URN `json:"owners" form:"rw" kind:"person" tab:"Insurance,shield"`
 	Extras []struct {
 		Price   int `json:"price" form:"rw" is:"required,min(0)"`
 		Coating *struct {
@@ -132,7 +132,7 @@ type Vehicle struct {
 			Type  string `json:"type" form:"rw" is:"required,in(leather|fabric)"`
 			Color string `json:"color" form:"rw" is:"required"`
 		} `json:"upholstery" form:"rw"`
-	} `json:"extras" form:"rw" tab:"Extras"`
+	} `json:"extras" form:"rw" tab:"Extras,plus"`
 }
 
 func NewVehicle() *Vehicle {

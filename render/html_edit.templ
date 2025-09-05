@@ -188,11 +188,18 @@ templ StructInline(props *Props, children []templ.Component) {
 	}
 }
 
-templ StructTabs(props *Props, tabs map[string][]templ.Component, tabOrder []string) {
+templ StructTabs(props *Props, tabs map[string][]templ.Component, tabOrder []string, tabInfos map[string]TabInfo) {
 	<div class="uk-margin">
 		<ul class="uk-tab-alt text-xs px-2 mb-5" data-uk-switcher={ "active: " + props.Tab }>
 			for i, tabName := range tabOrder {
-				<li><a href="#" data-tab-index={ fmt.Sprintf("%d", i) }>{ tabName }</a></li>
+				<li>
+					<a href="#" data-tab-index={ fmt.Sprintf("%d", i) } class="flex items-center gap-2">
+						if tabInfos[tabName].Icon != "" {
+							<uk-icon icon={ tabInfos[tabName].Icon } class="w-4 h-4"></uk-icon>
+						}
+						{ tabName }
+					</a>
+				</li>
 			}
 		</ul>
 		<ul class="uk-switcher uk-margin">

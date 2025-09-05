@@ -209,6 +209,7 @@ func renderStructFields(parent *Props, fields []reflect.StructField, rv reflect.
 // renderStructWithTabs groups fields by tabs and renders them in a tabbed interface
 func renderStructWithTabs(parent *Props, fields []reflect.StructField, rv reflect.Value) templ.Component {
 	tabs := make(map[string][]templ.Component)
+	tabInfos := make(map[string]TabInfo)
 	tabOrder := []string{}
 
 	for _, field := range fields {
@@ -218,26 +219,27 @@ func renderStructWithTabs(parent *Props, fields []reflect.StructField, rv reflec
 			continue // skip hidden fields
 		}
 
-		tabName := decodeTab(field)
-		if tabName == "" {
-			tabName = "General" // default tab for fields without tab tag
+		tabInfo := decodeTab(field)
+		if tabInfo.Name == "" {
+			tabInfo = TabInfo{Name: "General", Icon: ""} // default tab for fields without tab tag
 		}
 
-		// Track tab order
-		if _, exists := tabs[tabName]; !exists {
-			tabOrder = append(tabOrder, tabName)
-			tabs[tabName] = []templ.Component{}
+		// Track tab order and info
+		if _, exists := tabs[tabInfo.Name]; !exists {
+			tabOrder = append(tabOrder, tabInfo.Name)
+			tabs[tabInfo.Name] = []templ.Component{}
+			tabInfos[tabInfo.Name] = tabInfo
 		}
 
 		// Add component to appropriate tab
 		if label == "" {
-			tabs[tabName] = append(tabs[tabName], editor)
+			tabs[tabInfo.Name] = append(tabs[tabInfo.Name], editor)
 		} else {
-			tabs[tabName] = append(tabs[tabName], hxFormRow(label, props.Name, editor, isRequired(field)))
+			tabs[tabInfo.Name] = append(tabs[tabInfo.Name], hxFormRow(label, props.Name, editor, isRequired(field)))
 		}
 	}
 
-	return StructTabs(parent, tabs, tabOrder)
+	return StructTabs(parent, tabs, tabOrder, tabInfos)
 }
 
 func renderSlice(parent *Props, rv reflect.Value) (out []templ.Component) {
