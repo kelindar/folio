@@ -1022,14 +1022,14 @@ func StructTabs(props *Props, tabs map[string][]templ.Component, tabOrder []stri
 			templ_7745c5c3_Var53 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "<div class=\"uk-margin\"><ul class=\"uk-tab-alt text-xs mb-5\" data-uk-switcher=\"")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 76, "<div class=\"uk-margin\"><ul class=\"uk-tab-alt text-xs px-2 mb-5\" data-uk-switcher=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var54 string
 		templ_7745c5c3_Var54, templ_7745c5c3_Err = templ.JoinStringErrs("active: " + props.Tab)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_edit.templ`, Line: 193, Col: 79}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `render/html_edit.templ`, Line: 193, Col: 84}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var54))
 		if templ_7745c5c3_Err != nil {

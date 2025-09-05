@@ -347,7 +347,7 @@ func hxFormHeader(rx *Context, v folio.Object) templ.Component {
 			templ_7745c5c3_Var13 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"pl-4 pt-6 pb-4 mb-4 border-b bg-gray-50\"><div class=\"flex items-start justify-between space-x-3\"><div class=\"space-y-1\"><h2 class=\"text-lg font-medium text-gray-900\" id=\"slide-over-title\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 20, "<div class=\"pl-4 pt-6 pb-4 mb-4 border-b bg-gray-50 bg-pattern\"><div class=\"flex items-start justify-between space-x-3\"><div class=\"space-y-1\"><h2 class=\"text-lg font-medium text-gray-900\" id=\"slide-over-title\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
