@@ -357,19 +357,9 @@ func renderValue(props *Props) (string, templ.Component) {
 
 func propsOf(parent *Props, field reflect.StructField, rv reflect.Value) *Props {
 	name := nameOf(field, parent.Name)
-
-	// For slice items and nested structs, we need to preserve the root parent object
-	var parentObj folio.Object
-	if parent.Parent != nil {
-		parentObj = parent.Parent
-	} else {
-		// This shouldn't happen in normal cases, but provide a fallback
-		parentObj = nil
-	}
-
 	return &Props{
 		Context: parent.Context,
-		Parent:  parentObj,
+		Parent:  parent.Parent,
 		Name:    name,
 		Value:   rv,
 		Desc:    descOf(name, field),
