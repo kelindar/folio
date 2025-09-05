@@ -188,6 +188,27 @@ templ StructInline(props *Props, children []templ.Component) {
 	}
 }
 
+templ StructTabs(props *Props, tabs map[string][]templ.Component, tabOrder []string) {
+	<div class="uk-margin">
+		<ul class="uk-subnav uk-subnav-primary pb-5" data-uk-switcher>
+			for _, tabName := range tabOrder {
+				<li><a href="#">{ tabName }</a></li>
+			}
+		</ul>
+		<ul class="uk-switcher uk-margin">
+			for _, tabName := range tabOrder {
+				<li>
+					<div class="grid gap-2">
+						for _, component := range tabs[tabName] {
+							@component
+						}
+					</div>
+				</li>
+			}
+		</ul>
+	</div>
+}
+
 templ StructPtr(props *Props) {
 	switch props.Mode {
 		case ModeEdit, ModeCreate :
@@ -220,7 +241,7 @@ templ Slice(props *Props) {
 					type="button"
 					class="uk-btn uk-btn-ghost text-xs"
 					uk-tooltip="title: Add new item; pos: top"
-					hx-get={ fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, props.Parent.URN().Namespace, props.Name) }
+					hx-get={ makeURL(props) }
 					hx-target={ "#" + props.ID("list") }
 					hx-swap="beforeend"
 				>

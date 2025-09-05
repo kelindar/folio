@@ -67,6 +67,17 @@ func (p *Props) ID(prefix string) string {
 	return p.Name.ID(prefix)
 }
 
+// makeURL creates the URL for adding new items to a slice, handling cases where Parent might be nil
+func makeURL(props *Props) string {
+	var namespace string
+	if props.Parent != nil {
+		namespace = props.Parent.URN().Namespace
+	} else {
+		namespace = props.Namespace
+	}
+	return fmt.Sprintf("/make/%s?ns=%s&path=%s", props.Kind, namespace, props.Name)
+}
+
 // ---------------------------------- Object Rendering ----------------------------------
 
 const (
@@ -167,49 +178,101 @@ func renderStruct(parent *Props, rv reflect.Value) (out []templ.Component) {
 
 	// Render all visible fields of a struct
 	default:
-		for _, field := range fields {
-			props := propsOf(parent, field, rv.FieldByName(field.Name))
-			label, editor := renderValue(props)
-			switch {
-			case editor == nil:
-				continue // skip hidden fields
-			case label == "":
-				out = append(out, editor)
-			default:
-				out = append(out, hxFormRow(label, props.Name, editor, isRequired(field)))
-			}
+		if hasAnyTabTags(fields) {
+			out = append(out, renderStructWithTabs(parent, fields, rv))
+		} else {
+			out = renderStructFields(parent, fields, rv)
 		}
 	}
 
 	return out
 }
 
-func renderSlice(parent *Props, rv reflect.Value) (out []templ.Component) {
-	for i := 0; i < rv.Len(); i++ {
-		props := propsOf(parent, rv.Index(i).Type().Field(0), rv.Index(i))
-		props.Name = Path(fmt.Sprintf("%s.%d", parent.Name, i))
-		out = append(out, hxSliceItem(parent.Context, rv.Index(i).Interface(), props.Name))
+// hasAnyTabTags checks if any field in the slice has a tab tag
+func hasAnyTabTags(fields []reflect.StructField) bool {
+	for _, field := range fields {
+		if hasTab(field) {
+			return true
+		}
 	}
+	return false
+}
 
+// renderStructFields renders struct fields normally without tabs
+func renderStructFields(parent *Props, fields []reflect.StructField, rv reflect.Value) []templ.Component {
+	var out []templ.Component
+	for _, field := range fields {
+		props := propsOf(parent, field, rv.FieldByName(field.Name))
+		label, editor := renderValue(props)
+		switch {
+		case editor == nil:
+			continue // skip hidden fields
+		case label == "":
+			out = append(out, editor)
+		default:
+			out = append(out, hxFormRow(label, props.Name, editor, isRequired(field)))
+		}
+	}
 	return out
 }
 
-// renderField renders a field of a struct into a component.
-func renderField(props *Props) (string, templ.Component) {
-	if !props.Field.IsExported() {
-		return "", nil
+// renderStructWithTabs groups fields by tabs and renders them in a tabbed interface
+func renderStructWithTabs(parent *Props, fields []reflect.StructField, rv reflect.Value) templ.Component {
+	tabs := make(map[string][]templ.Component)
+	tabOrder := []string{}
+
+	for _, field := range fields {
+		props := propsOf(parent, field, rv.FieldByName(field.Name))
+		label, editor := renderValue(props)
+		if editor == nil {
+			continue // skip hidden fields
+		}
+
+		tabName := decodeTab(field)
+		if tabName == "" {
+			tabName = "General" // default tab for fields without tab tag
+		}
+
+		// Track tab order
+		if _, exists := tabs[tabName]; !exists {
+			tabOrder = append(tabOrder, tabName)
+			tabs[tabName] = []templ.Component{}
+		}
+
+		// Add component to appropriate tab
+		if label == "" {
+			tabs[tabName] = append(tabs[tabName], editor)
+		} else {
+			tabs[tabName] = append(tabs[tabName], hxFormRow(label, props.Name, editor, isRequired(field)))
+		}
 	}
 
-	// Check the level of the field
-	switch levelOf(props.Field.Tag.Get("form")) {
-	case levelHidden:
-		return "", nil
-	case levelReadOnly:
-		props.Mode = ModeView
+	return StructTabs(parent, tabs, tabOrder)
+}
+
+func renderSlice(parent *Props, rv reflect.Value) (out []templ.Component) {
+	for i := 0; i < rv.Len(); i++ {
+		element := rv.Index(i)
+		elementType := element.Type()
+
+		// Create a dummy field for the slice element
+		var field reflect.StructField
+		if elementType.Kind() == reflect.Struct && elementType.NumField() > 0 {
+			field = elementType.Field(0)
+		} else {
+			// Create a synthetic field for non-struct or empty struct types
+			field = reflect.StructField{
+				Name: fmt.Sprintf("Item%d", i),
+				Type: elementType,
+			}
+		}
+
+		props := propsOf(parent, field, element)
+		props.Name = Path(fmt.Sprintf("%s.%d", parent.Name, i))
+		out = append(out, hxSliceItem(parent.Context, element.Interface(), props.Name))
 	}
 
-	// Render the actual value
-	return renderValue(props)
+	return out
 }
 
 func renderValue(props *Props) (string, templ.Component) {
@@ -302,9 +365,19 @@ func renderValue(props *Props) (string, templ.Component) {
 
 func propsOf(parent *Props, field reflect.StructField, rv reflect.Value) *Props {
 	name := nameOf(field, parent.Name)
+
+	// For slice items and nested structs, we need to preserve the root parent object
+	var parentObj folio.Object
+	if parent.Parent != nil {
+		parentObj = parent.Parent
+	} else {
+		// This shouldn't happen in normal cases, but provide a fallback
+		parentObj = nil
+	}
+
 	return &Props{
 		Context: parent.Context,
-		Parent:  parent.Parent,
+		Parent:  parentObj,
 		Name:    name,
 		Value:   rv,
 		Desc:    descOf(name, field),

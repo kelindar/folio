@@ -35,6 +35,15 @@ func isEmail(field reflect.StructField) bool {
 	return strings.Contains(field.Tag.Get("is"), "email")
 }
 
+func hasTab(field reflect.StructField) bool {
+	return field.Tag.Get("tab") != ""
+}
+
+// decodeTab extracts the tab name from a struct field tag
+func decodeTab(field reflect.StructField) string {
+	return field.Tag.Get("tab")
+}
+
 func isRequired(field reflect.StructField) bool {
 	return strings.Contains(field.Tag.Get("is"), "required")
 }

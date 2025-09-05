@@ -201,3 +201,36 @@
   border-color: hsl(var(--border));
   padding-top: 1rem;
 }
+
+/* ---------------- Tabs ---------------- */
+
+.uk-tab {
+  border-bottom: 1px solid #e5e5e5;
+  margin-bottom: 20px;
+}
+
+.uk-tab>li>a {
+  padding: 10px 20px;
+  color: #666;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.uk-tab>li.uk-active>a {
+  color: #1e87f0;
+  border-bottom-color: #1e87f0;
+}
+
+.uk-tab>li>a:hover {
+  color: #1e87f0;
+  background-color: #f8f8f8;
+}
+
+.uk-switcher>li {
+  display: none;
+}
+
+.uk-switcher>li.uk-active {
+  display: block;
+}
