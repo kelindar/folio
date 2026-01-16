@@ -55,7 +55,7 @@ func TestParseQuery(t *testing.T) {
 		invalid bool
 	}{
 		"invalid namespace format": {query: "namespace=;state=active", invalid: true},
-		"invalid filter format":    {query: "namespace=company;filter=age;state=active", invalid: true},
+		"invalid filter key empty": {query: "namespace=company;filter=:value;state=active", invalid: true},
 		"invalid match format":     {query: "namespace=company;match=;", invalid: true},
 		"empty query string": {
 			query:  "",
@@ -90,6 +90,14 @@ func TestParseQuery(t *testing.T) {
 					"age": {"30"},
 				},
 				Match: "Alice",
+			},
+		},
+		"existence check filter": {
+			query: "filter=email",
+			expect: Query{
+				Filters: map[string][]string{
+					"email": {""},
+				},
 			},
 		},
 	}

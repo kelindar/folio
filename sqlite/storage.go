@@ -163,9 +163,27 @@ func queryFilterByJSON(path string, values []string) string {
 	}
 
 	var sb strings.Builder
-	sb.WriteString("(json_extract(data, '$.")
-	sb.WriteString(path)
-	sb.WriteString("') IN (")
+	jsonPath := "json_extract(data, '$." + path + "')"
+
+	// Check if this is an existence-only filter (empty string value)
+	if len(values) == 1 && values[0] == "" {
+		// Existence check: field must be non-null and non-zero value
+		sb.WriteString("(")
+		sb.WriteString(jsonPath)
+		sb.WriteString(" IS NOT NULL AND ")
+		sb.WriteString(jsonPath)
+		sb.WriteString(" != '' AND ")
+		sb.WriteString(jsonPath)
+		sb.WriteString(" != 0 AND ")
+		sb.WriteString(jsonPath)
+		sb.WriteString(" != false)")
+		return sb.String()
+	}
+
+	// Standard equality filter
+	sb.WriteString("(")
+	sb.WriteString(jsonPath)
+	sb.WriteString(" IN (")
 
 	// Write the values as a SQL 'IN' list
 	for i, v := range values {
