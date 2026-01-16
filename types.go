@@ -224,8 +224,11 @@ Example query: "namespace=company;state=active;filter=age:30;match={Name}"
  2. **state**: Indicates the states to filter by. Multiple states can be separated by commas.
     Example: `state=active,inactive`
 
- 3. **filter**: Defines filters to apply. Each filter is specified as `field:value`, and multiple filters can be separated by commas.
-    Example: `filter=age:30,income:1000`
+ 3. **filter**: Defines filters to apply. Each filter is specified as `field:value` for equality checks,
+    or just `field` (without colon) for existence checks (non-nil and non-zero). Multiple filters can be
+    separated by commas.
+    Example: `filter=age:30,income:1000` (equality checks)
+    Example: `filter=email` (existence check - matches records where email is set and non-empty)
 
  4. **match**: A full-text search query. This can include any search terms.
     Example: `match=software engineer`
@@ -339,6 +342,7 @@ func parseMatch(text string, query *Query, object any) error {
 }
 
 // populateFilters processes the filters and adds them to the Query struct.
+// Filters can be in the format "key:value" for equality checks or just "key" for existence checks.
 func populateFilters(query *Query, filterStr string) error {
 	filters := strings.Split(filterStr, ",")
 	for _, filter := range filters {
@@ -348,15 +352,20 @@ func populateFilters(query *Query, filterStr string) error {
 		}
 
 		kv := strings.SplitN(filter, ":", 2)
-		if len(kv) != 2 {
-			return fmt.Errorf("query: invalid filter format '%s'", filter)
+		key := strings.TrimSpace(kv[0])
+		if key == "" {
+			return fmt.Errorf("query: empty key in filter '%s'", filter)
 		}
 
-		key := strings.TrimSpace(kv[0])
-		value := strings.TrimSpace(kv[1])
-		if key == "" || value == "" {
-			return fmt.Errorf("query: empty key or value in filter '%s'", filter)
+		// If no value is provided, it's an existence check (empty string signals this)
+		var value string
+		if len(kv) == 2 {
+			value = strings.TrimSpace(kv[1])
+			if value == "" {
+				return fmt.Errorf("query: empty value in filter '%s'", filter)
+			}
 		}
+
 		query.Filters[key] = append(query.Filters[key], value)
 	}
 	return nil
